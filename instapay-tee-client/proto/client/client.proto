@@ -1,0 +1,69 @@
+syntax = "proto3";
+
+service Client {
+    rpc agreementRequest(AgreeRequestsMessage) returns (AgreementResult) {}
+    rpc updateRequest(UpdateRequestsMessage) returns (UpdateResult) {}
+    rpc confirmPayment(ConfirmRequestsMessage) returns (ConfirmResult) {}
+    rpc directChannelPayment(DirectChannelPaymentMessage) returns (DirectPaymentResult) {}
+}
+
+message AgreeRequestsMessage {
+    int64 paymentNumber = 1;
+    ChannelPayments channelPayments = 2;
+    bytes originalMessage = 3;
+    bytes signature = 4;
+}
+
+message UpdateRequestsMessage{
+    int64 paymentNumber = 1;
+    ChannelPayments channelPayments = 2;
+    bytes originalMessage = 3;
+    bytes signature = 4;
+}
+
+message ConfirmRequestsMessage{
+    int64 paymentNumber = 1;
+    bytes originalMessage = 2;
+    bytes signature = 3;
+}
+
+message ChannelPayment{
+    int64 channelId = 1;
+    int64 amount = 2;
+}
+
+message DirectChannelPaymentMessage {
+    int64 channelId = 1;
+    int64 amount = 2;
+    bytes originalMessage = 3;
+    bytes signature = 4;
+}
+
+message ChannelPayments {
+    repeated ChannelPayment channelPayments = 1;
+}
+
+message AgreementResult{
+    int64 paymentNumber = 1;
+    bool result = 2;
+    bytes originalMessage = 3;
+    bytes signature = 4;
+}
+
+message UpdateResult{
+    int64 paymentNumber = 1;
+    bool result = 2;
+    bytes originalMessage = 3;
+    bytes signature = 4;
+}
+
+message ConfirmResult {
+    int64 paymentNumber = 1;
+    bool result = 2;
+}
+
+message DirectPaymentResult{
+    bool result = 1;
+    bytes replyMessage = 2;
+    bytes replySignature = 3;
+}

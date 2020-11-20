@@ -1,0 +1,9 @@
+[submodule "Enclave/libs/secp256k1"]
+	path = Enclave/libs/secp256k1
+	url = https://github.com/bitcoin-core/secp256k1.git
+[submodule "Enclave/libs/rlpvalue"]
+	path = Enclave/libs/rlpvalue
+	url = https://github.com/bloq/rlpvalue.git
+[submodule "Enclave/libs/--name"]
+	path = Enclave/libs/--name
+	url = https://github.com/bloq/rlpvalue.git
