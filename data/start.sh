@@ -1,0 +1,1 @@
+./geth --datadir ./new --networkid 11 --rpc --rpcaddr 141.223.121.164 --rpcport 8555 --ws --wsaddr 141.223.121.164 --wsport 8881 --wsorigins="*" --port 30303 --rpccorsdomain "*" --rpcapi "db,eth,net,web3,personal,admin,miner,debug,txpool" --wsapi "db,eth,net,web3,personal,admin,miner,debug,txpool" --nodiscover --"allow-insecure-unlock" console

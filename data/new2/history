@@ -1,0 +1,8 @@
+miner.start()
+eth.sendTransaction({from: eth.coinbase,to: "0x96216849c49358B10257cb55b28eA603c874b05E", value: web3.toWei(100, "ether")})
+eth.sendTransaction({from: eth.coinbase,to: "0xD03A2CC08755eC7D75887f0997195654b928893e", value: web3.toWei(100, "ether")})
+miner.stop()
+miner.start()
+miner.stop()
+eth.accounts
+eth.coinbase

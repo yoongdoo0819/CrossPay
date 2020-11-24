@@ -1,0 +1,1 @@
+./geth --rpc --rpccorsdomain="https://remix.ethereum.org" --rpcport 9999 --rpcapi web3,eth,debug,personal,net --ws --wsorigins="*" --wsaddr 141.223.121.139 --wsport 8546 --wsapi web3,eth,debug,personal,net --vmdebug --datadir ./new2 --dev console

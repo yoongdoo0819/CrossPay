@@ -1,0 +1,32 @@
+=============== Oct 4, 2020 (KST) ===============
+22:35:29.640095 log@legend F·NumFile S·FileSize N·Entry C·BadEntry B·BadBlock Ke·KeyError D·DroppedEntry L·Level Q·SeqNum T·TimeElapsed
+22:35:29.646353 db@open opening
+22:35:29.652594 version@stat F·[] S·0B[] Sc·[]
+22:35:29.654761 db@janitor F·2 G·0
+22:35:29.654773 db@open done T·8.405649ms
+22:37:57.793299 db@close closing
+22:37:57.793413 db@close done T·112.553µs
+=============== Oct 4, 2020 (KST) ===============
+22:39:15.849217 log@legend F·NumFile S·FileSize N·Entry C·BadEntry B·BadBlock Ke·KeyError D·DroppedEntry L·Level Q·SeqNum T·TimeElapsed
+22:39:15.849304 version@stat F·[] S·0B[] Sc·[]
+22:39:15.849316 db@open opening
+22:39:15.849342 journal@recovery F·1
+22:39:15.854840 journal@recovery recovering @1
+22:39:15.859305 memdb@flush created L0@2 N·34 S·2KiB "\x03\x95\x06..\v_I,v12":"\xed/\xba..\x9c\xf1\xe0,v19"
+22:39:15.864876 version@stat F·[1] S·2KiB[2KiB] Sc·[0.25]
+22:39:15.871918 db@janitor F·3 G·0
+22:39:15.871932 db@open done T·22.610429ms
+22:49:01.936848 db@close closing
+22:49:01.936892 db@close done T·44.192µs
+=============== Nov 22, 2020 (KST) ===============
+16:39:23.978460 log@legend F·NumFile S·FileSize N·Entry C·BadEntry B·BadBlock Ke·KeyError D·DroppedEntry L·Level Q·SeqNum T·TimeElapsed
+16:39:23.980975 version@stat F·[1] S·2KiB[2KiB] Sc·[0.25]
+16:39:23.980991 db@open opening
+16:39:23.981026 journal@recovery F·1
+16:39:23.986278 journal@recovery recovering @3
+16:39:23.989603 memdb@flush created L0@5 N·71 S·16KiB "\x01\xe8\xa4..\x87\xb4\x1f,v101":"\ueb11..\x88\xf2\xd4,v85"
+16:39:23.994975 version@stat F·[2] S·18KiB[18KiB] Sc·[0.50]
+16:39:24.002895 db@janitor F·4 G·0
+16:39:24.002946 db@open done T·21.940533ms
+16:39:50.880464 db@close closing
+16:39:50.880598 db@close done T·130.426µs
