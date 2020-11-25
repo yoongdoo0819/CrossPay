@@ -1,29 +1,37 @@
 package main
 
 /*
-#cgo CPPFLAGS: -I/home/xiaofo/sgxsdk/include -I/home/xiaofo/instapay/src/github.com/sslab-instapay/instapay-tee-client
-#cgo LDFLAGS: -L/home/xiaofo/instapay/src/github.com/sslab-instapay/instapay-tee-client -ltee
+#cgo CPPFLAGS: -I/home/yoongdoo0819/sgxsdk/include -I/home/yoongdoo0819/instapay3.0/instapay/src/github.com/sslab-instapay/instapay-tee-client
+#cgo LDFLAGS: -L/home/yoongdoo0819/instapay3.0/instapay/src/github.com/sslab-instapay/instapay-tee-client -ltee
 
 #include "app.h"
 */
 import "C"
 
 import (
+	"context"
+	"crypto/ecdsa"
+	"flag"
 	"fmt"
+	"log"
+	"math/big"
+	"net"
+	"os"
+	"strconv"
+	"unsafe"
+
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/core/types"
+	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/gin-gonic/gin"
 	"github.com/sslab-instapay/instapay-tee-client/config"
 	instapayGrpc "github.com/sslab-instapay/instapay-tee-client/grpc"
 	clientPb "github.com/sslab-instapay/instapay-tee-client/proto/client"
 	"github.com/sslab-instapay/instapay-tee-client/router"
-	"google.golang.org/grpc"
-	"log"
-	"net"
-	"os"
-	"strconv"
-	"unsafe"
-	"flag"
 	"github.com/sslab-instapay/instapay-tee-client/service"
 	"github.com/sslab-instapay/instapay-tee-client/util"
+	"google.golang.org/grpc"
 )
 
 func main() {
@@ -43,10 +51,25 @@ func main() {
 	os.Setenv("key_file", *keyFile)
 	os.Setenv("channel_file", *channelFile)
 
+	fmt.Println("~~~~~~~~~~~~~~~~~~~~~~~~~");
 	LoadPeerInformation(os.Getenv("peer_file_directory"))
-	LoadDataToTEE(os.Getenv("key_file"), os.Getenv("channel_file"))
+	// CreateAccount(os.Getenv("peer_file_directory"))
+	if fileExists(*keyFile) {
+		LoadAccount(os.Getenv("key_file"))
+	} else {
+		CreateAccount(os.Getenv("key_file"))
+	}
+
+	fmt.Println("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
+	if fileExists(*channelFile) {
+		LoadChannelData(*channelFile)
+	}
+
+	fmt.Println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+	// LoadDataToTEE(os.Getenv("key_file"), os.Getenv("channel_file"))
 
 	go service.ListenContractEvent()
+	fmt.Println("TEST ###########");
 	go startGrpcServer()
 	startClientWebServer()
 }
@@ -89,10 +112,9 @@ func CORSMiddleware() gin.HandlerFunc {
 	}
 }
 
-func CreateAccount() {
-	defaultDirectory := "./data/key/k0"
+func CreateAccount(directory string) {
 	var kf *C.char
-	kf = C.CString(defaultDirectory)
+	kf = C.CString(directory)
 
 	C.ecall_create_account_w()
 	C.ecall_store_account_data_w(kf)
@@ -109,6 +131,33 @@ func CreateAccount() {
 	convertedAddress = "0x" + convertedAddress
 	fmt.Println("---- Public Key Address ---")
 	fmt.Println(convertedAddress)
+	sendEther(convertedAddress)
+	config.SetAccountConfig(convertedAddress)
+}
+
+func LoadChannelData(channelFile string) {
+	cf := C.CString(channelFile)
+
+	C.ecall_load_channel_data_w(cf)
+	defer C.free(unsafe.Pointer(cf))
+}
+
+func LoadAccount(keyFile string) {
+	kf := C.CString(keyFile)
+	C.ecall_load_account_data_w(kf)
+	defer C.free(unsafe.Pointer(kf))
+	var paddrs unsafe.Pointer
+
+	paddrs = C.ecall_get_public_addrs_w()
+	paddrSize := 20
+	paddrSlice := (*[1 << 30]C.address)(unsafe.Pointer(paddrs))[:paddrSize:paddrSize]
+
+	var convertedAddress string
+	convertedAddress = fmt.Sprintf("%02x", paddrSlice[0].addr)
+	convertedAddress = "0x" + convertedAddress
+	fmt.Println("---- Public Key Address ---")
+	fmt.Println(convertedAddress)
+	sendEther(convertedAddress)
 	config.SetAccountConfig(convertedAddress)
 }
 
@@ -138,4 +187,65 @@ func LoadDataToTEE(keyFile string, channelFile string) {
 
 func LoadPeerInformation(directory string) {
 	util.SetPeerInformation(directory)
+}
+
+func fileExists(filename string) bool {
+	info, err := os.Stat(filename)
+	if os.IsNotExist(err) {
+		return false
+	}
+	return !info.IsDir()
+}
+
+// 임시로 이더를 전송해줌.
+func sendEther(hexAddress string) {
+	client, err := ethclient.Dial("ws://" + config.EthereumConfig["wsHost"] + ":" + config.EthereumConfig["wsPort"])
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	privateKey, err := crypto.HexToECDSA("fad9c8855b740a0b7ed4c221dbad0f33a83a49cad6b3fe8d5817ac83d38b6a19")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	publicKey := privateKey.Public()
+	publicKeyECDSA, ok := publicKey.(*ecdsa.PublicKey)
+	if !ok {
+		log.Fatal("cannot assert type: publicKey is not of type *ecdsa.PublicKey")
+	}
+
+	fromAddress := crypto.PubkeyToAddress(*publicKeyECDSA)
+	nonce, err := client.PendingNonceAt(context.Background(), fromAddress)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	value := big.NewInt(1000000000000000000) // in wei (1 eth)
+	gasLimit := uint64(21000)                // in units
+	gasPrice, err := client.SuggestGasPrice(context.Background())
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	toAddress := common.HexToAddress(hexAddress)
+	var data []byte
+	tx := types.NewTransaction(nonce, toAddress, value, gasLimit, gasPrice, data)
+
+	chainID, err := client.NetworkID(context.Background())
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	signedTx, err := types.SignTx(tx, types.NewEIP155Signer(chainID), privateKey)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	err = client.SendTransaction(context.Background(), signedTx)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Printf("tx sent: %s", signedTx.Hash().Hex())
 }

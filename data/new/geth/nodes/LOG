@@ -183,3 +183,36 @@
 13:19:56.832771 table@remove removed @27
 13:20:04.988453 db@close closing
 13:20:04.988498 db@close done T·44.091µs
+=============== Nov 24, 2020 (KST) ===============
+16:23:06.534925 log@legend F·NumFile S·FileSize N·Entry C·BadEntry B·BadBlock Ke·KeyError D·DroppedEntry L·Level Q·SeqNum T·TimeElapsed
+16:23:06.535021 version@stat F·[0 2] S·282B[0B 282B] Sc·[0.00 0.00]
+16:23:06.535040 db@open opening
+16:23:06.535080 journal@recovery F·1
+16:23:06.535162 journal@recovery recovering @41
+16:23:06.537033 memdb@flush created L0@44 N·1 S·159B "loc..seq,v27":"loc..seq,v27"
+16:23:06.537135 version@stat F·[1 2] S·441B[159B 282B] Sc·[0.25 0.00]
+16:23:06.550343 db@janitor F·6 G·1
+16:23:06.550356 db@janitor removing table-40
+16:23:06.550377 db@open done T·15.333125ms
+=============== Nov 24, 2020 (KST) ===============
+19:00:16.432703 log@legend F·NumFile S·FileSize N·Entry C·BadEntry B·BadBlock Ke·KeyError D·DroppedEntry L·Level Q·SeqNum T·TimeElapsed
+19:00:16.432830 version@stat F·[1 2] S·441B[159B 282B] Sc·[0.25 0.00]
+19:00:16.432846 db@open opening
+19:00:16.432891 journal@recovery F·1
+19:00:16.432970 journal@recovery recovering @45
+19:00:16.435106 memdb@flush created L0@47 N·1 S·159B "loc..seq,v29":"loc..seq,v29"
+19:00:16.435186 version@stat F·[2 2] S·600B[318B 282B] Sc·[0.50 0.00]
+19:00:16.441237 db@janitor F·6 G·0
+19:00:16.441245 db@open done T·8.394377ms
+19:00:33.025906 db@close closing
+19:00:33.026054 db@close done T·143.281µs
+=============== Nov 25, 2020 (KST) ===============
+12:58:40.843834 log@legend F·NumFile S·FileSize N·Entry C·BadEntry B·BadBlock Ke·KeyError D·DroppedEntry L·Level Q·SeqNum T·TimeElapsed
+12:58:40.843913 version@stat F·[2 2] S·600B[318B 282B] Sc·[0.50 0.00]
+12:58:40.843926 db@open opening
+12:58:40.843956 journal@recovery F·1
+12:58:40.844021 journal@recovery recovering @48
+12:58:40.846278 memdb@flush created L0@50 N·1 S·159B "loc..seq,v31":"loc..seq,v31"
+12:58:40.846366 version@stat F·[3 2] S·759B[477B 282B] Sc·[0.75 0.00]
+12:58:40.852672 db@janitor F·7 G·0
+12:58:40.852680 db@open done T·8.750114ms

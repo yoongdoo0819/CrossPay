@@ -8,34 +8,35 @@ package service
 */
 import "C"
 import (
-	"log"
-	"math/big"
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/ethclient"
-	instapay "github.com/sslab-instapay/instapay-tee-client/contracts"
-	serverPb "github.com/sslab-instapay/instapay-tee-client/proto/server"
-	"github.com/sslab-instapay/instapay-tee-client/config"
 	"context"
-	"fmt"
-	"github.com/sslab-instapay/instapay-tee-client/model"
-	"github.com/ethereum/go-ethereum"
-	"github.com/ethereum/go-ethereum/core/types"
-	"github.com/ethereum/go-ethereum/accounts/abi"
-	"strings"
-	"math"
-	"google.golang.org/grpc"
-	"time"
-	"reflect"
-	"unsafe"
 	"encoding/hex"
-	"github.com/ethereum/go-ethereum/rlp"
+	"fmt"
+	"log"
+	"math"
+	"math/big"
 	"os"
+	"reflect"
+	"strings"
+	"time"
+	"unsafe"
+
+	"github.com/ethereum/go-ethereum"
+	"github.com/ethereum/go-ethereum/accounts/abi"
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/core/types"
+	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/ethereum/go-ethereum/rlp"
+	"github.com/sslab-instapay/instapay-tee-client/config"
+	instapay "github.com/sslab-instapay/instapay-tee-client/contracts"
+	"github.com/sslab-instapay/instapay-tee-client/model"
+	serverPb "github.com/sslab-instapay/instapay-tee-client/proto/server"
+	"google.golang.org/grpc"
 )
 
 func SendOpenChannelTransaction(deposit int, otherAddress string) (string, error) {
 
 	client, err := ethclient.Dial("ws://" + config.EthereumConfig["wsHost"] + ":" + config.EthereumConfig["wsPort"])
-	if err != nil{
+	if err != nil {
 		log.Println(err)
 	}
 
@@ -62,11 +63,26 @@ func SendOpenChannelTransaction(deposit int, otherAddress string) (string, error
 	rawTxBytes, err := hex.DecodeString(convertedRawTx)
 	tx := new(types.Transaction)
 	rlp.DecodeBytes(rawTxBytes, &tx)
-	client.SendTransaction(context.Background(), tx)
+	// rawTxHex := hex.EncodeToString(rawTxBytes)
+	for i := 0; i < len(tx.Data()); i++ {
+		fmt.Printf("%02x", tx.Data()[i])
+	}
+	fmt.Println()
+	msg, err := tx.AsMessage(types.NewEIP155Signer(tx.ChainId()))
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Println("Sender : ", msg.From().Hex())
+	err = client.SendTransaction(context.Background(), tx)
+	if err != nil {
+		log.Println(err)
+	}
+	log.Println(tx.Hash().Hex())
 
 	defer C.free(unsafe.Pointer(sig))
 
-	return "", nil
+	return tx.Hash().Hex(), nil
 }
 
 func SendCloseChannelTransaction(channelId int64) {
@@ -134,7 +150,7 @@ func ListenContractEvent() {
 			var closeChannelEvent = model.CloseChannelEvent{}
 			var ejectEvent = model.EjectEvent{}
 
-			err := contractAbi.Unpack(&createChannelEvent, "EventCreateChannel", vLog.Data)
+			err := contractAbi.Unpack(/*&createChannelEvent,*/ "EventCreateChannel", vLog.Data)
 			if err == nil {
 				log.Println("CreateChannel Event Emission")
 				fmt.Printf("Channel ID       : %d\n", createChannelEvent.Id)
@@ -142,6 +158,7 @@ func ListenContractEvent() {
 				fmt.Printf("Channel Receiver : %s\n", createChannelEvent.Receiver.Hex())
 				fmt.Printf("Channel Deposit  : %d\n", createChannelEvent.Deposit)
 				HandleCreateChannelEvent(createChannelEvent)
+				continue
 			}
 
 			err = contractAbi.Unpack(&closeChannelEvent, "EventCloseChannel", vLog.Data)
@@ -151,44 +168,47 @@ func ListenContractEvent() {
 				fmt.Printf("Owner Balance    : %d\n", closeChannelEvent.Ownerbal)
 				fmt.Printf("Receiver Balance : %d\n", closeChannelEvent.Receiverbal)
 				HandleCloseChannelEvent(closeChannelEvent)
+				continue
 			}
 
 			err = contractAbi.Unpack(&ejectEvent, "EventEject", vLog.Data)
 			if err == nil {
 				fmt.Printf("Payment Number   : %d\n", ejectEvent.Pn)
 				fmt.Printf("Stage            : %d\n", ejectEvent.Registeredstage)
+				continue
 			}
 
 		}
 	}
 }
 
-func HandleCreateChannelEvent(event model.CreateChannelEvent) error{
+func HandleCreateChannelEvent(event model.CreateChannelEvent) error {
 
 	account := config.GetAccountConfig()
 	log.Println("----- Handle Create Channel Event ----")
 
-	if event.Receiver.String() == config.GetAccountConfig().PublicKeyAddress {
+	if strings.ToLower(event.Receiver.String()) == config.GetAccountConfig().PublicKeyAddress {
 		// CASE IN CHANNEL
-		channelId := C.uint(uint32(event.Id))
+		channelId := C.uint(uint32(event.Id.Int64()))
 		owner := []C.uchar(account.PublicKeyAddress[2:])
-		sender := []C.uchar(event.Receiver.Hex()[2:])
-		deposit := C.uint(uint32(event.Deposit))
+		sender := []C.uchar(event.Owner.Hex()[2:])
+		deposit := C.uint(uint32(event.Deposit.Int64()))
+		fmt.Println("RECEIVE CREATE CHANNEL")
 		C.ecall_receive_create_channel_w(channelId, &sender[0], &owner[0], deposit)
-	} else if event.Owner.String() == config.GetAccountConfig().PublicKeyAddress {
+	} else if strings.ToLower(event.Owner.String()) == config.GetAccountConfig().PublicKeyAddress {
 		// CASE OUT CHANNEL
-		channelId := C.uint(uint32(event.Id))
+		channelId := C.uint(uint32(event.Id.Int64()))
 		owner := []C.uchar(event.Receiver.Hex()[2:])
 		sender := []C.uchar(account.PublicKeyAddress[2:])
-		deposit := C.uint(uint32(event.Deposit))
+		deposit := C.uint(uint32(event.Deposit.Int64()))
+		fmt.Println("RECEIVE CREATE CHANNEL")
 		C.ecall_receive_create_channel_w(channelId, &sender[0], &owner[0], deposit)
 	}
 
-	connection, err := grpc.Dial(config.EthereumConfig["serverGrpcHost"] + ":" + config.EthereumConfig["serverGrpcPort"], grpc.WithInsecure())
+	connection, err := grpc.Dial(config.EthereumConfig["serverGrpcHost"]+":"+config.EthereumConfig["serverGrpcPort"], grpc.WithInsecure())
 	if err != nil {
 		log.Println("GRPC Connection Error")
 		log.Println(err)
-		return err
 	}
 	defer connection.Close()
 	client := serverPb.NewServerClient(connection)
@@ -197,9 +217,9 @@ func HandleCreateChannelEvent(event model.CreateChannelEvent) error{
 	defer cancel()
 
 	var otherAddress string
-	if event.Receiver.String() == config.GetAccountConfig().PublicKeyAddress{
+	if event.Receiver.String() == config.GetAccountConfig().PublicKeyAddress {
 		otherAddress = event.Owner.String()
-	}else {
+	} else {
 		otherAddress = event.Receiver.String()
 	}
 
@@ -213,7 +233,7 @@ func HandleCreateChannelEvent(event model.CreateChannelEvent) error{
 	var defaultDirectory string
 	if os.Getenv("channel_file") == "" {
 		defaultDirectory = "./data/channel/c0"
-	}else{
+	} else {
 		defaultDirectory = os.Getenv("channel_file")
 	}
 
@@ -227,9 +247,9 @@ func HandleCreateChannelEvent(event model.CreateChannelEvent) error{
 func HandleCloseChannelEvent(event model.CloseChannelEvent) {
 
 	log.Println("----- Handle Close Channel Event -----")
-	channelId := C.uint(uint32(event.Id))
-	ownerBal := C.uint(uint32(event.Ownerbal))
-	receiverBal := C.uint(uint32(event.Receiverbal))
+	channelId := C.uint(uint32(event.Id.Int64()))
+	ownerBal := C.uint(uint32(event.Ownerbal.Int64()))
+	receiverBal := C.uint(uint32(event.Receiverbal.Int64()))
 
 	log.Println("----- Start Close Channel Event -----")
 	C.ecall_receive_close_channel_w(channelId, ownerBal, receiverBal)
@@ -237,7 +257,7 @@ func HandleCloseChannelEvent(event model.CloseChannelEvent) {
 	var defaultDirectory string
 	if os.Getenv("channel_file") == "" {
 		defaultDirectory = "./data/channel/c0"
-	}else{
+	} else {
 		defaultDirectory = os.Getenv("channel_file")
 	}
 

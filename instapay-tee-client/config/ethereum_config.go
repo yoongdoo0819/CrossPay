@@ -2,16 +2,16 @@ package config
 
 var EthereumConfig = map[string]string{
 	/* web3 and ethereum */
-	"wsHost":           "141.223.121.139",
+	"wsHost":           "141.223.121.164",
 	"wsPort":           "8881",
-	"contractAddr":     "0x092d70BB5c1954F5Fa3EBbb282d0416a5e46c818",
+	"contractAddr":     "0x745a8d1610D4AC940350221F569338E4C93b1De6",
 	"contractSrcPath":  "../contracts/InstaPay.sol",
 	"contractInstance": "",
 	"web3":             "",
 	"event":            "",
 
 	/* grpc configuration */
-	"serverGrpcHost": "141.223.121.139",
+	"serverGrpcHost": "141.223.121.164",
 	"serverGrpcPort": "50004",
 	"serverProto":    "",
 	"server":         "",
