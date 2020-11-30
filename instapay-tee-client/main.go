@@ -54,16 +54,25 @@ func main() {
 	fmt.Println("~~~~~~~~~~~~~~~~~~~~~~~~~");
 	LoadPeerInformation(os.Getenv("peer_file_directory"))
 	// CreateAccount(os.Getenv("peer_file_directory"))
+
+	fmt.Println("======= test func w start ==========\n");
+	C.ecall_test_func_w()
+	fmt.Println("======= test func w end   ==========\n");
+	
 	if fileExists(*keyFile) {
 		LoadAccount(os.Getenv("key_file"))
 	} else {
 		CreateAccount(os.Getenv("key_file"))
 	}
+	
+	//CreateAccount(os.Getenv("key_file"))
 
 	fmt.Println("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
+	
 	if fileExists(*channelFile) {
 		LoadChannelData(*channelFile)
 	}
+	
 
 	fmt.Println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
 	// LoadDataToTEE(os.Getenv("key_file"), os.Getenv("channel_file"))
@@ -113,6 +122,8 @@ func CORSMiddleware() gin.HandlerFunc {
 }
 
 func CreateAccount(directory string) {
+	
+	fmt.Println("Create Account \n\n");
 	var kf *C.char
 	kf = C.CString(directory)
 
@@ -143,6 +154,8 @@ func LoadChannelData(channelFile string) {
 }
 
 func LoadAccount(keyFile string) {
+	
+	fmt.Println("Load Account \n\n");
 	kf := C.CString(keyFile)
 	C.ecall_load_account_data_w(kf)
 	defer C.free(unsafe.Pointer(kf))
@@ -163,6 +176,7 @@ func LoadAccount(keyFile string) {
 
 func LoadDataToTEE(keyFile string, channelFile string) {
 
+	fmt.Println("Load Data To TEE \n\n");
 	kf := C.CString(keyFile)
 	cf := C.CString(channelFile)
 
@@ -216,12 +230,13 @@ func sendEther(hexAddress string) {
 	}
 
 	fromAddress := crypto.PubkeyToAddress(*publicKeyECDSA)
+	fmt.Println("fromAddress :", fromAddress.Hex())
 	nonce, err := client.PendingNonceAt(context.Background(), fromAddress)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	value := big.NewInt(1000000000000000000) // in wei (1 eth)
+	value := big.NewInt(1110000000000000000) // in wei (1 eth)
 	gasLimit := uint64(21000)                // in units
 	gasPrice, err := client.SuggestGasPrice(context.Background())
 	if err != nil {
@@ -229,6 +244,7 @@ func sendEther(hexAddress string) {
 	}
 
 	toAddress := common.HexToAddress(hexAddress)
+	fmt.Println("toAddress : %s", toAddress.Hex());
 	var data []byte
 	tx := types.NewTransaction(nonce, toAddress, value, gasLimit, gasPrice, data)
 

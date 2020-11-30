@@ -64,6 +64,10 @@ void Transaction::sign(unsigned char *seckey_arr)
     unsigned char *seckey = ::arr_to_bytes(seckey_arr, 64);
     unsigned char output64[64];
 
+    printf("[TX.cpp] Sec Key : ");
+    for(int i=0; i<32; i++)
+	    printf("%02x", seckey_arr[i]);
+    printf("\n");
     /* sha3 (keccak256) */
     sha3_context sha3_ctx;
 

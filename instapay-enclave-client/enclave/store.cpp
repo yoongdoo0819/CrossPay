@@ -52,6 +52,10 @@ void ecall_store_account_data(char *keyfile)
         sgx_seal_data(0, NULL, 32, (uint8_t *)data, size, (sgx_sealed_data_t*)sealed_log);
 
         printf("PRIVATE KEY IS SEALED SUCCESSFULLY !! (SEALED DATA SIZE: %d)\n", size);
+	for(int i = 0; i < 32; i++)
+		printf("%02x", data[i]);
+    	printf("\n");
+
         ocall_store_sealed_seckey(keyfile, sealed_log);
     }
 

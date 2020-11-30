@@ -29,9 +29,11 @@ unsigned char* ecall_create_channel_w(unsigned int nonce, unsigned char *owner, 
     unsigned char *signed_tx = new unsigned char[700];
     unsigned int signed_tx_len;
 
+    printf("ECALL CREATE CHANNEL W START");
     ecall_create_channel(global_eid, nonce, owner, receiver, deposit, signed_tx, &signed_tx_len);
     *sig_len = signed_tx_len;
-    
+
+    printf("ECALL CREATE CHANNEL W");
     return signed_tx;
 }
 
@@ -202,5 +204,7 @@ void* ecall_get_public_addrs_w(void)
 
 void ecall_test_func_w(void)
 {
+
+    printf("TEST FUNC W");
     ecall_test_func(global_eid);
 }

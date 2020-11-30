@@ -1,8 +1,8 @@
 package service
 
 /*
-#cgo CPPFLAGS: -I/home/xiaofo/sgxsdk/include -I/home/xiaofo/instapay/src/github.com/sslab-instapay/instapay-tee-client
-#cgo LDFLAGS: -L/home/xiaofo/instapay/src/github.com/sslab-instapay/instapay-tee-client -ltee
+#cgo CPPFLAGS: -I/home/yoongdoo0819/sgxsdk/include -I/home/yoongdoo0819/instapay3.0/instapay/src/github.com/sslab-instapay/instapay-tee-client
+#cgo LDFLAGS: -L/home/yoongdoo0819/instapay3.0/instapay/src/github.com/sslab-instapay/instapay-tee-client -ltee
 
 #include "app.h"
 */
@@ -35,7 +35,8 @@ import (
 
 func SendOpenChannelTransaction(deposit int, otherAddress string) (string, error) {
 
-	client, err := ethclient.Dial("ws://" + config.EthereumConfig["wsHost"] + ":" + config.EthereumConfig["wsPort"])
+	//client, err := ethclient.Dial("ws://" + config.EthereumConfig["wsHost"] + ":" + config.EthereumConfig["wsPort"])
+	client, err := ethclient.Dial("http:141.223.121.164:8555");
 	if err != nil {
 		log.Println(err)
 	}
@@ -76,9 +77,9 @@ func SendOpenChannelTransaction(deposit int, otherAddress string) (string, error
 	fmt.Println("Sender : ", msg.From().Hex())
 	err = client.SendTransaction(context.Background(), tx)
 	if err != nil {
-		log.Println(err)
+		log.Println("error :", err)
 	}
-	log.Println(tx.Hash().Hex())
+	log.Println("tx hash :", tx.Hash().Hex())
 
 	defer C.free(unsafe.Pointer(sig))
 

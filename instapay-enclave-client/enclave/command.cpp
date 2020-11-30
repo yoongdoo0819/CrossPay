@@ -3,6 +3,7 @@
 #include <string.h>
 #include <stdint.h>
 #include <cstring>
+#include <typeinfo>
 
 #include "sgx_trts.h"
 #include "enclave.h"
@@ -80,6 +81,16 @@ void ecall_create_account(unsigned char *generated_addr)
 
     copy(msg32 + 12, msg32 + 32, generated_addr);
 
+    printf("generated addr : ");
+    for(int i=0; i<20; i++) {
+	   printf("%02x", generated_addr[i]);
+    }
+    printf("\n");
+    printf("secret key : ");
+    for(int i=0; i<32; i++) {
+	    printf("%02x", s[i]);
+    }
+    printf("\n");
     return;
 }
 
@@ -87,6 +98,15 @@ void ecall_create_account(unsigned char *generated_addr)
 void ecall_create_channel(unsigned int nonce, unsigned char *owner, unsigned char *receiver, unsigned int deposit, unsigned char *signed_tx, unsigned int *signed_tx_len)
 {
     std::vector<unsigned char> data;
+
+    printf("ecall create channel start >> owner : %s \n", (unsigned char*)owner);
+    for(int i=0; i<32; i++) 
+	    printf("%02x", owner[i]);
+    printf("\n");
+    printf("ecall create channel start >> receiver : %s \n", (unsigned char*)receiver);
+    for(int i=0; i<32; i++)
+	    printf("%02x", receiver[i]);
+    printf("\n");
 
     /* encode ABI for calling "create_channel(address)" on the contract */
     sha3_context sha3_ctx;
@@ -100,6 +120,11 @@ void ecall_create_channel(unsigned int nonce, unsigned char *owner, unsigned cha
 
     unsigned char *addr = ::arr_to_bytes(receiver, 40);
     data.insert(data.end(), msg32, msg32 + 4);
+    
+    for(int i = 0; i < 12; i++){
+	    data.insert(data.end(), 0);
+    }
+
     data.insert(data.end(), addr, addr + 20);
 
     // deposit *= 1000000000000000000;
@@ -111,13 +136,42 @@ void ecall_create_channel(unsigned int nonce, unsigned char *owner, unsigned cha
     addr = ::arr_to_bytes(owner, 40);
     std::vector<unsigned char> pubkey(addr, addr + 20);
     std::vector<unsigned char> seckey;
+    std::vector<unsigned char> pubkey2;
 
+    printf("========== create channel ========= \n");
+  
+    printf("addr : ");
+    for(int i=0; i<32; i++) {
+	    printf("%02x", addr[i]);
+    }printf("\n"); 
+    printf("owner : %s \n", (unsigned char*)owner);
+    printf("receiver : %s \n", (unsigned char*)receiver);
     seckey = accounts.find(pubkey)->second.get_seckey();
+    pubkey2 = accounts.find(pubkey)->second.get_pubkey();
     tx.sign((unsigned char*)seckey.data());  // "e113ff405699b7779fbe278ee237f2988b1e6769d586d8803860d49f28359fbd"
+    //printf("seckey : %s \n", (unsigned char*)seckey);
+    //printf("seckey.data : %s \n", (unsigned char*)seckey.data());
+    printf("pubkey : ");
+    
+    for(int i=0; i<20; i++) {
+	    printf("%02x", pubkey[i]);
+    }printf("\n");
+    printf("pubkey2 : ");
+    for(int i=0; i<20; i++) {
+	printf("%02x", pubkey2[i]);
+    }printf("\n");
+//    printf(" >> %s \n", typeid(pubkey).name());
+//    printf(" >> %s \n", typeid(pubkey2).name());
+    printf("seckey : ");
+    for(int i=0; i<32; i++) {
+	    printf("%02x", seckey[i]);
+    }
+    printf("\n");
 
     memcpy(signed_tx, tx.signed_tx.data(), tx.signed_tx.size());
     *signed_tx_len = tx.signed_tx.size();
 
+    printf("############### end #####################  \n");
     return;
 }
 
@@ -606,6 +660,7 @@ void ecall_get_public_addrs(unsigned char *public_addrs)
 
     unsigned int cursor = 0;
 
+    printf("GET PUBLIC ADDRS \n\n");
     // for (iter = accounts.begin(); iter != accounts.end(); ++iter) {
     //     pubaddr = iter->second.get_pubkey();
     //     memcpy(data.addr, pubaddr.data(), 20);
@@ -709,4 +764,6 @@ void ecall_test_func(void)
     printf("\n");
 
     verify_message(0, signature, (unsigned char*)"FUCKYOU", 7, pubaddr);
+
+    printf(" ######################### TEST_FUNC ########################### \n");
 }
