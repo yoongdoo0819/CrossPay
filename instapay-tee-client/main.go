@@ -258,6 +258,14 @@ func sendEther(hexAddress string) {
 		log.Fatal(err)
 	}
 
+	/*
+	msg, err := tx.AsMessage(types.NewEIP155Signer(tx.ChainId()))
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println("Sender : ", msg.From().Hex())
+	*/
+
 	err = client.SendTransaction(context.Background(), signedTx)
 	if err != nil {
 		log.Fatal(err)

@@ -6,7 +6,7 @@
 #include <util.h>
 #include <rlpvalue.h>
 
-#define CONTRACT_ADDR (unsigned char*)"74DD27a41b01EB8B05630D256Eec6FE06e1ADE96"
+#define CONTRACT_ADDR (unsigned char*)"1f84d64484132670D07605e9D5BC2F062F907e52"
 
 #if defined(__cplusplus)
 extern "C" {

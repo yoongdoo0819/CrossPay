@@ -131,7 +131,7 @@ void ecall_create_channel(unsigned int nonce, unsigned char *owner, unsigned cha
 
     /* generate a transaction creating a channel */
     Transaction tx(nonce, CONTRACT_ADDR, deposit, data.data(), data.size());
-
+    printf("Contract Addr : %s \n", CONTRACT_ADDR);
     // find the account's private key and sign on transaction using
     addr = ::arr_to_bytes(owner, 40);
     std::vector<unsigned char> pubkey(addr, addr + 20);
