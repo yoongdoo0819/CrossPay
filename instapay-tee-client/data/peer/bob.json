@@ -1,7 +1,7 @@
 {
     "peer_informations": [
      {
-      "public_key_address": "0x54815331329231c32af78f145fe7719f56cedd2c",
+      "public_key_address": "0x43cd50c2de28ca500634636fda7d095821eec64a",
       "ip_address": "141.223.121.164",
       "grpc_port": 50001
      },

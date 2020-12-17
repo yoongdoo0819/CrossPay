@@ -209,10 +209,13 @@ func SendCloseChannelTransaction(channelId int64) {
 func ListenContractEvent() {
 	log.Println("---Start Listen Contract Event---")
 	client, err := ethclient.Dial("ws://" + config.EthereumConfig["wsHost"] + ":" + config.EthereumConfig["wsPort"])
+	//client, err := ethclient.Dial("http://141.223.121.164:8555")
+	
 	if err != nil {
 		log.Fatal("Cannot connect Ethereum So, End Client")
 	}
 	contractAddress := common.HexToAddress(config.EthereumConfig["contractAddr"])
+	fmt.Println("contract Addr : ", contractAddress)
 
 	query := ethereum.FilterQuery{
 		Addresses: []common.Address{contractAddress},
@@ -224,12 +227,18 @@ func ListenContractEvent() {
 	if err != nil {
 		log.Println(err)
 	}
+	fmt.Println("sub : ", sub)
 
 	contractAbi, err := abi.JSON(strings.NewReader(string(instapay.InstapayABI)))
 	if err != nil {
 		log.Println(err)
 	}
 
+	fmt.Println("--- Listen Contract Event---")
+	fmt.Println("query : ", query)
+	fmt.Println("logs  : ", logs)
+	fmt.Println("Abi   : ", contractAbi)
+	fmt.Println()
 	for {
 		select {
 		case err := <-sub.Err():
@@ -239,7 +248,8 @@ func ListenContractEvent() {
 			var closeChannelEvent = model.CloseChannelEvent{}
 			var ejectEvent = model.EjectEvent{}
 
-			a, err := contractAbi.Unpack(/*&createChannelEvent,*/ "EventCreateChannel", vLog.Data)
+			err := contractAbi.UnpackIntoInterface(&createChannelEvent, "EventCreateChannel", vLog.Data)
+			//fmt.Println("a : ", a)
 			if err == nil {
 				log.Println("CreateChannel Event Emission")
 				fmt.Printf("Channel ID       : %d\n", createChannelEvent.Id)
@@ -250,7 +260,7 @@ func ListenContractEvent() {
 				continue
 			}
 
-			a, err = contractAbi.Unpack(/*&closeChannelEvent,*/ "EventCloseChannel", vLog.Data)
+			err = contractAbi.UnpackIntoInterface(&closeChannelEvent, "EventCloseChannel", vLog.Data)
 			if err == nil {
 				log.Print("CloseChannel Event Emission")
 				fmt.Printf("Channel ID       : %d\n", closeChannelEvent.Id)
@@ -260,14 +270,12 @@ func ListenContractEvent() {
 				continue
 			}
 
-			a, err = contractAbi.Unpack(/*&ejectEvent,*/ "EventEject", vLog.Data)
+			err = contractAbi.UnpackIntoInterface(&ejectEvent, "EventEject", vLog.Data)
 			if err == nil {
 				fmt.Printf("Payment Number   : %d\n", ejectEvent.Pn)
 				fmt.Printf("Stage            : %d\n", ejectEvent.Registeredstage)
 				continue
 			}
-
-			fmt.Println(a);
 		}
 	}
 }
