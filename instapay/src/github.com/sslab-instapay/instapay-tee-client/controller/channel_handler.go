@@ -86,6 +86,7 @@ func DirectPayChannelHandler(ctx *gin.Context) {
 
 	peerInformation, _, err := util.GetPeerInformationByAddress(channel.OtherAddress)
 	if err != nil {
+		log.Println(err)
 		ctx.JSON(http.StatusBadRequest, gin.H{"success": false})
 		return
 	}

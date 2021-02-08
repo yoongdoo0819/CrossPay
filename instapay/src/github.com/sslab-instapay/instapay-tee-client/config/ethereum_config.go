@@ -4,7 +4,7 @@ var EthereumConfig = map[string]string{
 	/* web3 and ethereum */
 	"wsHost":           "141.223.121.164",
 	"wsPort":           "8881",
-	"contractAddr":     "0x2B1f68D6364540cD698507c4521Fb472Df8E9658",
+	"contractAddr":     "0x58CD83F2ae9d11628bE3753e70564049c435c148",
 	"contractSrcPath":  "../contracts/InstaPay.sol",
 	"contractInstance": "",
 	"web3":             "",

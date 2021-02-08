@@ -38,7 +38,9 @@ func SetPeerInformation(directory string) {
 func GetPeerInformationByAddress(publicKeyAddress string) (model.PeerInformation, int, error) {
 	log.Println("Peer Address : ", publicKeyAddress)
 	for i := 0; i < len(peerInformations.PeerInformationList); i++ {
+		fmt.Println("There is peer info ?")
 		if peerInformations.PeerInformationList[i].PublicKeyAddress == publicKeyAddress {
+			fmt.Println("There is peer info")
 			return peerInformations.PeerInformationList[i], i, nil
 		}
 	}

@@ -1,11 +1,12 @@
 package main
 
 /*
-#cgo CPPFLAGS: -I/home/yoongdoo0819/sgxsdk/include -I/home/yoongdoo0819/instapay3.0/instapay/src/github.com/sslab-instapay/instapay-tee-server
+#cgo CPPFLAGS: -I/home/xiao/sgxsdk/include -I/home/yoongdoo0819/instapay3.0/instapay/src/github.com/sslab-instapay/instapay-tee-server
 #cgo LDFLAGS: -L/home/yoongdoo0819/instapay3.0/instapay/src/github.com/sslab-instapay/instapay-tee-server -ltee
 
 #include "app.h"
 */
+
 import "C"
 
 import (
@@ -26,7 +27,7 @@ func StartWebServer() {
 }
 
 func main() {
-	portNum := flag.String("port", "3001", "port number")
+	portNum := flag.String("port", "3004", "port number")
 	grpcPortNum := flag.String("grpc_port", "50001", "grpc_port number")
 	flag.Parse()
 
@@ -35,6 +36,7 @@ func main() {
 
 	C.initialize_enclave()
 
+	fPrintln("asdfasdf");
 	config.GetContract()
 	go serverGrpc.StartGrpcServer()
 
