@@ -95,6 +95,9 @@ func DirectPayChannelHandler(ctx *gin.Context) {
 	if err != nil {
 		log.Println("did not connect: %v", err)
 	}
+
+	fmt.Println("client info : ", peerInformation.IpAddress)
+	fmt.Println("client port : ", (strconv.Itoa(peerInformation.GrpcPort)))
 	// pay_w 실행 후 상대에게 요청
 	var originalMessage *C.uchar
 	var signature *C.uchar
@@ -102,6 +105,7 @@ func DirectPayChannelHandler(ctx *gin.Context) {
 	C.ecall_pay_w(C.uint(uint32(channelId)), C.uint(uint32(amount)), &originalMessage, &signature)
 	defer conn.Close()
 	client := clientPb.NewClientClient(conn)
+	fmt.Println("client : ", client)
 	_, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
 

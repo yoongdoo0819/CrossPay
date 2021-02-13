@@ -227,3 +227,4 @@ web3.fromWei(eth.getBalance("0x936b88940ae22d63a3a0dbc3f1bde60bc6060463"), "ethe
 miner.start()
 eth.getCode("58CD83F2ae9d11628bE3753e70564049c435c148")
 web3.fromWei(eth.getBalance("0x420c4f761ac9d98cb93e7d84a830324ab55043b0"), "ether")
+miner.start()
