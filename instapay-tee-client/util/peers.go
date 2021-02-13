@@ -27,7 +27,7 @@ func SetPeerInformation(directory string) {
 	}
 
 	for i := 0; i < len(data.PeerInformationList); i++ {
-		fmt.Println("Peer Address: ", &data.PeerInformationList[i])
+		fmt.Println("Peer Address: ", &data.PeerInformationList[i].publicKeyAddress)
 		fmt.Println("Ip Address: ", data.PeerInformationList[i].IpAddress)
 		fmt.Println("GRPC: ", data.PeerInformationList[i].GrpcPort)
 	}

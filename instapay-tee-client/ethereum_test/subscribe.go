@@ -21,9 +21,9 @@ import (
 
 var EthereumConfig = map[string]string{
 	/* web3 and ethereum */
-	"rpcHost":          "141.223.121.139",
+	"rpcHost":          "141.223.121.164",
 	"rpcPort":          "8555",
-	"wsHost":           "141.223.121.139", //141.223.121.139
+	"wsHost":           "141.223.121.164", //141.223.121.164
 	"wsPort":           "8881",
 	"contractAddr":     "0x3016947BE73dcb877401Ee33802aC8fA6feE631E", // change to correct address
 	"contractSrcPath":  "../contracts/InstaPay.sol",
@@ -32,7 +32,7 @@ var EthereumConfig = map[string]string{
 	"event":            "",
 
 	/* grpc configuration */
-	"serverGrpcHost": "141.223.121.139",
+	"serverGrpcHost": "141.223.121.164",
 	"serverGrpcPort": "50004",
 	"serverProto":    "",
 	"server":         "",

@@ -17,14 +17,14 @@ import (
 
 var EthereumConfig = map[string]string{
 	/* web3 and ethereum */
-	"rpcHost":          "141.223.121.139",
+	"rpcHost":          "141.223.121.164",
 	"rpcPort":          "8555",
-	"wsHost":           "141.223.121.139",
+	"wsHost":           "141.223.121.164",
 	"wsPort":           "8881",
 	"contractAddr":     "0x092d70BB5c1954F5Fa3EBbb282d0416a5e46c818",
 
 	/* grpc configuration */
-	"serverGrpcHost":   "141.223.121.139",
+	"serverGrpcHost":   "141.223.121.164",
 	"serverGrpcPort":   "50004",
 	"serverProto":      "",
 	"server":           "",

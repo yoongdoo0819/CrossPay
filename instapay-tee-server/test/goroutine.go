@@ -38,7 +38,7 @@ func Start() {
 
   fmt.Printf("Start()\n")
 
-  client, err := ethclient.Dial("ws://141.223.121.139:8881")
+  client, err := ethclient.Dial("ws://141.223.121.164:8881")
   if err != nil {
     log.Fatal(err)
   }

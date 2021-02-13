@@ -67,18 +67,13 @@ func main() {
 	
 	//CreateAccount(os.Getenv("key_file"))
 
-	fmt.Println("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
-	
 	if fileExists(*channelFile) {
 		LoadChannelData(*channelFile)
 	}
-	
 
-	fmt.Println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
 	// LoadDataToTEE(os.Getenv("key_file"), os.Getenv("channel_file"))
 
 	go service.ListenContractEvent()
-	fmt.Println("TEST ###########");
 	go startGrpcServer()
 	startClientWebServer()
 }

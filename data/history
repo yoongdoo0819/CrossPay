@@ -70,7 +70,7 @@ miner.setEtherbase(eth.accounts[1])
 miner.setEtherbase(eth.accounts[0])
 miner.start()
 miner.stop()
-geth attach rpc:http://141.223.121.139:8555
+geth attach rpc:http://141.223.121.164:8555
 eth.mining
 eth.coinbase()
 miner.start()
@@ -78,7 +78,7 @@ miner.stop()
 eth.coinbase
 eth.blockNumber
 eth.getBalance(eth.accounts[0])
-geth attach "rpc:http://141.223.121.139:8555"
+geth attach "rpc:http://141.223.121.164:8555"
 persnal.unlockAccount(eth.accounts[0])
 minser.setEtherbase(eth.accounts[2])
 miner.setEtherbase(eth.accounts[2])

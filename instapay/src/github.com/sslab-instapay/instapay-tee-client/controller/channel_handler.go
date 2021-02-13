@@ -124,6 +124,7 @@ func DirectPayChannelHandler(ctx *gin.Context) {
 
 func PaymentToServerChannelHandler(ctx *gin.Context) {
 
+	log.Println("----- Payment To Server Start -----")
 	otherAddress := ctx.PostForm("addr")
 	amount, err := strconv.Atoi(ctx.PostForm("amount"))
 	if err != nil {
@@ -137,6 +138,8 @@ func PaymentToServerChannelHandler(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, gin.H{"message": err})
 		return
 	}
+
+	log.Println("----- Payment To Server Conn Success -----")
 	defer connection.Close()
 	client := serverPb.NewServerClient(connection)
 
@@ -153,6 +156,8 @@ func PaymentToServerChannelHandler(ctx *gin.Context) {
 	log.Println(r.GetResult())
 
 	ctx.JSON(http.StatusOK, gin.H{"sendAddress": otherAddress, "amount": amount})
+
+	log.Println("----- client PaymentRequest Success -----")
 }
 
 func GetChannelListHandler(ctx *gin.Context) {

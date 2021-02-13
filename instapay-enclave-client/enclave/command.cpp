@@ -130,13 +130,15 @@ void ecall_create_channel(unsigned int nonce, unsigned char *owner, unsigned cha
     // deposit *= 1000000000000000000;
 
     /* generate a transaction creating a channel */
-    Transaction tx(nonce, CONTRACT_ADDR, deposit, data.data(), data.size());
+    //Transaction tx(nonce, CONTRACT_ADDR, deposit, data.data(), data.size());
     printf("Contract Addr : %s \n", CONTRACT_ADDR);
     // find the account's private key and sign on transaction using
     addr = ::arr_to_bytes(owner, 40);
     std::vector<unsigned char> pubkey(addr, addr + 20);
     std::vector<unsigned char> seckey;
     std::vector<unsigned char> pubkey2;
+
+    Transaction tx(nonce, CONTRACT_ADDR, deposit, data.data(), data.size());
 
     printf("========== create channel ========= \n");
   
@@ -148,6 +150,9 @@ void ecall_create_channel(unsigned int nonce, unsigned char *owner, unsigned cha
     printf("receiver : %s \n", (unsigned char*)receiver);
     seckey = accounts.find(pubkey)->second.get_seckey();
     pubkey2 = accounts.find(pubkey)->second.get_pubkey();
+    printf("seckey.data() : %s \n", (unsigned char*)seckey.data());
+    for(int i=0; i<seckey.size(); i++)
+	    printf("%02x", seckey.at(i));
     tx.sign((unsigned char*)seckey.data());  // "e113ff405699b7779fbe278ee237f2988b1e6769d586d8803860d49f28359fbd"
     //printf("seckey : %s \n", (unsigned char*)seckey);
     //printf("seckey.data : %s \n", (unsigned char*)seckey.data());
@@ -156,10 +161,15 @@ void ecall_create_channel(unsigned int nonce, unsigned char *owner, unsigned cha
     for(int i=0; i<20; i++) {
 	    printf("%02x", pubkey[i]);
     }printf("\n");
+    //for(int i=0; i<sizeof(pubkey)/sizeof(pubkey[0]); i++)
+    //	    printf("%02x", pubkey[i]);
+    printf("len : %d \n", pubkey.size());
+
     printf("pubkey2 : ");
     for(int i=0; i<20; i++) {
 	printf("%02x", pubkey2[i]);
     }printf("\n");
+    printf("len : %d \n", pubkey2.size());
 //    printf(" >> %s \n", typeid(pubkey).name());
 //    printf(" >> %s \n", typeid(pubkey2).name());
     printf("seckey : ");
@@ -167,11 +177,27 @@ void ecall_create_channel(unsigned int nonce, unsigned char *owner, unsigned cha
 	    printf("%02x", seckey[i]);
     }
     printf("\n");
+    printf("len : %d \n", seckey.size());
+/*
+    printf("seckey.data : ");
+    for(int i=0; i<32; i++)
+	    printf("%02x", seckey.data()[i]);
+*/
+    //printf("signed_tx : %s \n", (unsigned char*)signed_tx);
+    //printf("tx.signed_tx.data() : %s \n", (unsigned char*)tx.signed_tx.data());
 
     memcpy(signed_tx, tx.signed_tx.data(), tx.signed_tx.size());
     *signed_tx_len = tx.signed_tx.size();
-
+/*
+    printf("nonce : %s \n", (unsigned char*) nonce);
+    printf("contract addr : %s \n", CONTRACT_ADDR);
+    printf("deposit : %d \n", deposit);
+    printf("signed tx : %s \n", signed_tx);
+    for(int i=0; i<tx.signed_tx.size(); i++)
+	    printf("%02x", signed_tx[i]);
+*/
     printf("############### end #####################  \n");
+    //fflush(stdout);
     return;
 }
 
@@ -648,6 +674,7 @@ void ecall_get_num_public_addrs(unsigned int *num_public_addrs)
     // accounts.insert(map_account_value(p2, Account(s2)));
     /********************************************************/
 
+    printf("accounts size : %d \n", accounts.size());
     *num_public_addrs = accounts.size();
 }
 
@@ -674,6 +701,11 @@ void ecall_get_public_addrs(unsigned char *public_addrs)
         memcpy(public_addrs + cursor, (unsigned char*)&data, sizeof(address));
         cursor += sizeof(address);
     }
+
+    printf("public_addrs : ");
+    for(int i=0; i<20; i++)
+	    printf("%02x", public_addrs[i]);
+
 }
 
 

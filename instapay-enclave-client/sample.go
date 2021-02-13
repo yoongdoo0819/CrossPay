@@ -32,7 +32,7 @@ func main() {
 	// if err != nil{
 	// 	log.Println(err)
 	// }
-	// client, err := ethclient.Dial("ws://141.223.121.139:8881")
+	// client, err := ethclient.Dial("ws://141.223.121.164:8881")
 	// if err != nil{
 	// 	log.Fatal(err)
 	// }
@@ -65,7 +65,7 @@ func main() {
 
 	/* calling ecall_create_channel_w */
 	
-	// client, err := ethclient.Dial("ws://141.223.121.139:8881")
+	// client, err := ethclient.Dial("ws://141.223.121.164:8881")
 	// if err != nil{
 	// 	log.Println(err)
 	// }

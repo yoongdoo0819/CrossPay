@@ -27,7 +27,7 @@ func SetPeerInformation(directory string) {
 	}
 
 	for i := 0; i < len(data.PeerInformationList); i++ {
-		fmt.Println("Peer Address: ", &data.PeerInformationList[i])
+		fmt.Println("Peer Address: ", data.PeerInformationList[i].PublicKeyAddress)
 		fmt.Println("Ip Address: ", data.PeerInformationList[i].IpAddress)
 		fmt.Println("GRPC: ", data.PeerInformationList[i].GrpcPort)
 	}
@@ -38,7 +38,7 @@ func SetPeerInformation(directory string) {
 func GetPeerInformationByAddress(publicKeyAddress string) (model.PeerInformation, int, error) {
 	log.Println("Peer Address : ", publicKeyAddress)
 	for i := 0; i < len(peerInformations.PeerInformationList); i++ {
-		fmt.Println("There is peer ?")
+		fmt.Println("There is peer : ", peerInformations.PeerInformationList[i].PublicKeyAddress)
 		if peerInformations.PeerInformationList[i].PublicKeyAddress == publicKeyAddress {
 			fmt.Println("peer exist")
 			return peerInformations.PeerInformationList[i], i, nil

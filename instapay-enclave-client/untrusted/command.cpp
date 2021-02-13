@@ -205,6 +205,5 @@ void* ecall_get_public_addrs_w(void)
 void ecall_test_func_w(void)
 {
 
-    printf("TEST FUNC W");
     ecall_test_func(global_eid);
 }

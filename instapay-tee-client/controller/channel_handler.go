@@ -123,6 +123,7 @@ func DirectPayChannelHandler(ctx *gin.Context) {
 
 func PaymentToServerChannelHandler(ctx *gin.Context) {
 
+	log.Println("----- Payment To Server Start -----")
 	otherAddress := ctx.PostForm("addr")
 	amount, err := strconv.Atoi(ctx.PostForm("amount"))
 	if err != nil {

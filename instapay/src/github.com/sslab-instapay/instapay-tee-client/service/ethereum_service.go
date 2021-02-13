@@ -47,6 +47,8 @@ func SendOpenChannelTransaction(deposit int, otherAddress string) (string, error
 	address := common.HexToAddress(config.GetAccountConfig().PublicKeyAddress)
 	nonce, err := client.PendingNonceAt(context.Background(), address)
 
+	fmt.Println("address########## : ", address.Hex());
+
 	convertNonce := C.uint(nonce)
 	owner := []C.uchar(account.PublicKeyAddress[2:])
 	receiver := []C.uchar(otherAddress[2:])
@@ -54,10 +56,10 @@ func SendOpenChannelTransaction(deposit int, otherAddress string) (string, error
 	SigLen := C.uint(0)
 
 	fmt.Println("account: ", account);
-	fmt.Printf("owner : ", &owner[0]);
+	fmt.Println("owner : ", &owner[0]);
 	fmt.Println("otherAddress: ", otherAddress);
 	fmt.Println("address : ", address.Hex());
-	fmt.Printf("receiver : %s \n", &receiver[0]);
+	fmt.Println("receiver : %s \n", &receiver[0]);
 
 /*
 	privateKey, err := crypto.HexToECDSA("fad9c8855b740a0b7ed4c221dbad0f33a83a49cad6b3fe8d5817ac83d38b6a19")
@@ -118,18 +120,16 @@ func SendOpenChannelTransaction(deposit int, otherAddress string) (string, error
 	fmt.Printf("tx sent : %s", signedTx.Hash().Hex())
 	*/
 
-	fmt.Println(" ====================== test func w start ================ \n");
 	//C.ecall_test_func_w();
-	fmt.Println(" ====================== test func w end   ================ \n");
 
-	fmt.Println(" ====================== create channel w start ================ \n");
+	fmt.Println(" ====================== CREATE CHANNEL START IN ENCLAVE ================ \n");
 	var sig *C.uchar = C.ecall_create_channel_w(convertNonce, &owner[0], &receiver[0], newDeposit, &SigLen)
 	hdr := reflect.SliceHeader{
 		Data: uintptr(unsafe.Pointer(sig)),
 		Len:  int(SigLen),
 		Cap:  int(SigLen),
 	}
-	fmt.Println(" ====================== create channel w end   ================ \n");
+	fmt.Println(" ====================== CREATE CHANNEL END IN ENCLAVE  ================ \n");
 
 	s := *(*[]C.uchar)(unsafe.Pointer(&hdr))
 	var convertedRawTx string
@@ -151,6 +151,7 @@ func SendOpenChannelTransaction(deposit int, otherAddress string) (string, error
 	v, r, _ := tx.RawSignatureValues()
 	fmt.Println("v : ", v, " r : ", r, " s : ")
 	fmt.Println()
+	
 	fromAddr, err := types.NewEIP155Signer(tx.ChainId()).Sender(tx)
 	if err != nil {
 		log.Fatal(err)
@@ -159,7 +160,7 @@ func SendOpenChannelTransaction(deposit int, otherAddress string) (string, error
 		fmt.Printf("%02x", fromAddr[i])
 	}
 	fmt.Println()
-	fmt.Println("fromAddr : ", fromAddr)
+	fmt.Println("fromAddr : ", fromAddr.Hex())
 	fmt.Println("chainId: ", tx.ChainId())
 	fmt.Println("Sender : ", msg.From().Hex())
 	fmt.Println("Receiver: ", msg.To().Hex())
@@ -244,9 +245,25 @@ func ListenContractEvent() {
 		case err := <-sub.Err():
 			log.Println(err)
 		case vLog := <-logs:
-			var createChannelEvent = model.CreateChannelEvent{}
-			var closeChannelEvent = model.CloseChannelEvent{}
-			var ejectEvent = model.EjectEvent{}
+			//var createChannelEvent = model.CreateChannelEvent{}
+			//var closeChannelEvent = model.CloseChannelEvent{}
+			//var ejectEvent = model.EjectEvent{}
+
+			createChannelEvent := struct {
+				Id	 *big.Int
+				Owner	 common.Address
+				Receiver common.Address
+				Deposit	 *big.Int
+			}{}
+			closeChannelEvent := struct {
+				Id	    *big.Int
+				Ownerbal    *big.Int
+				Receiverbal *big.Int
+			}{}
+			ejectEvent := struct {
+				Pn 	 	*big.Int
+				Registeredstage int
+			}{}
 
 			err := contractAbi.UnpackIntoInterface(&createChannelEvent, "EventCreateChannel", vLog.Data)
 			//fmt.Println("a : ", a)
@@ -303,6 +320,7 @@ func HandleCreateChannelEvent(event model.CreateChannelEvent) error {
 		C.ecall_receive_create_channel_w(channelId, &sender[0], &owner[0], deposit)
 	}
 
+	fmt.Println("HANDLE CREATE CHANNEL EVENT SUCCESS")
 	connection, err := grpc.Dial(config.EthereumConfig["serverGrpcHost"]+":"+config.EthereumConfig["serverGrpcPort"], grpc.WithInsecure())
 	if err != nil {
 		log.Println("GRPC Connection Error")
