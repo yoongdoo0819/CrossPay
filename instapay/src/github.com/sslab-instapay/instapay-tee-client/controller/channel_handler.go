@@ -146,6 +146,7 @@ func PaymentToServerChannelHandler(ctx *gin.Context) {
 	log.Println("----- Payment To Server Conn Success -----")
 	defer connection.Close()
 	client := serverPb.NewServerClient(connection)
+	fmt.Println(reflect.TypeOf(client))
 
 	clientContext, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
