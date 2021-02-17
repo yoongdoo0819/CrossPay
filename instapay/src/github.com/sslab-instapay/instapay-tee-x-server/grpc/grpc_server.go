@@ -1,8 +1,8 @@
 package grpc
 
 /*
-#cgo CPPFLAGS: -I/home/yoongdoo0819/sgxsdk/include -I/home/yoongdoo0819/instapay3.0/instapay/src/github.com/sslab-instapay/instapay-tee-server
-#cgo LDFLAGS: -L/home/yoongdoo0819/instapay3.0/instapay/src/github.com/sslab-instapay/instapay-tee-server -ltee
+#cgo CPPFLAGS: -I/home/yoongdoo0819/sgxsdk/include -I/home/yoongdoo0819/instapay3.0/instapay/src/github.com/sslab-instapay/instapay-tee-x-server
+#cgo LDFLAGS: -L/home/yoongdoo0819/instapay3.0/instapay/src/github.com/sslab-instapay/instapay-tee-x-server -ltee
 
 #include "../app.h"
 */
@@ -17,9 +17,9 @@ import (
 	"context"
 	"strconv"
 	"google.golang.org/grpc"
-	"github.com/sslab-instapay/instapay-tee-server/repository"
-	pbServer "github.com/sslab-instapay/instapay-tee-server/proto/server"
-	pbClient "github.com/sslab-instapay/instapay-tee-server/proto/client"
+	"github.com/sslab-instapay/instapay-tee-x-server/repository"
+	pbServer "github.com/sslab-instapay/instapay-tee-x-server/proto/server"
+	pbClient "github.com/sslab-instapay/instapay-tee-x-server/proto/client"
 	"unsafe"
 	"reflect"
 )
