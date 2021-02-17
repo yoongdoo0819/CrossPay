@@ -1,0 +1,72 @@
+/* Enclave.edl - Top EDL file. */
+
+enclave {
+    untrusted {
+        void ocall_print_string([in, string] const char *str);
+    };
+
+    trusted {
+
+        /* network.cpp */
+
+        public void ecall_accept_request(
+            [in, size=40] unsigned char *sender,
+            [in, size=40] unsigned char *receiver,
+            unsigned int amount,
+            [user_check] unsigned int *payment_num);
+        
+        public void ecall_add_participant(
+            unsigned int payment_num,
+            [in, size=40] unsigned char *addr);
+
+        public void ecall_update_sentagr_list(
+            unsigned int payment_num,
+            [in, size=40] unsigned char *addr);
+
+        public void ecall_update_sentupt_list(
+            unsigned int payment_num,
+            [in, size=40] unsigned char *addr);
+
+        public void ecall_check_unanimity(
+            unsigned int payment_num,
+            int which_list,
+            [user_check] int *is_unanimous);
+
+        public void ecall_update_payment_status_to_success(
+            unsigned int payment_num);
+
+        public void ecall_create_ag_req_msg(
+            unsigned int payment_num,
+            unsigned int payment_size,
+            [user_check] unsigned int *channel_ids,
+            [user_check] int *amount,
+            [user_check] unsigned char *req_msg,
+            [user_check] unsigned char *req_sig);
+
+        public void ecall_create_ud_req_msg(
+            unsigned int payment_num,
+            unsigned int payment_size,
+            [user_check] unsigned int *channel_ids,
+            [user_check] int *amount,
+            [user_check] unsigned char *req_msg,
+            [user_check] unsigned char *req_sig);
+
+        public void ecall_create_confirm_msg(
+            unsigned int payment_num,
+            [user_check] unsigned char *confirm_msg,
+            [user_check] unsigned char *confirm_sig);
+
+        public void ecall_verify_ag_res_msg(
+            [user_check] unsigned char *pubaddr,
+            [user_check] unsigned char *res_msg,
+            [user_check] unsigned char *res_sig,
+            [user_check] unsigned int *is_verified);
+
+        public void ecall_verify_ud_res_msg(
+            [user_check] unsigned char *pubaddr,
+            [user_check] unsigned char *res_msg,
+            [user_check] unsigned char *res_sig,
+            [user_check] unsigned int *is_verified);
+        
+    };
+};
