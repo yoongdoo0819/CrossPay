@@ -7,9 +7,9 @@ import (
 
 func RegisterRestRouter(router *gin.Engine) {
 
-	xPaymentRequestRouter := router.Group("xpayments")
+	xPaymentRequestRouter := router.Group("cross-payments")
 	{
-		xPaymentRequestRouter.POST("x-server", controller.CrossPaymentToServerChannelHandler)
+		xPaymentRequestRouter.POST("cross-server", controller.CrossPaymentToServerChannelHandler)
 	}
 
 }

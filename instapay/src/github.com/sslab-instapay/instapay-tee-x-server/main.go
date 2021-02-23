@@ -23,6 +23,7 @@ func StartWebServer() {
 	//fmt.Println(gin.Default())
 	defaultRouter.LoadHTMLGlob("templates/*")
 
+	router.RegisterRestRouter(defaultRouter)
 	router.RegisterViewRouter(defaultRouter)
 	defaultRouter.Run(":" + os.Getenv("port"))
 }

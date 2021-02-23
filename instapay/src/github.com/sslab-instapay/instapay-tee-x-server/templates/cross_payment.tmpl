@@ -29,10 +29,10 @@
 <table width="100%">
 <tr>
 <td>
-            <form method="post" action="/channels/requests/open">
+            <form method="post" action="/cross-payments/cross-server">
 		<div class="form-group">
 
-		    <h1>Ethereum</h1>
+		    <h1>Ethereum private network 1</h1>
 		    <!--
                     <div class="col-xs-4">
 		           <select class="form-control" name="chainId">
@@ -45,7 +45,7 @@
 		    -->
 </td>
 <td>
-		    <h2>Ethereum Classic</h2>
+		    <h2>Ethereum private network 2</h2>
 		    <!--
                     <div class="col-xs-4">
 		           <select class="form-control" name="chainId">
@@ -62,46 +62,50 @@
 <tr>
 <td>
                 <div class="form-group">
-                    <div class="col-xs-4">
-	                    <label for="e_addr1">Address 1:</label>
-        	            <input type="text" class="form-control" id="e_addr1" name="e_addr1">
-                	    <label for="e_addr1_val">Value:</label>
-	                    <input type="text" class="form-control" id="e_addr1_val" name="e_addr1_val">
+                    <div class="col-xs-6">
+	                    <label for="chain1_sender">Address 1:</label>
+        	            <input type="text" class="form-control" id="chain1_sender" name="chain1_sender">
+                	    <label for="chain1_sender_val">Value:</label>
+	                    <input type="text" class="form-control" id="chain1_sender_val" name="chain1_sender_val">
                     </div>
-                    <div class="col-xs-4">
-	                    <label for="e_addr2">Address 2:</label>
-        	            <input type="text" class="form-control" id="e_addr2" name="e_addr2">
-                	    <label for="e_addr2_val">Value:</label>
-	                    <input type="text" class="form-control" id="e_addr2_val" name="e_addr2_val">
+                    <div class="col-xs-6">
+	                    <label for="chain1_receiver">Address 2:</label>
+        	            <input type="text" class="form-control" id="chain1_receiver" name="chain1_receiver">
+                	    <!--<label for="e_addr2_val">Value:</label>
+	                    <input type="text" class="form-control" id="e_addr2_val" name="e_addr2_val">-->
                    </div>
+		    <!--
                     <div class="col-xs-4">
 	                    <label for="e_addr3">Address 3:</label>
         	            <input type="text" class="form-control" id="e_addr3" name="e_addr3">
-	                    <!--<label for="e_addr3_val">Value:</label>
-	                    <input type="text" class="form-control" id="e_addr3_val" name="e_addr3_val"> -->
+	                    <label for="e_addr3_val">Value:</label>
+	                    <input type="text" class="form-control" id="e_addr3_val" name="e_addr3_val">
                     </div>
+		    -->
                 </div>
 </td>
 <td>
                 <div class="form-group">
-                    <div class="col-xs-4">
-	                    <label for="ec_addr1">Address 1:</label>
-	                    <input type="text" class="form-control" id="ec_addr1" name="ec_addr1">
-	                    <label for="ec_addr1_val">Value:</label>
-	                    <input type="text" class="form-control" id="ec_addr1_val" name="ec_addr1_val">
+                    <div class="col-xs-6">
+	                    <label for="chain2_sender">Address 1:</label>
+	                    <input type="text" class="form-control" id="chain2_sender" name="chain2_sender">
+	                    <label for="chain2_sender_val">Value:</label>
+	                    <input type="text" class="form-control" id="chain2_sender_val" name="chain2_sender_val">
                     </div>
-                    <div class="col-xs-4">
-	                    <label for="ec_addr2">Address 2:</label>
-	                    <input type="text" class="form-control" id="ec_addr2" name="ec_addr2">
-	                    <label for="ec_addr2_val">Value:</label>
-	                    <input type="text" class="form-control" id="ec_addr2_val" name="ec_addr2_val">
+                    <div class="col-xs-6">
+	                    <label for="chain2_receiver">Address 2:</label>
+	                    <input type="text" class="form-control" id="chain2_receiver" name="chain2_receiver">
+	                    <!--<label for="ec_addr2_val">Value:</label>
+	                    <input type="text" class="form-control" id="ec_addr2_val" name="ec_addr2_val">-->
                     </div>
+		    <!--
                     <div class="col-xs-4">
 	                    <label for="ec_addr3">Address 3:</label>
         	            <input type="text" class="form-control" id="ec_addr3" name="ec_addr3">
-	                    <!--<label for="ec_addr3_val">Value:</label>
-	                    <input type="text" class="form-control" id="ec_addr3_val" name="ec_addr3_val">-->
+	                    <label for="ec_addr3_val">Value:</label>
+	                    <input type="text" class="form-control" id="ec_addr3_val" name="ec_addr3_val">
                     </div>
+		    -->
                 </div>
 </td>
 </tr>
