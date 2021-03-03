@@ -8,6 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/sslab-instapay/instapay-tee-x-server/config"
         serverPb "github.com/sslab-instapay/instapay-tee-x-server/proto/server"
+	//xServerPb "github.com/sslab-instapay/instapay-tee-x-server/proto/cross-server"
 	"google.golang.org/grpc"
 	"github.com/sslab-instapay/instapay-tee-x-server/repository"
 	"log"
@@ -133,7 +134,7 @@ func CrossPaymentToServerChannelHandler(ctx *gin.Context) {
 	client2Context, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
 
-	r, err := client2.PaymentRequest(client2Context, &serverPb.PaymentRequestMessage{From : chain2Sender, To : chain2Receiver, Amount: int64(chain2SenderVal)})
+	r, err := client2.CrossPaymentPrepareRequest(client2Context, &serverPb.CrossPaymentPrepareReqMessage{From : chain2Sender, To : chain2Receiver, Amount: int64(chain2SenderVal)})
 	if err != nil {
 		log.Println(err)
 		ctx.JSON(http.StatusBadRequest, gin.H{"message":err})

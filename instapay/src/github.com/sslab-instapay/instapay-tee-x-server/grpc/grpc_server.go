@@ -13,20 +13,26 @@ import (
 	"log"
 	"fmt"
 	"os"
-	"sync"
+	//"sync"
 	"context"
 	"strconv"
 	"google.golang.org/grpc"
-	"github.com/sslab-instapay/instapay-tee-x-server/repository"
+	"github.com/sslab-instapay/instapay-tee-x-server/config"
+	"time"
+	
+	//"github.com/sslab-instapay/instapay-tee-x-server/repository"
 	pbServer "github.com/sslab-instapay/instapay-tee-x-server/proto/server"
-	pbClient "github.com/sslab-instapay/instapay-tee-x-server/proto/client"
-	"unsafe"
-	"reflect"
+	//pbClient "github.com/sslab-instapay/instapay-tee-x-server/proto/client"
+	pbXServer"github.com/sslab-instapay/instapay-tee-x-server/proto/cross-server"
+	//"unsafe"
+	//"reflect"
 )
 
 type ServerGrpc struct {
+	pbServer.UnimplementedServerServer
+	pbXServer.UnimplementedCross_ServerServer
 }
-
+/*
 var rwMutex = new(sync.RWMutex)
 
 func SendAgreementRequest(pn int64, address string, paymentInformation PaymentInformation) {
@@ -88,7 +94,8 @@ func SendAgreementRequest(pn int64, address string, paymentInformation PaymentIn
 
 	return
 }
-
+*/
+/*
 func SendUpdateRequest(pn int64, address string, paymentInformation PaymentInformation) {
 	info, err := repository.GetClientInfo(address)
 	if err != nil {
@@ -114,7 +121,7 @@ func SendUpdateRequest(pn int64, address string, paymentInformation PaymentInfor
 
 	originalMessageByte, signatureByte := convertPointerToByte(originalMessage, signature)
 
-	rqm := pbClient.UpdateRequestsMessage{ /* convert AgreeRequestsMessage to UpdateRequestsMessage */
+	rqm := pbClient.UpdateRequestsMessage{ // convert AgreeRequestsMessage to UpdateRequestsMessage 
 		PaymentNumber:   pn,
 		OriginalMessage: originalMessageByte,
 		Signature:       signatureByte,
@@ -166,7 +173,7 @@ func SendConfirmPayment(pn int, address string) {
 }
 
 func WrapperAgreementRequest(pn int64, p []string, paymentInformation map[string]PaymentInformation) {
-	/* remove C's address from p */
+	// remove C's address from p 
 	var q []string
 	q = p[0:2]
 
@@ -196,7 +203,7 @@ func WrapperUpdateRequest(pn int64, p []string, paymentInformation map[string]Pa
 }
 
 func WrapperConfirmPayment(pn int, p []string) {
-	/* update payment's status */
+	// update payment's status 
 	C.ecall_update_payment_status_to_success_w(C.uint(pn))
 
 	for _, address := range p {
@@ -210,13 +217,13 @@ func SearchPath(pn int64, amount int64) ([]string, map[string]PaymentInformation
 	log.Println("===== SearchPath Start =====")
 	var p []string
 
-	/* composing p */
+	// composing p 
 
 	p = append(p, "ed26fa51b429c5c5922bee06184ec058c99a73c1")
 	p = append(p, "75c6a898f5b92c15035cf05d344fd5123c4949a2")
 	p = append(p, "0x59d853e0fef578589bd8609afbf1f5e5559a73ac")
 
-	/* composing w */
+	// composing w 
 	var channelInform1, channelInform2, channelInform3 []C.uint
 	var amountInform1, amountInform2, amountInform3 []C.int
 
@@ -267,7 +274,8 @@ func (s *ServerGrpc) PaymentRequest(ctx context.Context, rq *pbServer.PaymentReq
 	log.Println("===== Payment Request End =====")
 	return &pbServer.Result{Result: true}, nil
 }
-
+*/
+/*
 func (s *ServerGrpc) CommunicationInfoRequest(ctx context.Context, address *pbServer.Address) (*pbServer.CommunicationInfo, error) {
 	res, err := repository.GetClientInfo(address.Addr)
 	if err != nil {
@@ -276,13 +284,14 @@ func (s *ServerGrpc) CommunicationInfoRequest(ctx context.Context, address *pbSe
 
 	return &pbServer.CommunicationInfo{IPAddress: res.IP, Port: int64(res.Port)}, nil
 }
-
+*/
 func StartGrpcServer() {
 	grpcPort, err := strconv.Atoi(os.Getenv("grpc_port"))
 	if err != nil {
 		log.Fatal(err)
 	}
 
+	log.Println("grpcPort : ", grpcPort)
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", grpcPort))
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
@@ -290,10 +299,11 @@ func StartGrpcServer() {
 
 	grpcServer := grpc.NewServer()
 	pbServer.RegisterServerServer(grpcServer, &ServerGrpc{})
+	pbXServer.RegisterCross_ServerServer(grpcServer, &ServerGrpc{})
 
 	grpcServer.Serve(lis)
 }
-
+/*
 func convertByteToPointer(originalMsg []byte, signature []byte) (*C.uchar, *C.uchar) {
 
 	log.Println("----- convertByteToPointer Server Start -----")
@@ -348,3 +358,120 @@ type PaymentInformation struct {
 	ChannelInform []C.uint
 	AmountInform  []C.int
 }
+*/
+/*
+ instpay 3.0
+
+*/
+/*
+func (s *ServerGrpc) CrossPaymentPrepareRequest(ctx context.Context, rq *pbServer.CrossPaymentPrepareReqMessage) (*pbServer.Result, error) {
+
+	return &pbServer.Result{Result: true}, nil
+}
+*/
+/*
+
+func (s *ServerGrpc) CrossPaymentRequest(ctx context.Context, rq *pbServer.CrossPaymentPrepareReqMessage) (*pbServer.Result, error) {
+
+	// Lv2 off-chain server sends the cross-payment request to Lv1 off-chain server
+
+	log.Println("===== Cross Payment Request Start =====")
+	from := rq.From
+	to := rq.To
+	amount := rq.Amount
+
+	sender := []C.uchar(from)
+	receiver := []C.uchar(to)
+
+	PaymentNum := C.ecall_accept_request_w(&sender[0], &receiver[0], C.uint(amount))
+	p, paymentInformation := SearchPath(int64(PaymentNum), amount)
+
+	for i := 0; i < len(p); i++ {
+		C.ecall_add_participant_w(PaymentNum, &([]C.uchar(p[i]))[0])
+	}
+	C.ecall_update_sentagr_list_w(PaymentNum, &([]C.uchar(p[2]))[0])
+
+	go WrapperAgreementRequest(int64(PaymentNum), p, paymentInformation)
+
+	log.Println("===== Cross Payment Request End =====")
+	return &pbServer.Result{Result: true}, nil
+}
+*/
+
+func (s *ServerGrpc) CrossPaymentPrepared(ctx context.Context, rq *pbXServer.CrossPaymentPrepareResMessage) (*pbXServer.CrossResult, error) {
+
+	result := rq.Result
+	log.Println("===== Cross Payment Prepared ====== ", result)
+
+
+	connectionForChain2, err := grpc.Dial(config.EthereumConfig["chain2ServerGrpcHost"] + ":" + config.EthereumConfig["chain2ServerGrpcPort"], grpc.WithInsecure())
+	if err != nil {
+		log.Println(err)
+		return &pbXServer.CrossResult{Result: false}, nil
+	}
+
+	defer connectionForChain2.Close()
+
+	client2 := pbServer.NewServerClient(connectionForChain2)
+	client2Context, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
+
+	r, err := client2.CrossPaymentCommitRequest(client2Context, &pbServer.CrossPaymentCommitReqMessage{From: "0xa12f7f8b48bc7111c4d9b02ec1e57f943c79e75c", To: "0x8098f0b94448f28fe880a6447beff6f2c52fdc35", Amount: 3})
+	if err != nil {
+		log.Println(err)
+		return &pbXServer.CrossResult{Result: false}, nil
+	}
+
+	log.Println(r.GetResult())
+	// Lv2 off-chain server sends the cross-payment request to Lv1 off-chain server
+/*
+	log.Println("===== Cross Payment Request Start =====")
+	from := rq.From
+	to := rq.To
+	amount := rq.Amount
+
+	sender := []C.uchar(from)
+	receiver := []C.uchar(to)
+
+	PaymentNum := C.ecall_accept_request_w(&sender[0], &receiver[0], C.uint(amount))
+	p, paymentInformation := SearchPath(int64(PaymentNum), amount)
+
+	for i := 0; i < len(p); i++ {
+		C.ecall_add_participant_w(PaymentNum, &([]C.uchar(p[i]))[0])
+	}
+	C.ecall_update_sentagr_list_w(PaymentNum, &([]C.uchar(p[2]))[0])
+
+	go WrapperAgreementRequest(int64(PaymentNum), p, paymentInformation)
+*/
+	log.Println("===== Cross Payment Request End =====")
+	return &pbXServer.CrossResult{Result: true}, nil
+}
+
+func (s *ServerGrpc) CrossPaymentCommitted(ctx context.Context, rq *pbXServer.CrossPaymentCommitResMessage) (*pbXServer.CrossResult, error) {
+
+	result := rq.Result
+	log.Println("===== Cross Payment Committed ====== ", result)
+	// Lv2 off-chain server sends the cross-payment request to Lv1 off-chain server
+/*
+	log.Println("===== Cross Payment Request Start =====")
+	from := rq.From
+	to := rq.To
+	amount := rq.Amount
+
+	sender := []C.uchar(from)
+	receiver := []C.uchar(to)
+
+	PaymentNum := C.ecall_accept_request_w(&sender[0], &receiver[0], C.uint(amount))
+	p, paymentInformation := SearchPath(int64(PaymentNum), amount)
+
+	for i := 0; i < len(p); i++ {
+		C.ecall_add_participant_w(PaymentNum, &([]C.uchar(p[i]))[0])
+	}
+	C.ecall_update_sentagr_list_w(PaymentNum, &([]C.uchar(p[2]))[0])
+
+	go WrapperAgreementRequest(int64(PaymentNum), p, paymentInformation)
+*/
+	log.Println("===== Cross Payment Committed End =====")
+	return &pbXServer.CrossResult{Result: true}, nil
+}
+
