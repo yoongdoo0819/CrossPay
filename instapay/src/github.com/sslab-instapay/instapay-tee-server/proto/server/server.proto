@@ -3,6 +3,10 @@ syntax = "proto3";
 service Server {
     rpc paymentRequest(paymentRequestMessage) returns (Result) {}
     rpc communicationInfoRequest(address) returns (CommunicationInfo) {}
+    
+    rpc crossPaymentPrepareRequest(crossPaymentPrepareReqMessage) returns (Result) {}
+    rpc crossPaymentCommitRequest(crossPaymentCommitReqMessage) returns (Result) {}
+
 }
 
 message paymentRequestMessage {
@@ -23,3 +27,19 @@ message CommunicationInfo {
     string IPAddress = 1;
     int64 port = 2;
 }
+
+message crossPaymentPrepareReqMessage {
+    int64 pn = 1;
+    string from = 2;
+    string to = 3;
+    int64 amount = 4;
+}
+
+message crossPaymentCommitReqMessage {
+    int64 pn = 1;
+    string from = 2;
+    string to = 3;
+    int64 amount = 4;
+}
+
+

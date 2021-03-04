@@ -52,6 +52,13 @@ void ecall_update_sentupt_list_w(unsigned int payment_num, unsigned char *addr);
 int ecall_check_unanimity_w(unsigned int payment_num, int which_list);
 void ecall_update_payment_status_to_success_w(unsigned int payment_num);
 
+/* instapay 3.0 */
+void ecall_cross_accept_request_w(unsigned char *sender, unsigned char *receiver, unsigned int amount, unsigned int payment_num);
+void ecall_cross_add_participant_w(unsigned int payment_num, unsigned char *addr);
+void ecall_cross_update_sentagr_list_w(unsigned int payment_num, unsigned char *addr);
+
+
+
 /** 서버의 agreement request 메시지와 서명을 생성
  *
  * Out:     original_msg:   생성된 메시지의 plain text 주소

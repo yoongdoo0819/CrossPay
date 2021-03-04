@@ -400,23 +400,24 @@ func (s *ServerGrpc) CrossPaymentRequest(ctx context.Context, rq *pbServer.Cross
 
 func (s *ServerGrpc) CrossPaymentPrepared(ctx context.Context, rq *pbXServer.CrossPaymentPrepareResMessage) (*pbXServer.CrossResult, error) {
 
+	pn := rq.Pn
 	result := rq.Result
-	log.Println("===== Cross Payment Prepared ====== ", result)
+	log.Println("===== Cross Payment Prepared Start ====== ", result)
 
 
-	connectionForChain2, err := grpc.Dial(config.EthereumConfig["chain2ServerGrpcHost"] + ":" + config.EthereumConfig["chain2ServerGrpcPort"], grpc.WithInsecure())
+	connectionForChain1, err := grpc.Dial(config.EthereumConfig["chain1ServerGrpcHost"] + ":" + config.EthereumConfig["chain1ServerGrpcPort"], grpc.WithInsecure())
 	if err != nil {
 		log.Println(err)
 		return &pbXServer.CrossResult{Result: false}, nil
 	}
 
-	defer connectionForChain2.Close()
+	defer connectionForChain1.Close()
 
-	client2 := pbServer.NewServerClient(connectionForChain2)
-	client2Context, cancel := context.WithTimeout(context.Background(), time.Second)
+	client1 := pbServer.NewServerClient(connectionForChain1)
+	client1Context, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
 
-	r, err := client2.CrossPaymentCommitRequest(client2Context, &pbServer.CrossPaymentCommitReqMessage{From: "0xa12f7f8b48bc7111c4d9b02ec1e57f943c79e75c", To: "0x8098f0b94448f28fe880a6447beff6f2c52fdc35", Amount: 3})
+	r, err := client1.CrossPaymentCommitRequest(client1Context, &pbServer.CrossPaymentCommitReqMessage{Pn: pn, From: "0xed26fa51b429c5c5922bee06184ec058c99a73c1", To: "0x59d853e0fef578589bd8609afbf1f5e5559a73ac", Amount: 3})
 	if err != nil {
 		log.Println(err)
 		return &pbXServer.CrossResult{Result: false}, nil
@@ -443,7 +444,7 @@ func (s *ServerGrpc) CrossPaymentPrepared(ctx context.Context, rq *pbXServer.Cro
 
 	go WrapperAgreementRequest(int64(PaymentNum), p, paymentInformation)
 */
-	log.Println("===== Cross Payment Request End =====")
+	log.Println("===== Cross Payment Prepared End =====")
 	return &pbXServer.CrossResult{Result: true}, nil
 }
 

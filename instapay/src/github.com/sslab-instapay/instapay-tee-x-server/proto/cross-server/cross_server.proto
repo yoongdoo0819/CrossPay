@@ -11,11 +11,13 @@ service Cross_Server {
 
 
 message crossPaymentPrepareResMessage {
-    string result = 1;
+    int64 pn = 1;
+    bool result = 2;
 }
 
 message crossPaymentCommitResMessage {
-    bool result = 1;
+    int64 pn = 1;
+    bool result = 2;
 }
 
 message crossPaymentConfirmResMessage {

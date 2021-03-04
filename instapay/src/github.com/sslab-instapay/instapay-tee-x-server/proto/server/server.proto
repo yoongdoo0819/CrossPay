@@ -29,15 +29,17 @@ message CommunicationInfo {
 }
 
 message crossPaymentPrepareReqMessage {
-    string from = 1;
-    string to = 2;
-    int64 amount = 3;
+    int64 pn = 1;
+    string from = 2;
+    string to = 3;
+    int64 amount = 4;
 }
 
 message crossPaymentCommitReqMessage {
-    string from = 1;
-    string to = 2;
-    int64 amount = 3;
+    int64 pn = 1;
+    string from = 2;
+    string to = 3;
+    int64 amount = 4;
 }
 
 

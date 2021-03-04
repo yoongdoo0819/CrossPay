@@ -67,6 +67,21 @@ enclave {
             [user_check] unsigned char *res_msg,
             [user_check] unsigned char *res_sig,
             [user_check] unsigned int *is_verified);
+       
+	/* instapay 3.0 */
+        public void ecall_cross_accept_request(
+            [in, size=40] unsigned char *sender,
+            [in, size=40] unsigned char *receiver,
+            unsigned int amount,
+            unsigned int payment_num);
         
+        public void ecall_cross_add_participant(
+            unsigned int payment_num,
+            [in, size=40] unsigned char *addr);
+
+        public void ecall_cross_update_sentagr_list(
+            unsigned int payment_num,
+            [in, size=40] unsigned char *addr);
+
     };
 };

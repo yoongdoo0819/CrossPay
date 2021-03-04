@@ -3,7 +3,7 @@
 
 #include <payment.h>
 #include <message.h>
-
+#include <cross_message.h>
 
 unsigned int Payment::acc_payment_num = 1;
 
@@ -172,3 +172,30 @@ void ecall_verify_ud_res_msg(unsigned char *pubaddr, unsigned char *res_msg, uns
     *is_verified = 1;
     return;
 }
+
+/*
+ *
+ *
+ * InstaPay 3.0
+ */
+
+
+void ecall_cross_accept_request(unsigned char *sender, unsigned char *receiver, unsigned int amount, unsigned int payment_num)
+{
+    payments.insert(map_payment_value(Payment::acc_payment_num, Payment(Payment::acc_payment_num, sender, receiver, amount)));
+    //*payment_num = Payment::acc_payment_num;
+    //Payment::acc_payment_num++;
+}
+
+
+void ecall_cross_add_participant(unsigned int payment_num, unsigned char *addr)
+{
+    payments.find(payment_num)->second.register_participant(addr);
+}
+
+
+void ecall_cross_update_sentagr_list(unsigned int payment_num, unsigned char *addr)
+{
+    payments.find(payment_num)->second.update_addrs_sent_agr(addr);
+}
+

@@ -1,5 +1,13 @@
 package controller
 
+/*
+#cgo CPPFLAGS: -I/home/yoongdoo0819/sgxsdk/include -I/home/yoongdoo0819/instapay3.0/instapay/src/github.com/sslab-instapay/instapay-tee-x-server
+#cgo LDFLAGS: -L/home/yoongdoo0819/instapay3.0/instapay/src/github.com/sslab-instapay/instapay-tee-x-server -ltee
+
+#include "app.h"
+*/
+import "C"
+
 import (
 	"context"
 	"net/http"
@@ -89,25 +97,38 @@ func GetChannelListHandler(context *gin.Context){
 */
 func CrossPaymentToServerChannelHandler(ctx *gin.Context) {
 
-	chain1Sender := ctx.PostForm("chain1_sender")
-	chain1Receiver := ctx.PostForm("chain1_receiver")
-	chain1SenderVal := ctx.PostForm("chain1_sender_val")
-
-	chain2Sender := ctx.PostForm("chain2_sender")
-	chain2Receiver := ctx.PostForm("chain2_receiver")
-	chain2SenderVal, err := strconv.Atoi(ctx.PostForm("chain2_sender_val"))
+	chain1From := ctx.PostForm("chain1_sender")
+	chain1To := ctx.PostForm("chain1_receiver")
+	chain1Val, err := strconv.Atoi(ctx.PostForm("chain1_sender_val"))
 	if err != nil {
 		log.Println(err)
 	}
 
-	fmt.Println("chain1 sender : ", chain1Sender)
-	fmt.Println("chain1 sender val : ", chain1SenderVal)
-	fmt.Println("chain1 receiver : ", chain1Receiver)
+	chain2From := ctx.PostForm("chain2_sender")
+	chain2To := ctx.PostForm("chain2_receiver")
+	chain2Val, err := strconv.Atoi(ctx.PostForm("chain2_sender_val"))
+	if err != nil {
+		log.Println(err)
+	}
 
-	fmt.Println("chain2 sender : ", chain2Sender)
-	fmt.Println("chain2 sender val : ", chain2SenderVal)
-	fmt.Println("chain2 receiver : ", chain2Receiver)
+	fmt.Println("chain1 from : ", chain1From)
+	fmt.Println("chain1 val : ", chain1Val)
+	fmt.Println("chain1 to : ", chain1To)
 
+	fmt.Println("chain2 from : ", chain2From)
+	fmt.Println("chain2 val : ", chain2Val)
+	fmt.Println("chain2 to : ", chain2To)
+
+	//chain2Sender := []C.uchar(chain2From)
+	//chain2Receiver := []C.uchar(chain2To)
+
+	chain1Sender := []C.uchar(chain1From)
+	chain1Receiver := []C.uchar(chain1To)
+
+	PaymentNum := C.ecall_accept_request_w(&chain1Sender[0], &chain1Receiver[0], C.uint(chain1Val))
+
+	log.Println("pn : ", PaymentNum)
+	log.Println("chain1 server : ", config.EthereumConfig["chain1ServerGrpcHost"] + ":" + config.EthereumConfig["chain1ServerGrpcPort"])
 
 	connectionForChain1, err := grpc.Dial(config.EthereumConfig["chain1ServerGrpcHost"] + ":" + config.EthereumConfig["chain1ServerGrpcPort"], grpc.WithInsecure())
 	if err != nil {
@@ -126,15 +147,15 @@ func CrossPaymentToServerChannelHandler(ctx *gin.Context) {
 	defer connectionForChain1.Close()
 	defer connectionForChain2.Close()
 
-	//client1 := serverPb.NewServerClient(connectionForChain1)
-	client2 := serverPb.NewServerClient(connectionForChain2)
+	client1 := serverPb.NewServerClient(connectionForChain1)
+	//client2 := serverPb.NewServerClient(connectionForChain2)
 
-	//client1Context, cancel := context.WithTimeout(context.Background(), time.Second)
-	//defer cancel()
-	client2Context, cancel := context.WithTimeout(context.Background(), time.Second)
+	client1Context, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
+	//client2Context, cancel := context.WithTimeout(context.Background(), time.Second)
+	//defer cancel()
 
-	r, err := client2.CrossPaymentPrepareRequest(client2Context, &serverPb.CrossPaymentPrepareReqMessage{From : chain2Sender, To : chain2Receiver, Amount: int64(chain2SenderVal)})
+	r, err := client1.CrossPaymentPrepareRequest(client1Context, &serverPb.CrossPaymentPrepareReqMessage{Pn: int64(PaymentNum), From : chain1From, To : chain1To, Amount: int64(chain1Val)})
 	if err != nil {
 		log.Println(err)
 		ctx.JSON(http.StatusBadRequest, gin.H{"message":err})
