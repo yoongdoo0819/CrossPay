@@ -159,5 +159,27 @@ enclave {
 
         public void ecall_load_channel_data([in, size=628] unsigned char *sealed_channel_data);
 
+
+        /*
+         * InstaPay 3.0
+         *
+         **/
+
+        public void ecall_cross_go_pre_update(
+            [user_check] unsigned char *msg,
+            [user_check] unsigned char *signature,
+            [user_check] unsigned char *original_msg, 
+            [user_check] unsigned char *output);
+
+        public void ecall_cross_go_post_update(
+            [user_check] unsigned char *msg,
+            [user_check] unsigned char *signature,
+            [user_check] unsigned char *original_msg, 
+            [user_check] unsigned char *output);
+
+        public void ecall_cross_go_idle(
+            [user_check] unsigned char *msg,
+            [user_check] unsigned char *signature);
+
     };
 };

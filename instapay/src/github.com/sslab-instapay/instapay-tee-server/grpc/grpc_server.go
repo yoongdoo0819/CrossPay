@@ -513,7 +513,7 @@ func SendCrossAgreementRequest(pn int64, address string, paymentInformation Paym
 	fmt.Println("===== CREATE AG REQ MSG END IN ENCLAVE =====")
 	originalMessageByte, signatureByte := convertPointerToByte(originalMessage, signature)
 
-	r, err := client.AgreementRequest(context.Background(), &pbClient.AgreeRequestsMessage{PaymentNumber: int64(pn), OriginalMessage: originalMessageByte, Signature: signatureByte})
+	r, err := client.CrossPaymentPrepareClientRequest(context.Background(), &pbClient.CrossPaymentPrepareReqClientMessage{PaymentNumber: int64(pn), OriginalMessage: originalMessageByte, Signature: signatureByte})
 	if err != nil {
 		log.Println("client AgreementRequest err : ", err)
 	}
@@ -561,13 +561,13 @@ func SendCrossUpdateRequest(pn int64, address string, paymentInformation Payment
 
 	originalMessageByte, signatureByte := convertPointerToByte(originalMessage, signature)
 
-	rqm := pbClient.UpdateRequestsMessage{ /* convert AgreeRequestsMessage to UpdateRequestsMessage */
+	rqm := pbClient.CrossPaymentCommitReqClientMessage{ /* convert AgreeRequestsMessage to UpdateRequestsMessage */
 		PaymentNumber:   pn,
 		OriginalMessage: originalMessageByte,
 		Signature:       signatureByte,
 	}
 
-	r, err := client.UpdateRequest(context.Background(), &rqm)
+	r, err := client.CrossPaymentCommitClientRequest(context.Background(), &rqm)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -607,7 +607,7 @@ func SendCrossConfirmPayment(pn int, address string) {
 
 	originalMessageByte, signatureByte := convertPointerToByte(originalMessage, signature)
 
-	_, err = client.ConfirmPayment(context.Background(), &pbClient.ConfirmRequestsMessage{PaymentNumber: int64(pn), OriginalMessage: originalMessageByte, Signature: signatureByte}, )
+	_, err = client.CrossPaymentConfirmClientRequest(context.Background(), &pbClient.CrossPaymentConfirmReqClientMessage{PaymentNumber: int64(pn), OriginalMessage: originalMessageByte, Signature: signatureByte}, )
 	if err != nil {
 		log.Println(err)
 	}

@@ -22,6 +22,7 @@ import (
 )
 
 type ClientGrpc struct {
+	clientPb.UnimplementedClientServer
 }
 
 func (s *ClientGrpc) AgreementRequest(ctx context.Context, in *clientPb.AgreeRequestsMessage) (*clientPb.AgreementResult, error) {
@@ -132,4 +133,51 @@ func convertPointerToByte(originalMsg *C.uchar, signature *C.uchar) ([]byte, []b
 	}
 
 	return returnMsg, returnSignature
+}
+
+/*
+ *
+ *
+ * InstaPay 3.0
+ */
+
+func (s *ClientGrpc) CrossPaymentPrepareClientRequest(ctx context.Context, in *clientPb.CrossPaymentPrepareReqClientMessage) (*clientPb.PrepareResult, error) {
+	log.Println("----REceive Aggreement Request----")
+	convertedOriginalMsg, convertedSignatureMsg := convertByteToPointer(in.OriginalMessage, in.Signature)
+
+	var originalMsg *C.uchar
+	var signature *C.uchar
+	C.ecall_go_pre_update_w(convertedOriginalMsg, convertedSignatureMsg, &originalMsg, &signature)
+
+	originalMessageStr, signatureStr := convertPointerToByte(originalMsg, signature)
+
+	return &clientPb.PrepareResult{Result: true, OriginalMessage: originalMessageStr, Signature: signatureStr}, nil
+}
+
+func (s *ClientGrpc) CrossPaymentCommitClientRequest(ctx context.Context, in *clientPb.CrossPaymentCommitReqClientMessage) (*clientPb.CommitResult, error) {
+	// 채널 정보를 업데이트 한다던지 잔액을 변경.
+	log.Println("----REceive Update Request----")
+	convertedOriginalMsg, convertedSignatureMsg := convertByteToPointer(in.OriginalMessage, in.Signature)
+
+	var originalMsg *C.uchar
+	var signature *C.uchar
+	C.ecall_go_post_update_w(convertedOriginalMsg, convertedSignatureMsg, &originalMsg, &signature)
+
+	originalMessageStr, signatureStr := convertPointerToByte(originalMsg, signature)
+
+	return &clientPb.CommitResult{Result: true, OriginalMessage: originalMessageStr, Signature: signatureStr}, nil
+}
+
+func (s *ClientGrpc) CrossPaymentConfirmClientRequest(ctx context.Context, in *clientPb.CrossPaymentConfirmReqClientMessage) (*clientPb.ConfirmResult, error) {
+	log.Println("----ConfirmPayment Request Receive----")
+
+	convertedOriginalMsg, convertedSignatureMsg := convertByteToPointer(in.OriginalMessage, in.Signature)
+	C.ecall_go_idle_w(convertedOriginalMsg, convertedSignatureMsg)
+	log.Println("----ConfirmPayment Request End----")
+
+	// fmt.Println(C.ecall_get_balance_w(C.uint(1)))
+	// fmt.Println(C.ecall_get_balance_w(C.uint(2)))
+	// fmt.Println(time.Since(controller.ExecutionTime))
+
+	return &clientPb.ConfirmResult{Result: true}, nil
 }

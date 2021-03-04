@@ -5,6 +5,10 @@ service Client {
     rpc updateRequest(UpdateRequestsMessage) returns (UpdateResult) {}
     rpc confirmPayment(ConfirmRequestsMessage) returns (ConfirmResult) {}
     rpc directChannelPayment(DirectChannelPaymentMessage) returns (DirectPaymentResult) {}
+
+    rpc crossPaymentPrepareClientRequest(crossPaymentPrepareReqClientMessage) returns (PrepareResult) {}
+    rpc crossPaymentCommitClientRequest(crossPaymentCommitReqClientMessage) returns (CommitResult) {}
+    rpc crossPaymentConfirmClientRequest(crossPaymentConfirmReqClientMessage) returns (ConfirmResult) {}
 }
 
 message AgreeRequestsMessage {
@@ -67,3 +71,44 @@ message DirectPaymentResult{
     bytes replyMessage = 2;
     bytes replySignature = 3;
 }
+
+/*
+ *
+ *
+ * InstaPay 3.0
+ */
+
+message crossPaymentPrepareReqClientMessage {
+    int64 paymentNumber = 1;
+    ChannelPayments channelPayments = 2;
+    bytes originalMessage = 3;
+    bytes signature = 4;
+}
+
+message crossPaymentCommitReqClientMessage{
+    int64 paymentNumber = 1;
+    ChannelPayments channelPayments = 2;
+    bytes originalMessage = 3;
+    bytes signature = 4;
+}
+
+message crossPaymentConfirmReqClientMessage{
+    int64 paymentNumber = 1;
+    bytes originalMessage = 2;
+    bytes signature = 3;
+}
+
+message PrepareResult{
+    int64 paymentNumber = 1;
+    bool result = 2;
+    bytes originalMessage = 3;
+    bytes signature = 4;
+}
+
+message CommitResult{
+    int64 paymentNumber = 1;
+    bool result = 2;
+    bytes originalMessage = 3;
+    bytes signature = 4;
+}
+
