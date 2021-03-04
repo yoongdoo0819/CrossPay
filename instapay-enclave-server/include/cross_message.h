@@ -1,5 +1,5 @@
-#ifndef MESSAGE_H
-#define MESSAGE_H
+#ifndef CROSS_MESSAGE_H
+#define CROSS_MESSAGE_H
 
 #include <vector>
 #include <util.h>
@@ -21,13 +21,11 @@ extern "C" {
 using namespace std;
 
 enum cross_message_type {
-	PAY     = 0,
-    PAID    = 1,
-    PREPARE_REQ  = 2,
-    PREPARE_RES  = 3,
-    COMMIT_RES  = 4,
-    COMMIT_REQ  = 5,  
-    CONFIRM = 6,
+    CROSS_PREPARE_REQ  = 1,
+    CROSS_PREPARE_RES  = 2,
+    CROSS_COMMIT_RES  = 3,
+    CROSS_COMMIT_REQ  = 4,  
+    CROSS_CONFIRM = 5,
 };
 
 typedef struct cross_message {

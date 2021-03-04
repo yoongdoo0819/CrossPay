@@ -271,6 +271,7 @@ unsigned int ecall_cross_verify_ag_res_msg_w(unsigned char *pubaddr, unsigned ch
 {
     unsigned int is_verified;
 
+    printf("CROSS VERIFY AG RES \n");
     ecall_cross_verify_ag_res_msg(global_eid, pubaddr, res_msg, res_sig, &is_verified);
 
     return is_verified;

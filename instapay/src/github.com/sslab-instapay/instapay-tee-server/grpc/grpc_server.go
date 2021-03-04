@@ -354,9 +354,9 @@ type PaymentInformation struct {
 }
 
 /*
- instapay 3.0
-
-*/
+ *
+ *instapay 3.0
+ */
 
 func (s *ServerGrpc) CrossPaymentPrepareRequest(ctx context.Context, rq *pbServer.CrossPaymentPrepareReqMessage) (*pbServer.Result, error) {
 
@@ -509,7 +509,7 @@ func SendCrossAgreementRequest(pn int64, address string, paymentInformation Paym
 	var signature *C.uchar
 
 	fmt.Println("===== CREATE AG REQ MSG START IN ENCLAVE =====")
-	C.ecall_create_ag_req_msg_w(C.uint(pn), C.uint(len(channelSlice)), &channelSlice[0], &amountSlice[0], &originalMessage, &signature)
+	C.ecall_cross_create_ag_req_msg_w(C.uint(pn), C.uint(len(channelSlice)), &channelSlice[0], &amountSlice[0], &originalMessage, &signature)
 	fmt.Println("===== CREATE AG REQ MSG END IN ENCLAVE =====")
 	originalMessageByte, signatureByte := convertPointerToByte(originalMessage, signature)
 
@@ -521,11 +521,13 @@ func SendCrossAgreementRequest(pn int64, address string, paymentInformation Paym
 	log.Println("r.Result : ", r.Result)
 	if r.Result {
 		agreementOriginalMessage, agreementSignature := convertByteToPointer(r.OriginalMessage, r.Signature)
-		C.ecall_verify_ag_res_msg_w(&([]C.uchar(address)[0]), agreementOriginalMessage, agreementSignature)
+		is_verified := C.ecall_cross_verify_ag_res_msg_w(&([]C.uchar(address)[0]), agreementOriginalMessage, agreementSignature)
+		log.Println("is_verified : ", is_verified)
+
 	}
 
 	rwMutex.Lock()
-	C.ecall_update_sentagr_list_w(C.uint(pn), &([]C.uchar(address)[0]))
+	C.ecall_cross_update_sentagr_list_w(C.uint(pn), &([]C.uchar(address)[0]))
 	rwMutex.Unlock()
 
 	return
@@ -555,7 +557,7 @@ func SendCrossUpdateRequest(pn int64, address string, paymentInformation Payment
 	var signature *C.uchar
 
 	log.Println("===== SendCrossUpdateRequest =====")
-	C.ecall_create_ud_req_msg_w(C.uint(pn), C.uint(len(channelSlice)), &channelSlice[0], &amountSlice[0], &originalMessage, &signature)
+	C.ecall_cross_create_ud_req_msg_w(C.uint(pn), C.uint(len(channelSlice)), &channelSlice[0], &amountSlice[0], &originalMessage, &signature)
 
 	originalMessageByte, signatureByte := convertPointerToByte(originalMessage, signature)
 
@@ -572,12 +574,12 @@ func SendCrossUpdateRequest(pn int64, address string, paymentInformation Payment
 
 	if r.Result {
 		updateOriginalMessage, updateSignature := convertByteToPointer(r.OriginalMessage, r.Signature)
-		C.ecall_verify_ud_res_msg_w(&([]C.uchar(address)[0]), updateOriginalMessage, updateSignature)
+		C.ecall_cross_verify_ud_res_msg_w(&([]C.uchar(address)[0]), updateOriginalMessage, updateSignature)
 	}
 
 	log.Println("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$")
 	rwMutex.Lock()
-	C.ecall_update_sentupt_list_w(C.uint(pn), &([]C.uchar(address))[0])
+	C.ecall_cross_update_sentupt_list_w(C.uint(pn), &([]C.uchar(address))[0])
 	rwMutex.Unlock()
 
 	return
@@ -601,7 +603,7 @@ func SendCrossConfirmPayment(pn int, address string) {
 
 	var originalMessage *C.uchar
 	var signature *C.uchar
-	C.ecall_create_confirm_msg_w(C.uint(int32(pn)), &originalMessage, &signature)
+	C.ecall_cross_create_confirm_msg_w(C.uint(int32(pn)), &originalMessage, &signature)
 
 	originalMessageByte, signatureByte := convertPointerToByte(originalMessage, signature)
 
@@ -620,7 +622,7 @@ func WrapperCrossAgreementRequest(pn int64, p []string, paymentInformation map[s
 		go SendCrossAgreementRequest(pn, address, paymentInformation[address])
 	}
 
-	for C.ecall_check_unanimity_w(C.uint(pn), C.int(0)) != 1 {
+	for C.ecall_cross_check_unanimity_w(C.uint(pn), C.int(0)) != 1 {
 	}
 
 	fmt.Println("[ALARM] ALL USERS AGREED")
@@ -650,7 +652,7 @@ func WrapperCrossUpdateRequest(pn int64, p []string, paymentInformation map[stri
 	}
 
 	fmt.Println("pn : ", pn)
-	for C.ecall_check_unanimity_w(C.uint(pn), C.int(1)) != 1 {
+	for C.ecall_cross_check_unanimity_w(C.uint(pn), C.int(1)) != 1 {
 	}
 
 	fmt.Println("[ALARM] ALL USERS UPDATED")
@@ -660,7 +662,7 @@ func WrapperCrossUpdateRequest(pn int64, p []string, paymentInformation map[stri
 
 func WrapperCrossConfirmPayment(pn int, p []string) {
 	/* update payment's status */
-	C.ecall_update_payment_status_to_success_w(C.uint(pn))
+	C.ecall_cross_update_payment_status_to_success_w(C.uint(pn))
 
 	for _, address := range p {
 		go SendCrossConfirmPayment(pn, address)

@@ -52,12 +52,6 @@ void ecall_update_sentupt_list_w(unsigned int payment_num, unsigned char *addr);
 int ecall_check_unanimity_w(unsigned int payment_num, int which_list);
 void ecall_update_payment_status_to_success_w(unsigned int payment_num);
 
-/* instapay 3.0 */
-void ecall_cross_accept_request_w(unsigned char *sender, unsigned char *receiver, unsigned int amount, unsigned int payment_num);
-void ecall_cross_add_participant_w(unsigned int payment_num, unsigned char *addr);
-void ecall_cross_update_sentagr_list_w(unsigned int payment_num, unsigned char *addr);
-
-
 /** 서버의 agreement request 메시지와 서명을 생성
  *
  * Out:     original_msg:   생성된 메시지의 plain text 주소
@@ -109,6 +103,26 @@ unsigned int ecall_verify_ag_res_msg_w(unsigned char *pubaddr, unsigned char *re
  *          res_sig:   클라이언트의 agreement response 메시지의 signature 주소
  */
 unsigned int ecall_verify_ud_res_msg_w(unsigned char *pubaddr, unsigned char *res_msg, unsigned char *res_sig);
+
+
+/* instapay 3.0 */
+void ecall_cross_accept_request_w(unsigned char *sender, unsigned char *receiver, unsigned int amount, unsigned int payment_num);
+void ecall_cross_add_participant_w(unsigned int payment_num, unsigned char *addr);
+void ecall_cross_update_sentagr_list_w(unsigned int payment_num, unsigned char *addr);
+
+void ecall_cross_update_sentupt_list_w(unsigned int payment_num, unsigned char *addr);
+int ecall_cross_check_unanimity_w(unsigned int payment_num, int which_list);
+void ecall_cross_update_payment_status_to_success_w(unsigned int payment_num);
+
+void ecall_cross_create_ag_req_msg_w(unsigned int payment_num, unsigned int payment_size, unsigned int *channel_ids, int *amount, unsigned char **original_msg, unsigned char **output);
+
+void ecall_cross_create_ud_req_msg_w(unsigned int payment_num, unsigned int payment_size, unsigned int *channel_ids, int *amount, unsigned char **original_msg, unsigned char **output);
+
+void ecall_cross_create_confirm_msg_w(unsigned int payment_num, unsigned char **original_msg, unsigned char **output);
+
+unsigned int ecall_cross_verify_ag_res_msg_w(unsigned char *pubaddr, unsigned char *res_msg, unsigned char *res_sig);
+unsigned int ecall_cross_verify_ud_res_msg_w(unsigned char *pubaddr, unsigned char *res_msg, unsigned char *res_sig);
+
 
 #if defined(__cplusplus)
 }
