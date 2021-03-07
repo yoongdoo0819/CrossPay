@@ -381,7 +381,7 @@ void ecall_cross_go_idle(unsigned char *msg, unsigned char *signature)
 
     /* step 2. check that message type is 'UD_REQ' */
 
-    if(confirm->type != CROSS_CONFIRM)
+    if(confirm->type != CROSS_CONFIRM_REQ)
         return;
 
     /* step 3. complete payment */

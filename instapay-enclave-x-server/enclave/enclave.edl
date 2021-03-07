@@ -67,6 +67,29 @@ enclave {
             [user_check] unsigned char *res_msg,
             [user_check] unsigned char *res_sig,
             [user_check] unsigned int *is_verified);
-        
+
+        /*
+         *
+         *
+         * InstaPay 3.0
+         */
+
+        public void ecall_cross_create_all_prepare_req_msg(
+            unsigned int payment_num, 
+            [user_check] unsigned char *req_msg, 
+            [user_check] unsigned char *req_sig);
+
+        public void ecall_cross_create_all_commit_req_msg(
+            unsigned int payment_num,
+            unsigned int payment_size,
+            [user_check] unsigned int *channel_ids,
+            [user_check] int *amount,
+            [user_check] unsigned char *req_msg,
+            [user_check] unsigned char *req_sig);
+
+        public void ecall_cross_create_all_confirm_req_msg(
+            unsigned int payment_num,
+            [user_check] unsigned char *confirm_msg,
+            [user_check] unsigned char *confirm_sig);
     };
 };

@@ -124,6 +124,10 @@ void ecall_cross_create_confirm_msg_w(unsigned int payment_num, unsigned char **
 unsigned int ecall_cross_verify_ag_res_msg_w(unsigned char *pubaddr, unsigned char *res_msg, unsigned char *res_sig);
 unsigned int ecall_cross_verify_ud_res_msg_w(unsigned char *pubaddr, unsigned char *res_msg, unsigned char *res_sig);
 
+unsigned int ecall_cross_create_all_prepare_msg_w(unsigned char *msg, unsigned char *signature);
+void ecall_cross_create_prepare_msg_w(unsigned int payment_num, unsigned int payment_size, unsigned int *channel_ids, int *amount, unsigned char **original_msg, unsigned char **output);
+void ecall_cross_create_all_prepared_msg_w(unsigned int payment_num, unsigned char **original_msg, unsigned char **output);
+
 
 
 #if defined(__cplusplus)

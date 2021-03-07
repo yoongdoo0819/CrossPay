@@ -140,3 +140,54 @@ unsigned int ecall_verify_ud_res_msg_w(unsigned char *pubaddr, unsigned char *re
 
     return is_verified;
 }
+
+/*
+ *
+ *
+ * InstaPay 3.0
+ */
+
+void ecall_cross_create_all_prepare_req_msg_w(unsigned int payment_num, unsigned char **original_msg, unsigned char **output)
+{
+    unsigned char *req_msg = new unsigned char[sizeof(message)];
+    unsigned char *req_sig = new unsigned char[65];
+
+    memset(req_msg, 0x00, sizeof(message));
+    memset(req_sig, 0x00, 65);
+
+    ecall_cross_create_all_prepare_req_msg(global_eid, payment_num, req_msg, req_sig);
+
+    *original_msg = req_msg;
+    *output = req_sig;
+}
+
+
+void ecall_cross_create_all_commit_req_msg_w(unsigned int payment_num, unsigned int payment_size, unsigned int *channel_ids, int *amount, unsigned char **original_msg, unsigned char **output)
+{
+    unsigned char *req_msg = new unsigned char[sizeof(message)];
+    unsigned char *req_sig = new unsigned char[65];
+
+    memset(req_msg, 0x00, sizeof(message));
+    memset(req_sig, 0x00, 65);
+
+    ecall_cross_create_all_commit_req_msg(global_eid, payment_num, payment_size, channel_ids, amount, req_msg, req_sig);
+
+    *original_msg = req_msg;
+    *output = req_sig;
+}
+
+
+void ecall_cross_create_all_confirm_req_msg_w(unsigned int payment_num, unsigned char **original_msg, unsigned char **output)
+{
+    unsigned char *confirm_msg = new unsigned char[sizeof(message)];
+    unsigned char *confirm_sig = new unsigned char[65];
+
+    memset(confirm_msg, 0x00, sizeof(message));
+    memset(confirm_sig, 0x00, 65);
+
+    ecall_cross_create_all_confirm_req_msg(global_eid, payment_num, confirm_msg, confirm_sig);
+
+    *original_msg = confirm_msg;
+    *output = confirm_sig;
+}
+

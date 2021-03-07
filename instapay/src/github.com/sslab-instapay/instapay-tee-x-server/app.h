@@ -104,6 +104,16 @@ unsigned int ecall_verify_ag_res_msg_w(unsigned char *pubaddr, unsigned char *re
  */
 unsigned int ecall_verify_ud_res_msg_w(unsigned char *pubaddr, unsigned char *res_msg, unsigned char *res_sig);
 
+
+/*
+ *
+ *
+ * InstaPay 3.0
+ */
+void ecall_cross_create_all_prepare_req_msg_w(unsigned int payment_num, unsigned char **original_msg, unsigned char **output);
+
+
+
 #if defined(__cplusplus)
 }
 #endif

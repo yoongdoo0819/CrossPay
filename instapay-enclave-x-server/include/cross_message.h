@@ -21,7 +21,7 @@ extern "C" {
 using namespace std;
 
 enum cross_message_type {
-
+    
     CROSS_ALL_PREPARE_REQ = 1,
     CROSS_PREPARE_REQ     = 2,
     CROSS_PREPARE_RES     = 3,

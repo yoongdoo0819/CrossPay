@@ -12,6 +12,8 @@ import (
 	"context"
 	"net/http"
 	"time"
+	"unsafe"
+	"reflect"
 
 	"github.com/gin-gonic/gin"
 	"github.com/sslab-instapay/instapay-tee-x-server/config"
@@ -127,6 +129,14 @@ func CrossPaymentToServerChannelHandler(ctx *gin.Context) {
 
 	PaymentNum := C.ecall_accept_request_w(&chain1Sender[0], &chain1Receiver[0], C.uint(chain1Val))
 
+	var originalMessage *C.uchar
+	var signature *C.uchar
+
+	fmt.Println("===== CREATE CROSS ALL PREPARE MSG START =====")
+	C.ecall_cross_create_all_prepare_req_msg_w(C.uint(PaymentNum), &originalMessage, &signature)
+	fmt.Println("===== CREATE CROSS ALL PREPARE MSG END =====")
+
+
 	log.Println("pn : ", PaymentNum)
 	log.Println("chain1 server : ", config.EthereumConfig["chain1ServerGrpcHost"] + ":" + config.EthereumConfig["chain1ServerGrpcPort"])
 
@@ -155,7 +165,8 @@ func CrossPaymentToServerChannelHandler(ctx *gin.Context) {
 	//client2Context, cancel := context.WithTimeout(context.Background(), time.Second)
 	//defer cancel()
 
-	r, err := client1.CrossPaymentPrepareRequest(client1Context, &serverPb.CrossPaymentPrepareReqMessage{Pn: int64(PaymentNum), From : chain1From, To : chain1To, Amount: int64(chain1Val)})
+	originalMessageByte, signatureByte := convertPointerToByte(originalMessage, signature)
+	r, err := client1.CrossPaymentPrepareRequest(client1Context, &serverPb.CrossPaymentPrepareReqMessage{Pn: int64(PaymentNum), From : chain1From, To : chain1To, Amount: int64(chain1Val), OriginalMessage: originalMessageByte, Signature: signatureByte})
 	if err != nil {
 		log.Println(err)
 		ctx.JSON(http.StatusBadRequest, gin.H{"message":err})
@@ -166,7 +177,54 @@ func CrossPaymentToServerChannelHandler(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{"message":"Cross-Payment" })
 }
 
+func convertByteToPointer(originalMsg []byte, signature []byte) (*C.uchar, *C.uchar) {
 
+	log.Println("----- convertByteToPointer Server Start -----")
+	var uOriginal [44]C.uchar
+	var uSignature [65]C.uchar
 
+	for i := 0; i < 44; i++ {
+		uOriginal[i] = C.uchar(originalMsg[i])
+	}
+
+	for i := 0; i < 65; i++ {
+		uSignature[i] = C.uchar(signature[i])
+	}
+
+	cOriginalMsg := (*C.uchar)(unsafe.Pointer(&uOriginal[0]))
+	cSignature := (*C.uchar)(unsafe.Pointer(&uSignature[0]))
+
+	return cOriginalMsg, cSignature
+}
+
+func convertPointerToByte(originalMsg *C.uchar, signature *C.uchar) ([]byte, []byte) {
+
+	var returnMsg []byte
+	var returnSignature []byte
+
+	replyMsgHdr := reflect.SliceHeader{
+		Data: uintptr(unsafe.Pointer(originalMsg)),
+		Len:  int(44),
+		Cap:  int(44),
+	}
+	replyMsgS := *(*[]C.uchar)(unsafe.Pointer(&replyMsgHdr))
+
+	replySigHdr := reflect.SliceHeader{
+		Data: uintptr(unsafe.Pointer(signature)),
+		Len:  int(65),
+		Cap:  int(65),
+	}
+	replySigS := *(*[]C.uchar)(unsafe.Pointer(&replySigHdr))
+
+	for i := 0; i < 44; i++ {
+		returnMsg = append(returnMsg, byte(replyMsgS[i]))
+	}
+
+	for i := 0; i < 65; i++ {
+		returnSignature = append(returnSignature, byte(replySigS[i]))
+	}
+
+	return returnMsg, returnSignature
+}
 
 

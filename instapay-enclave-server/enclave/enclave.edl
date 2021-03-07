@@ -128,5 +128,32 @@ enclave {
             [user_check] unsigned char *res_sig,
             [user_check] unsigned int *is_verified);
 
+        public void ecall_cross_create_all_prepare_msg(
+            [user_check] unsigned char *msg,
+            [user_check] unsigned char *signature,
+            [user_check] unsigned int *is_verified);
+
+        public void ecall_cross_create_prepare_msg(
+            unsigned int payment_num,
+            unsigned int payment_size,
+            [user_check] unsigned int *channel_ids,
+            [user_check] int *amount,
+            [user_check] unsigned char *req_msg,
+            [user_check] unsigned char *req_sig);
+
+        public void ecall_cross_create_all_prepared_msg(
+            unsigned int payment_num, 
+            [user_check] unsigned char *res_msg, 
+            [user_check] unsigned char *res_sig);
+
+
+
+/*
+        public void ecall_cross_create_all_prepare_msg(
+            [user_check] unsigned char *msg, 
+            [user_check] unsigned char *signature,
+            [user_check] unsigned int *is_verified);
+*/
+
     };
 };

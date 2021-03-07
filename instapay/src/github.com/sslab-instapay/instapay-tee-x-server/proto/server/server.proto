@@ -33,6 +33,8 @@ message crossPaymentPrepareReqMessage {
     string from = 2;
     string to = 3;
     int64 amount = 4;
+    bytes originalMessage = 5;
+    bytes signature = 6;
 }
 
 message crossPaymentCommitReqMessage {
@@ -40,6 +42,8 @@ message crossPaymentCommitReqMessage {
     string from = 2;
     string to = 3;
     int64 amount = 4;
+    bytes originalMessage = 5;
+    bytes signature = 6;
 }
 
 

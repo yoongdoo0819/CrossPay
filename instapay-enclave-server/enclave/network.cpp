@@ -285,7 +285,7 @@ void ecall_cross_create_confirm_msg(unsigned int payment_num, unsigned char *con
 
     /* create payment confirm message */
 
-    confirm.type = CROSS_CONFIRM;
+    confirm.type = CROSS_CONFIRM_REQ;
     confirm.payment_num = payment_num;
 
     sign_message((unsigned char*)&confirm, sizeof(Message), seckey, confirm_signature);
@@ -349,3 +349,129 @@ void ecall_cross_verify_ud_res_msg(unsigned char *pubaddr, unsigned char *res_ms
     *is_verified = 1;
     return;
 }
+
+
+void ecall_cross_create_all_prepare_msg(unsigned char *msg, unsigned char *signature, unsigned int *is_verified)
+{
+	
+     Cross_Message * all_prepare_req = (Cross_Message*)msg;
+
+     if(verify_message(1, signature, msg, sizeof(Cross_Message), NULL))
+     {
+	*is_verified = 0;
+	return; 
+     }
+
+     if(all_prepare_req->type != CROSS_ALL_PREPARE_REQ)
+     {
+	*is_verified = 0;
+	return;
+     }
+
+     *is_verified = 1;
+     return;
+}
+
+void ecall_cross_create_all_prepared_msg(unsigned int payment_num, unsigned char *res_msg, unsigned char *res_sig)
+{
+    unsigned char res_signature[65] = {0, };
+    unsigned char *seckey_arr = (unsigned char*)"5a5e2194e0639fd017158793812dd5f5668f5bfc9a146f93f39237a4b4ed7dd5";
+    unsigned char *seckey = ::arr_to_bytes(seckey_arr, 64);
+
+    Cross_Message response;
+
+    memset((unsigned char*)&response, 0x00, sizeof(Cross_Message));
+
+    /* create agreement request message */
+
+    response.type = CROSS_ALL_PREPARED;
+    response.payment_num = payment_num;
+    //request.payment_size = payment_size;
+    //memcpy(request.channel_ids, channel_ids, sizeof(unsigned int) * payment_size);
+    //memcpy(request.payment_amount, amount, sizeof(int) * payment_size);
+
+    sign_message((unsigned char*)&response, sizeof(Cross_Message), seckey, res_signature);
+
+    memcpy(res_msg, (unsigned char*)&response, sizeof(Cross_Message));
+    memcpy(res_sig, res_signature, 65);
+
+    return;
+}
+
+
+void ecall_cross_create_prepare_msg(unsigned int payment_num, unsigned int payment_size, unsigned int *channel_ids, int *amount, unsigned char *req_msg, unsigned char *req_sig)
+{
+    unsigned char req_signature[65] = {0, };
+    unsigned char *seckey_arr = (unsigned char*)"5a5e2194e0639fd017158793812dd5f5668f5bfc9a146f93f39237a4b4ed7dd5";
+    unsigned char *seckey = ::arr_to_bytes(seckey_arr, 64);
+
+    Cross_Message request;
+
+    memset((unsigned char*)&request, 0x00, sizeof(Cross_Message));
+
+    /* create agreement request message */
+
+    request.type = CROSS_PREPARE_REQ;
+    request.payment_num = payment_num;
+    request.payment_size = payment_size;
+    memcpy(request.channel_ids, channel_ids, sizeof(unsigned int) * payment_size);
+    memcpy(request.payment_amount, amount, sizeof(int) * payment_size);
+
+    sign_message((unsigned char*)&request, sizeof(Cross_Message), seckey, req_signature);
+
+    memcpy(req_msg, (unsigned char*)&request, sizeof(Cross_Message));
+    memcpy(req_sig, req_signature, 65);
+
+    return;
+}
+
+
+
+/*void ecall_cross_create_all_prepare_msg(unsigned char *msg, unsigned char *signature, unsigned char* is_verified)
+{
+	
+	Cross_Message * all_prepare_req = (Cross_Message*)msg;
+
+	if(verify_message(1, signature, msg, sizeof(Cross_Message), NULL))
+	{
+		*is_verified = 0;
+		return; 
+	}
+
+	if(all_prepare_req->type != CROSS_ALL_PREPARE_REQ)
+	{
+		*is_verified = 0;
+		return;
+	}
+
+	*is_verified = 1;
+	return;
+}
+*/
+
+/*
+void ecall_cross_create_all_commit_msg(unsigned int payment_num, unsigned int payment_size, unsigned int *channel_ids, int *amount, unsigned char *req_msg, unsigned char *req_sig)
+{
+    unsigned char req_signature[65] = {0, };
+    unsigned char *seckey_arr = (unsigned char*)"5a5e2194e0639fd017158793812dd5f5668f5bfc9a146f93f39237a4b4ed7dd5";
+    unsigned char *seckey = ::arr_to_bytes(seckey_arr, 64);
+
+    Cross_Message request;
+
+    memset((unsigned char*)&request, 0x00, sizeof(Cross_Message));
+
+    // create update request message 
+
+    request.type = CROSS_ALL_COMMITTED;
+    request.payment_num = payment_num;
+    request.payment_size = payment_size;
+    memcpy(request.channel_ids, channel_ids, sizeof(unsigned int) * payment_size);
+    memcpy(request.payment_amount, amount, sizeof(int) * payment_size);
+
+    sign_message((unsigned char*)&request, sizeof(Cross_Message), seckey, req_signature);
+
+    memcpy(req_msg, (unsigned char*)&request, sizeof(Cross_Message));
+    memcpy(req_sig, req_signature, 65);
+
+    return;
+}*/

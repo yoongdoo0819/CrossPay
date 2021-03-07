@@ -203,37 +203,6 @@ void ecall_cross_create_ag_req_msg_w(unsigned int payment_num, unsigned int paym
 
     *original_msg = req_msg;
     *output = req_sig;
-
-    // printf("====== GENERATED AGREEMENT REQUEST MESSAGE ======\n");
-    // printf("payment number: %d\n", payment_num);
-    // printf("payment size: %d\n", payment_size);
-    // printf("channel ids: ");
-    // for(int i = 0; i < payment_size; i++)
-    //     printf("%d ", channel_ids[i]);
-    // printf("\n");
-    // printf("amounts: ");
-    // for(int i = 0; i < payment_size; i++)
-    //     printf("%d ", amount[i]);
-    // printf("\n");
-    // printf("=================================================\n");
-
-    // message *m = (message*)req_msg;
-    // printf("===== AGREEMENT REQUEST MESSAGE BYTESTREAM ======\n");
-    // printf("type: %d\n", m->type);
-    // printf("channel_id: %d\n", m->channel_id);
-    // printf("amount: %d\n", m->amount);
-    // printf("counter: %d\n", m->counter);
-    // printf("payment number: %d\n", m->payment_num);
-    // printf("payment size: %d\n", m->payment_size);
-    // printf("channel ids: ");
-    // for(int i = 0; i < m->payment_size; i++)
-    //     printf("%d ", m->channel_ids[i]);
-    // printf("\n");
-    // printf("amounts: ");
-    // for(int i = 0; i < m->payment_size; i++)
-    //     printf("%d ", m->payment_amount[i]);
-    // printf("\n");
-    // printf("=================================================\n");
 }
 
 
@@ -286,3 +255,52 @@ unsigned int ecall_cross_verify_ud_res_msg_w(unsigned char *pubaddr, unsigned ch
 
     return is_verified;
 }
+
+unsigned int ecall_cross_create_all_prepare_msg_w(unsigned char *msg, unsigned char *signature)
+{
+    unsigned int is_verified;
+
+    ecall_cross_create_all_prepare_msg(global_eid, msg, signature, &is_verified);
+
+    return is_verified;
+}
+/*
+unsigned int ecall_cross_create_all_prepare_msg_w(unsigned char *msg, unsigned char* signature)
+{
+
+    unsigned int is_verified;
+    
+    ecall_cross_create_all_prepare_msg(global_eid, msg, signature, &is_verified);
+    return is_verified;
+}
+*/
+
+void ecall_cross_create_prepare_msg_w(unsigned int payment_num, unsigned int payment_size, unsigned int *channel_ids, int *amount, unsigned char **original_msg, unsigned char **output)
+{
+    unsigned char *req_msg = new unsigned char[sizeof(message)];
+    unsigned char *req_sig = new unsigned char[65];
+
+    memset(req_msg, 0x00, sizeof(message));
+    memset(req_sig, 0x00, 65);
+
+    ecall_cross_create_prepare_msg(global_eid, payment_num, payment_size, channel_ids, amount, req_msg, req_sig);
+
+    *original_msg = req_msg;
+    *output = req_sig;
+}
+
+void ecall_cross_create_all_prepared_msg_w(unsigned int payment_num, unsigned char **original_msg, unsigned char **output)
+{
+    unsigned char *res_msg = new unsigned char[sizeof(message)];
+    unsigned char *res_sig = new unsigned char[65];
+
+    memset(res_msg, 0x00, sizeof(message));
+    memset(res_sig, 0x00, 65);
+
+    ecall_cross_create_all_prepared_msg(global_eid, payment_num, res_msg, res_sig);
+
+    *original_msg = res_msg;
+    *output = res_sig;
+
+}
+

@@ -377,7 +377,10 @@ func (s *ServerGrpc) CrossPaymentPrepareRequest(ctx context.Context, rq *pbServe
 	log.Println("amount : ", amount)
 	log.Println("pn : ", PaymentNum)
 
+	convertedOriginalMsg, convertedSignatureMsg := convertByteToPointer(rq.OriginalMessage, rq.Signature)
 
+	result := C.ecall_cross_create_all_prepare_msg_w(convertedOriginalMsg, convertedSignatureMsg)
+	fmt.Println("all_prepare msg : ", result)
 	C.ecall_cross_accept_request_w(&sender[0], &receiver[0], C.uint(amount), C.uint(PaymentNum))
 	p, paymentInformation := SearchPath(int64(PaymentNum), amount)
 
@@ -625,6 +628,18 @@ func WrapperCrossAgreementRequest(pn int64, p []string, paymentInformation map[s
 	for C.ecall_cross_check_unanimity_w(C.uint(pn), C.int(0)) != 1 {
 	}
 
+	// C.ecall_cross_all_prepared_msg_w(C.uint(pn))
+//	var originalMessage *C.uchar
+//	var signature *C.uchar
+
+	fmt.Println("===== CREATE CROSS ALL PREPARED MSG START IN ENCLAVE =====")
+	var originalMessage *C.uchar
+	var signature *C.uchar
+	C.ecall_cross_create_all_prepared_msg_w(C.uint(pn), &originalMessage, &signature)
+	fmt.Println("===== CREATE CROSS ALL PREPARED MSG END IN ENCLAVE =====")
+	originalMessageByte, signatureByte := convertPointerToByte(originalMessage, signature)
+	//originalMessageByte, signatureByte := convertPointerToByte(originalMessage, signature)
+
 	fmt.Println("[ALARM] ALL USERS AGREED")
 
 	connectionForXServer, err := grpc.Dial("141.223.121.164:50009", grpc.WithInsecure())
@@ -637,7 +652,7 @@ func WrapperCrossAgreementRequest(pn int64, p []string, paymentInformation map[s
 	XServerContext, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
 
-	r, err := XServer.CrossPaymentPrepared(XServerContext, &pbXServer.CrossPaymentPrepareResMessage{Pn: pn, Result: true})
+	r, err := XServer.CrossPaymentPrepared(XServerContext, &pbXServer.CrossPaymentPrepareResMessage{Pn: pn, OriginalMessage: originalMessageByte, Signature: signatureByte, Result: true})
 	if err != nil {
 		return
 	}

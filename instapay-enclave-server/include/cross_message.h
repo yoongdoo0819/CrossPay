@@ -21,11 +21,19 @@ extern "C" {
 using namespace std;
 
 enum cross_message_type {
-    CROSS_PREPARE_REQ  = 1,
-    CROSS_PREPARE_RES  = 2,
-    CROSS_COMMIT_RES  = 3,
-    CROSS_COMMIT_REQ  = 4,  
-    CROSS_CONFIRM = 5,
+
+    CROSS_ALL_PREPARE_REQ = 1,
+    CROSS_PREPARE_REQ     = 2,
+    CROSS_PREPARE_RES     = 3,
+    CROSS_ALL_PREPARED    = 4,
+
+    CROSS_ALL_COMMIT_RES  = 5,
+    CROSS_COMMIT_REQ      = 6, 
+    CROSS_COMMIT_RES      = 7,
+    CROSS_ALL_COMMITTED   = 8,
+
+    CROSS_ALL_CONFIRM_REQ = 9,
+    CROSS_CONFIRM_REQ     = 10,
 };
 
 typedef struct cross_message {
