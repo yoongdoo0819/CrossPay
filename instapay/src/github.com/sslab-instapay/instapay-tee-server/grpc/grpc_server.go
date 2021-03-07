@@ -379,8 +379,8 @@ func (s *ServerGrpc) CrossPaymentPrepareRequest(ctx context.Context, rq *pbServe
 
 	convertedOriginalMsg, convertedSignatureMsg := convertByteToPointer(rq.OriginalMessage, rq.Signature)
 
-	result := C.ecall_cross_create_all_prepare_msg_w(convertedOriginalMsg, convertedSignatureMsg)
-	fmt.Println("all_prepare msg : ", result)
+	is_verified := C.ecall_cross_create_all_prepare_msg_w(convertedOriginalMsg, convertedSignatureMsg)
+	fmt.Println("all prepare msg : ", is_verified)
 	C.ecall_cross_accept_request_w(&sender[0], &receiver[0], C.uint(amount), C.uint(PaymentNum))
 	p, paymentInformation := SearchPath(int64(PaymentNum), amount)
 
@@ -437,6 +437,12 @@ func (s *ServerGrpc) CrossPaymentCommitRequest(ctx context.Context, rq *pbServer
 	//sender := []C.uchar(from)
 	//receiver := []C.uchar(to)
 
+	convertedOriginalMsg, convertedSignatureMsg := convertByteToPointer(rq.OriginalMessage, rq.Signature)
+
+	is_verified := C.ecall_cross_create_all_commit_msg_w(convertedOriginalMsg, convertedSignatureMsg)
+	fmt.Println("all commit msg : ", is_verified)
+	log.Println("all commit msg : ", is_verified)
+
 	//PaymentNum := C.ecall_accept_request_w(&sender[0], &receiver[0], C.uint(amount))
 	p, paymentInformation := SearchPath(pn, amount)
 
@@ -471,6 +477,35 @@ func (s *ServerGrpc) CrossPaymentCommitRequest(ctx context.Context, rq *pbServer
 */
 	log.Println("===== Cross Payment Commit End =====")
 
+	return &pbServer.Result{Result: true}, nil
+}
+
+func (s *ServerGrpc) CrossPaymentConfirmRequest(ctx context.Context, rq *pbServer.CrossPaymentConfirmReqMessage) (*pbServer.Result, error) {
+
+
+	log.Println("===== Cross Payment Confirm Start =====")
+
+	//from := rq.From
+	//to := rq.To
+	pn := rq.Pn
+	amount := rq.Amount
+	log.Println("pn : ", pn)
+	log.Println("amount : ", amount)
+	//sender := []C.uchar(from)
+	//receiver := []C.uchar(to)
+
+	convertedOriginalMsg, convertedSignatureMsg := convertByteToPointer(rq.OriginalMessage, rq.Signature)
+
+	is_verified := C.ecall_cross_create_all_confirm_msg_w(convertedOriginalMsg, convertedSignatureMsg)
+	fmt.Println("all confirm msg : ", is_verified)
+
+	//PaymentNum := C.ecall_accept_request_w(&sender[0], &receiver[0], C.uint(amount))
+	p, _ := SearchPath(pn, amount)
+	
+	go WrapperCrossConfirmPayment(int(pn), p)
+	//go WrapperCrossUpdateRequest(pn, p, paymentInformation)
+	
+	log.Println("===== Cross Payment Confirm End =====")
 	return &pbServer.Result{Result: true}, nil
 }
 
@@ -575,14 +610,19 @@ func SendCrossUpdateRequest(pn int64, address string, paymentInformation Payment
 		log.Fatal(err)
 	}
 
+	log.Println("r result : ", r.GetResult())
+	/*
 	if r.Result {
 		updateOriginalMessage, updateSignature := convertByteToPointer(r.OriginalMessage, r.Signature)
 		C.ecall_cross_verify_ud_res_msg_w(&([]C.uchar(address)[0]), updateOriginalMessage, updateSignature)
 	}
+	*/
 
 	log.Println("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$")
 	rwMutex.Lock()
+	log.Println("===== Mutex START =====")
 	C.ecall_cross_update_sentupt_list_w(C.uint(pn), &([]C.uchar(address))[0])
+	log.Println("===== Mutex END =====")
 	rwMutex.Unlock()
 
 	return
@@ -631,6 +671,7 @@ func WrapperCrossAgreementRequest(pn int64, p []string, paymentInformation map[s
 	// C.ecall_cross_all_prepared_msg_w(C.uint(pn))
 //	var originalMessage *C.uchar
 //	var signature *C.uchar
+	fmt.Println("[ALARM] ALL USERS AGREED")
 
 	fmt.Println("===== CREATE CROSS ALL PREPARED MSG START IN ENCLAVE =====")
 	var originalMessage *C.uchar
@@ -639,8 +680,6 @@ func WrapperCrossAgreementRequest(pn int64, p []string, paymentInformation map[s
 	fmt.Println("===== CREATE CROSS ALL PREPARED MSG END IN ENCLAVE =====")
 	originalMessageByte, signatureByte := convertPointerToByte(originalMessage, signature)
 	//originalMessageByte, signatureByte := convertPointerToByte(originalMessage, signature)
-
-	fmt.Println("[ALARM] ALL USERS AGREED")
 
 	connectionForXServer, err := grpc.Dial("141.223.121.164:50009", grpc.WithInsecure())
 	if err != nil {
@@ -671,7 +710,32 @@ func WrapperCrossUpdateRequest(pn int64, p []string, paymentInformation map[stri
 	}
 
 	fmt.Println("[ALARM] ALL USERS UPDATED")
+/*
+	fmt.Println("===== CREATE CROSS ALL COMMITTED MSG START IN ENCLAVE =====")
+	var originalMessage *C.uchar
+	var signature *C.uchar
+	C.ecall_cross_create_all_committed_msg_w(C.uint(pn), &originalMessage, &signature)
+	fmt.Println("===== CREATE CROSS ALL COMMITTED MSG END IN ENCLAVE =====")
+	originalMessageByte, signatureByte := convertPointerToByte(originalMessage, signature)
+	//originalMessageByte, signatureByte := convertPointerToByte(originalMessage, signature)
 
+	connectionForXServer, err := grpc.Dial("141.223.121.164:50009", grpc.WithInsecure())
+	if err != nil {
+		log.Fatal("conn err : ", err)
+	}
+	defer connectionForXServer.Close()
+
+	XServer := pbXServer.NewCross_ServerClient(connectionForXServer)
+	XServerContext, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
+
+	r, err := XServer.CrossPaymentCommitted(XServerContext, &pbXServer.CrossPaymentCommitResMessage{Pn: pn, OriginalMessage: originalMessageByte, Signature: signatureByte, Result: true})
+	if err != nil {
+		return
+	}
+
+	log.Println(r.GetResult())
+*/
 	go WrapperCrossConfirmPayment(int(pn), p)
 }
 

@@ -147,7 +147,7 @@ func (s *ClientGrpc) CrossPaymentPrepareClientRequest(ctx context.Context, in *c
 
 	var originalMsg *C.uchar
 	var signature *C.uchar
-	C.ecall_go_pre_update_w(convertedOriginalMsg, convertedSignatureMsg, &originalMsg, &signature)
+	C.ecall_cross_go_pre_update_w(convertedOriginalMsg, convertedSignatureMsg, &originalMsg, &signature)
 
 	originalMessageStr, signatureStr := convertPointerToByte(originalMsg, signature)
 
@@ -161,7 +161,7 @@ func (s *ClientGrpc) CrossPaymentCommitClientRequest(ctx context.Context, in *cl
 
 	var originalMsg *C.uchar
 	var signature *C.uchar
-	C.ecall_go_post_update_w(convertedOriginalMsg, convertedSignatureMsg, &originalMsg, &signature)
+	C.ecall_cross_go_post_update_w(convertedOriginalMsg, convertedSignatureMsg, &originalMsg, &signature)
 
 	originalMessageStr, signatureStr := convertPointerToByte(originalMsg, signature)
 
@@ -172,7 +172,7 @@ func (s *ClientGrpc) CrossPaymentConfirmClientRequest(ctx context.Context, in *c
 	log.Println("----ConfirmPayment Request Receive----")
 
 	convertedOriginalMsg, convertedSignatureMsg := convertByteToPointer(in.OriginalMessage, in.Signature)
-	C.ecall_go_idle_w(convertedOriginalMsg, convertedSignatureMsg)
+	C.ecall_cross_go_idle_w(convertedOriginalMsg, convertedSignatureMsg)
 	log.Println("----ConfirmPayment Request End----")
 
 	// fmt.Println(C.ecall_get_balance_w(C.uint(1)))

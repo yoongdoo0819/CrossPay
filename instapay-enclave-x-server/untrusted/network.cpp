@@ -161,8 +161,15 @@ void ecall_cross_create_all_prepare_req_msg_w(unsigned int payment_num, unsigned
     *output = req_sig;
 }
 
+unsigned int ecall_cross_verify_all_prepared_res_msg_w(unsigned char *res_msg, unsigned char *res_sig)
+{
+    unsigned int is_verified;
 
-void ecall_cross_create_all_commit_req_msg_w(unsigned int payment_num, unsigned int payment_size, unsigned int *channel_ids, int *amount, unsigned char **original_msg, unsigned char **output)
+    ecall_cross_verify_all_prepared_res_msg(global_eid, res_msg, res_sig, &is_verified);
+    return is_verified;
+}
+
+void ecall_cross_create_all_commit_req_msg_w(unsigned int payment_num, unsigned char **original_msg, unsigned char **output)
 {
     unsigned char *req_msg = new unsigned char[sizeof(message)];
     unsigned char *req_sig = new unsigned char[65];
@@ -170,12 +177,19 @@ void ecall_cross_create_all_commit_req_msg_w(unsigned int payment_num, unsigned 
     memset(req_msg, 0x00, sizeof(message));
     memset(req_sig, 0x00, 65);
 
-    ecall_cross_create_all_commit_req_msg(global_eid, payment_num, payment_size, channel_ids, amount, req_msg, req_sig);
+    ecall_cross_create_all_commit_req_msg(global_eid, payment_num, req_msg, req_sig);
 
     *original_msg = req_msg;
     *output = req_sig;
 }
 
+unsigned int ecall_cross_verify_all_committed_res_msg_w(unsigned char *res_msg, unsigned char *res_sig)
+{
+    unsigned int is_verified;
+
+    ecall_cross_verify_all_committed_res_msg(global_eid, res_msg, res_sig, &is_verified);
+    return is_verified;
+}
 
 void ecall_cross_create_all_confirm_req_msg_w(unsigned int payment_num, unsigned char **original_msg, unsigned char **output)
 {

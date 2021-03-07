@@ -146,6 +146,21 @@ enclave {
             [user_check] unsigned char *res_msg, 
             [user_check] unsigned char *res_sig);
 
+        public void ecall_cross_create_all_commit_msg(
+            [user_check] unsigned char *msg,
+            [user_check] unsigned char *signature,
+            [user_check] unsigned int *is_verified);
+
+        public void ecall_cross_create_all_committed_msg(
+            unsigned int payment_num, 
+            [user_check] unsigned char *res_msg, 
+            [user_check] unsigned char *res_sig);
+
+        public void ecall_cross_create_all_confirm_msg(
+            [user_check] unsigned char *msg,
+            [user_check] unsigned char *signature,
+            [user_check] unsigned int *is_verified);
+
 
 
 /*

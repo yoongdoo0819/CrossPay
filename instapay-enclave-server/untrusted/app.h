@@ -127,9 +127,10 @@ unsigned int ecall_cross_create_all_prepare_msg_w(unsigned char *msg, unsigned c
 void ecall_cross_create_prepare_msg_w(unsigned int payment_num, unsigned int payment_size, unsigned int *channel_ids, int *amount, unsigned char **original_msg, unsigned char **output);
 void ecall_cross_create_all_prepared_msg_w(unsigned int payment_num, unsigned char **original_msg, unsigned char **output);
 
+unsigned int ecall_cross_create_all_commit_msg_w(unsigned char *msg, unsigned char *signature);
+void ecall_cross_create_all_committed_msg_w(unsigned int payment_num, unsigned char **original_msg, unsigned char **output);
 
-
-
+unsigned int ecall_cross_create_all_confirm_msg_w(unsigned char *msg, unsigned char *signature);
 //unsigned int ecall_cross_create_all_prepare_msg_w(unsigned char *msg, unsigned char *signature);
 
 

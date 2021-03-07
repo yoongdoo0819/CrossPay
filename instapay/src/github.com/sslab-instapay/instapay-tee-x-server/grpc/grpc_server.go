@@ -19,7 +19,9 @@ import (
 	"google.golang.org/grpc"
 	"github.com/sslab-instapay/instapay-tee-x-server/config"
 	"time"
-	
+	"unsafe"
+	"reflect"
+
 	//"github.com/sslab-instapay/instapay-tee-x-server/repository"
 	pbServer "github.com/sslab-instapay/instapay-tee-x-server/proto/server"
 	//pbClient "github.com/sslab-instapay/instapay-tee-x-server/proto/client"
@@ -398,12 +400,15 @@ func (s *ServerGrpc) CrossPaymentRequest(ctx context.Context, rq *pbServer.Cross
 }
 */
 
-func (s *ServerGrpc) CrossPaymentPrepared(ctx context.Context, rq *pbXServer.CrossPaymentPrepareResMessage) (*pbXServer.CrossResult, error) {
+func (s *ServerGrpc) CrossPaymentPrepared(ctx context.Context, rs *pbXServer.CrossPaymentPrepareResMessage) (*pbXServer.CrossResult, error) {
 
-	pn := rq.Pn
-	result := rq.Result
+	pn := rs.Pn
+	result := rs.Result
+	convertedOriginalMsg, convertedSignatureMsg := convertByteToPointer(rs.OriginalMessage, rs.Signature)
 	log.Println("===== Cross Payment Prepared Start ====== ", result)
 
+	is_verified := C.ecall_cross_verify_all_prepared_res_msg_w(convertedOriginalMsg, convertedSignatureMsg)
+	fmt.Println("all prepared msg result : ", is_verified)
 
 	connectionForChain1, err := grpc.Dial(config.EthereumConfig["chain1ServerGrpcHost"] + ":" + config.EthereumConfig["chain1ServerGrpcPort"], grpc.WithInsecure())
 	if err != nil {
@@ -417,7 +422,13 @@ func (s *ServerGrpc) CrossPaymentPrepared(ctx context.Context, rq *pbXServer.Cro
 	client1Context, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
 
-	r, err := client1.CrossPaymentCommitRequest(client1Context, &pbServer.CrossPaymentCommitReqMessage{Pn: pn, From: "0xed26fa51b429c5c5922bee06184ec058c99a73c1", To: "0x59d853e0fef578589bd8609afbf1f5e5559a73ac", Amount: 3})
+	var originalMessage *C.uchar
+	var signature *C.uchar
+
+	C.ecall_cross_create_all_commit_req_msg_w(C.uint(pn), &originalMessage, &signature)
+	originalMessageByte, signatureByte := convertPointerToByte(originalMessage, signature)
+
+	r, err := client1.CrossPaymentCommitRequest(client1Context, &pbServer.CrossPaymentCommitReqMessage{Pn: pn, From: "0xed26fa51b429c5c5922bee06184ec058c99a73c1", To: "0x59d853e0fef578589bd8609afbf1f5e5559a73ac", Amount: 3, OriginalMessage: originalMessageByte, Signature: signatureByte})
 	if err != nil {
 		log.Println(err)
 		return &pbXServer.CrossResult{Result: false}, nil
@@ -448,10 +459,43 @@ func (s *ServerGrpc) CrossPaymentPrepared(ctx context.Context, rq *pbXServer.Cro
 	return &pbXServer.CrossResult{Result: true}, nil
 }
 
-func (s *ServerGrpc) CrossPaymentCommitted(ctx context.Context, rq *pbXServer.CrossPaymentCommitResMessage) (*pbXServer.CrossResult, error) {
+func (s *ServerGrpc) CrossPaymentCommitted(ctx context.Context, rs *pbXServer.CrossPaymentCommitResMessage) (*pbXServer.CrossResult, error) {
 
-	result := rq.Result
+	pn := rs.Pn
+	result := rs.Result
 	log.Println("===== Cross Payment Committed ====== ", result)
+
+	convertedOriginalMsg, convertedSignatureMsg := convertByteToPointer(rs.OriginalMessage, rs.Signature)
+
+	is_verified := C.ecall_cross_verify_all_committed_res_msg_w(convertedOriginalMsg, convertedSignatureMsg)
+	fmt.Println("all committed msg result : ", is_verified)
+
+	connectionForChain1, err := grpc.Dial(config.EthereumConfig["chain1ServerGrpcHost"] + ":" + config.EthereumConfig["chain1ServerGrpcPort"], grpc.WithInsecure())
+	if err != nil {
+		log.Println(err)
+		return &pbXServer.CrossResult{Result: false}, nil
+	}
+
+	defer connectionForChain1.Close()
+
+	client1 := pbServer.NewServerClient(connectionForChain1)
+	client1Context, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
+
+	var originalMessage *C.uchar
+	var signature *C.uchar
+
+	C.ecall_cross_create_all_confirm_req_msg_w(C.uint(pn), &originalMessage, &signature)
+	originalMessageByte, signatureByte := convertPointerToByte(originalMessage, signature)
+
+	r, err := client1.CrossPaymentConfirmRequest(client1Context, &pbServer.CrossPaymentConfirmReqMessage{Pn: pn, From: "0xed26fa51b429c5c5922bee06184ec058c99a73c1", To: "0x59d853e0fef578589bd8609afbf1f5e5559a73ac", Amount: 3, OriginalMessage: originalMessageByte, Signature: signatureByte})
+	if err != nil {
+		log.Println(err)
+		return &pbXServer.CrossResult{Result: false}, nil
+	}
+
+	log.Println(r.GetResult())
+
 	// Lv2 off-chain server sends the cross-payment request to Lv1 off-chain server
 /*
 	log.Println("===== Cross Payment Request Start =====")
@@ -476,3 +520,52 @@ func (s *ServerGrpc) CrossPaymentCommitted(ctx context.Context, rq *pbXServer.Cr
 	return &pbXServer.CrossResult{Result: true}, nil
 }
 
+func convertByteToPointer(originalMsg []byte, signature []byte) (*C.uchar, *C.uchar) {
+
+	log.Println("----- convertByteToPointer Server Start -----")
+	var uOriginal [44]C.uchar
+	var uSignature [65]C.uchar
+
+	for i := 0; i < 44; i++ {
+		uOriginal[i] = C.uchar(originalMsg[i])
+	}
+
+	for i := 0; i < 65; i++ {
+		uSignature[i] = C.uchar(signature[i])
+	}
+
+	cOriginalMsg := (*C.uchar)(unsafe.Pointer(&uOriginal[0]))
+	cSignature := (*C.uchar)(unsafe.Pointer(&uSignature[0]))
+
+	return cOriginalMsg, cSignature
+}
+
+func convertPointerToByte(originalMsg *C.uchar, signature *C.uchar) ([]byte, []byte) {
+
+	var returnMsg []byte
+	var returnSignature []byte
+
+	replyMsgHdr := reflect.SliceHeader{
+		Data: uintptr(unsafe.Pointer(originalMsg)),
+		Len:  int(44),
+		Cap:  int(44),
+	}
+	replyMsgS := *(*[]C.uchar)(unsafe.Pointer(&replyMsgHdr))
+
+	replySigHdr := reflect.SliceHeader{
+		Data: uintptr(unsafe.Pointer(signature)),
+		Len:  int(65),
+		Cap:  int(65),
+	}
+	replySigS := *(*[]C.uchar)(unsafe.Pointer(&replySigHdr))
+
+	for i := 0; i < 44; i++ {
+		returnMsg = append(returnMsg, byte(replyMsgS[i]))
+	}
+
+	for i := 0; i < 65; i++ {
+		returnSignature = append(returnSignature, byte(replySigS[i]))
+	}
+
+	return returnMsg, returnSignature
+}

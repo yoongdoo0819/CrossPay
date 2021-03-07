@@ -22,6 +22,7 @@ type ServerClient interface {
 	CommunicationInfoRequest(ctx context.Context, in *Address, opts ...grpc.CallOption) (*CommunicationInfo, error)
 	CrossPaymentPrepareRequest(ctx context.Context, in *CrossPaymentPrepareReqMessage, opts ...grpc.CallOption) (*Result, error)
 	CrossPaymentCommitRequest(ctx context.Context, in *CrossPaymentCommitReqMessage, opts ...grpc.CallOption) (*Result, error)
+	CrossPaymentConfirmRequest(ctx context.Context, in *CrossPaymentConfirmReqMessage, opts ...grpc.CallOption) (*Result, error)
 }
 
 type serverClient struct {
@@ -68,6 +69,15 @@ func (c *serverClient) CrossPaymentCommitRequest(ctx context.Context, in *CrossP
 	return out, nil
 }
 
+func (c *serverClient) CrossPaymentConfirmRequest(ctx context.Context, in *CrossPaymentConfirmReqMessage, opts ...grpc.CallOption) (*Result, error) {
+	out := new(Result)
+	err := c.cc.Invoke(ctx, "/Server/crossPaymentConfirmRequest", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // ServerServer is the server API for Server service.
 // All implementations must embed UnimplementedServerServer
 // for forward compatibility
@@ -76,6 +86,7 @@ type ServerServer interface {
 	CommunicationInfoRequest(context.Context, *Address) (*CommunicationInfo, error)
 	CrossPaymentPrepareRequest(context.Context, *CrossPaymentPrepareReqMessage) (*Result, error)
 	CrossPaymentCommitRequest(context.Context, *CrossPaymentCommitReqMessage) (*Result, error)
+	CrossPaymentConfirmRequest(context.Context, *CrossPaymentConfirmReqMessage) (*Result, error)
 	mustEmbedUnimplementedServerServer()
 }
 
@@ -94,6 +105,9 @@ func (UnimplementedServerServer) CrossPaymentPrepareRequest(context.Context, *Cr
 }
 func (UnimplementedServerServer) CrossPaymentCommitRequest(context.Context, *CrossPaymentCommitReqMessage) (*Result, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CrossPaymentCommitRequest not implemented")
+}
+func (UnimplementedServerServer) CrossPaymentConfirmRequest(context.Context, *CrossPaymentConfirmReqMessage) (*Result, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CrossPaymentConfirmRequest not implemented")
 }
 func (UnimplementedServerServer) mustEmbedUnimplementedServerServer() {}
 
@@ -180,6 +194,24 @@ func _Server_CrossPaymentCommitRequest_Handler(srv interface{}, ctx context.Cont
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Server_CrossPaymentConfirmRequest_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CrossPaymentConfirmReqMessage)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServerServer).CrossPaymentConfirmRequest(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/Server/crossPaymentConfirmRequest",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServerServer).CrossPaymentConfirmRequest(ctx, req.(*CrossPaymentConfirmReqMessage))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Server_ServiceDesc is the grpc.ServiceDesc for Server service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -202,6 +234,10 @@ var Server_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "crossPaymentCommitRequest",
 			Handler:    _Server_CrossPaymentCommitRequest_Handler,
+		},
+		{
+			MethodName: "crossPaymentConfirmRequest",
+			Handler:    _Server_CrossPaymentConfirmRequest_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

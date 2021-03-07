@@ -112,10 +112,12 @@ unsigned int ecall_verify_ud_res_msg_w(unsigned char *pubaddr, unsigned char *re
  */
 
 void ecall_cross_create_all_prepare_req_msg_w(unsigned int payment_num,/* unsigned int payment_size, unsigned int *channel_ids, int *amount,*/ unsigned char **req_msg, unsigned char **req_sig);
-void ecall_cross_create_all_commit_req_msg_w(unsigned int payment_num, unsigned int payment_size, unsigned int *channel_ids, int *amount, unsigned char *req_msg, unsigned char *req_sig);
-void ecall_cross_create_all_confirm_req_msg_w(unsigned int payment_num, unsigned char *confirm_msg, unsigned char *confirm_sig);
+unsigned int ecall_cross_verify_all_prepared_res_msg_w(unsigned char *res_msg, unsigned char *res_sig);
 
+void ecall_cross_create_all_commit_req_msg_w(unsigned int payment_num, unsigned char **req_msg, unsigned char **req_sig);
+unsigned int ecall_cross_verify_all_committed_res_msg_w(unsigned char *res_msg, unsigned char *res_sig);
 
+void ecall_cross_create_all_confirm_req_msg_w(unsigned int payment_num, unsigned char **req_msg, unsigned char **req_sig);
 
 #if defined(__cplusplus)
 }

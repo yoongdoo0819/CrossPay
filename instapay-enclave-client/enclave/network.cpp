@@ -245,7 +245,12 @@ void ecall_cross_go_pre_update(unsigned char *msg, unsigned char *signature, uns
     /* step 2. check that message type is 'AG_REQ' */
 
     if(ag_req->type != CROSS_PREPARE_REQ)
+    {
+	printf("CROSS_PREPARE FAILURE \n");
         return;
+    }
+
+    printf("PREPARE FAILURE \n");
 
     /* step 3. generate payment instance */
 

@@ -27,7 +27,7 @@ enum cross_message_type {
     CROSS_PREPARE_RES     = 3,
     CROSS_ALL_PREPARED    = 4,
 
-    CROSS_ALL_COMMIT_RES  = 5,
+    CROSS_ALL_COMMIT_REQ  = 5,
     CROSS_COMMIT_REQ      = 6, 
     CROSS_COMMIT_RES      = 7,
     CROSS_ALL_COMMITTED   = 8,
