@@ -127,7 +127,13 @@ func CrossPaymentToServerChannelHandler(ctx *gin.Context) {
 	chain1Sender := []C.uchar(chain1From)
 	chain1Receiver := []C.uchar(chain1To)
 
-	PaymentNum := C.ecall_accept_request_w(&chain1Sender[0], &chain1Receiver[0], C.uint(chain1Val))
+	//chain1Server := "chain1Server"
+	//chain2Server := "chain2Server"
+
+	PaymentNum := C.ecall_cross_accept_request_w(&chain1Sender[0], &chain1Sender[0], &chain1Receiver[0], C.uint(chain1Val), &chain1Sender[0], &chain1Sender[0], &chain1Receiver[0], C.uint(chain1Val));
+
+	//C.ecall_cross_add_participant_w(C.uint(PaymentNum), &([]C.uchar(chain1Server))[0])
+	//C.ecall_cross_add_participant_w(C.uint(PaymentNum), &([]C.uchar(chain2Server))[0])
 
 	var originalMessage *C.uchar
 	var signature *C.uchar

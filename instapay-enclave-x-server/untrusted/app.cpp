@@ -136,14 +136,11 @@ int initialize_enclave(void)
 }
 
 /* OCall functions */
-void ocall_print_string(const char *str)
+/*void ocall_print_string(const char *str)
 {
-    /* Proxy/Bridge will check the length and null-terminate 
-     * the input string to prevent buffer overflow. 
-     */
     printf("%s", str);
 }
-
+*/
 /* Application entry */
 int SGX_CDECL main(int argc, char *argv[])
 {

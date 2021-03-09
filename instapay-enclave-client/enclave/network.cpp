@@ -381,11 +381,13 @@ void ecall_cross_go_idle(unsigned char *msg, unsigned char *signature)
 
     /* step 1. verify signature */
 
+    printf("cross_go_idle sig verification \n");
     if(verify_message(1, signature, msg, sizeof(Cross_Message), NULL))
         return;
 
     /* step 2. check that message type is 'UD_REQ' */
 
+    printf("cross_go_idle type verification \n");
     if(confirm->type != CROSS_CONFIRM_REQ)
         return;
 

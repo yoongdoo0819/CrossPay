@@ -20,6 +20,11 @@ extern "C" {
 
 using namespace std;
 
+enum cross_payment_server {
+	chain1Server = 0,
+	chain2Server = 1,
+};
+
 enum cross_message_type {
 
     CROSS_ALL_PREPARE_REQ = 1,
@@ -51,6 +56,10 @@ typedef struct cross_message {
     unsigned int channel_ids[2];
     int payment_amount[2];
     unsigned int e;
+
+    /*** cross-payment ***/
+    cross_payment_server server;
+
 } Cross_Message;
 
 void sign_message(unsigned char *original_msg, unsigned int msg_size, unsigned char *seckey, unsigned char *signature);

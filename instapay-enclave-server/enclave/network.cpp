@@ -288,7 +288,7 @@ void ecall_cross_create_confirm_msg(unsigned int payment_num, unsigned char *con
     confirm.type = CROSS_CONFIRM_REQ;
     confirm.payment_num = payment_num;
 
-    sign_message((unsigned char*)&confirm, sizeof(Message), seckey, confirm_signature);
+    sign_message((unsigned char*)&confirm, sizeof(Cross_Message), seckey, confirm_signature);
 
     memcpy(confirm_msg, (unsigned char*)&confirm, sizeof(Cross_Message));
     memcpy(confirm_sig, confirm_signature, 65);
@@ -314,6 +314,11 @@ void ecall_cross_verify_ag_res_msg(unsigned char *pubaddr, unsigned char *res_ms
 	ocall_print_string("FAILURE###########################################");
         *is_verified = 0;
         return;
+    }
+
+    if(strcmp((const char*)&(res->server), (const char*)&"cross-server") != 0) {
+	*is_verified = 0;
+	return;
     }
 
     ocall_print_string("success##############################################");
@@ -342,6 +347,11 @@ void ecall_cross_verify_ud_res_msg(unsigned char *pubaddr, unsigned char *res_ms
     if(res->type != CROSS_COMMIT_RES) {
         *is_verified = 0;
         return;
+    }
+
+    if(strcmp((const char*)&(res->server), (const char*)"cross-server") != 0) {
+	*is_verified = 0;
+	return ;
     }
 
     /* step 3. mark as verified */
@@ -383,6 +393,7 @@ void ecall_cross_create_all_prepared_msg(unsigned int payment_num, unsigned char
 
     /* create agreement request message */
 
+    response.server = chain1Server;
     response.type = CROSS_ALL_PREPARED;
     response.payment_num = payment_num;
     //request.payment_size = payment_size;
@@ -457,6 +468,7 @@ void ecall_cross_create_all_committed_msg(unsigned int payment_num, unsigned cha
 
     /* create agreement request message */
 
+    response.server = chain1Server;
     response.type = CROSS_ALL_COMMITTED;
     response.payment_num = payment_num;
     //request.payment_size = payment_size;

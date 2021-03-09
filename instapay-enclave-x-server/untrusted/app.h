@@ -45,6 +45,8 @@ typedef struct _message {
 
 int initialize_enclave(void);
 
+void ocall_print_string(const char *str);
+
 unsigned int ecall_accept_request_w(unsigned char *sender, unsigned char *receiver, unsigned int amount);
 void ecall_add_participant_w(unsigned int payment_num, unsigned char *addr);
 void ecall_update_sentagr_list_w(unsigned int payment_num, unsigned char *addr);
@@ -110,6 +112,13 @@ unsigned int ecall_verify_ud_res_msg_w(unsigned char *pubaddr, unsigned char *re
  *
  * InstaPay 3.0
  */
+unsigned int ecall_cross_accept_request_w(unsigned char *chain1Server, unsigned char *chain1Sender, unsigned char *chain1Receiver, unsigned int chain1Amount, unsigned char *chain2Server, unsigned char *chain2Sender, unsigned char *chain2Receiver, unsigned int chain2Amount);
+
+void ecall_cross_add_participant_w(unsigned int payment_num, unsigned char *addr);
+void ecall_cross_update_preparedServer_list_w(unsigned int payment_num, unsigned char *addr);
+void ecall_cross_update_committedServer_list_w(unsigned int payment_num, unsigned char *addr);
+unsigned int ecall_cross_check_prepared_unanimity_w(unsigned int payment_num, int which_list);
+unsigned int ecall_cross_check_committed_unanimity_w(unsigned int payment_num, int which_list);
 
 void ecall_cross_create_all_prepare_req_msg_w(unsigned int payment_num,/* unsigned int payment_size, unsigned int *channel_ids, int *amount,*/ unsigned char **req_msg, unsigned char **req_sig);
 unsigned int ecall_cross_verify_all_prepared_res_msg_w(unsigned char *res_msg, unsigned char *res_sig);

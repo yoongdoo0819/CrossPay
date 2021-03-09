@@ -710,7 +710,7 @@ func WrapperCrossUpdateRequest(pn int64, p []string, paymentInformation map[stri
 	}
 
 	fmt.Println("[ALARM] ALL USERS UPDATED")
-/*
+
 	fmt.Println("===== CREATE CROSS ALL COMMITTED MSG START IN ENCLAVE =====")
 	var originalMessage *C.uchar
 	var signature *C.uchar
@@ -735,8 +735,8 @@ func WrapperCrossUpdateRequest(pn int64, p []string, paymentInformation map[stri
 	}
 
 	log.Println(r.GetResult())
-*/
-	go WrapperCrossConfirmPayment(int(pn), p)
+
+	//go WrapperCrossConfirmPayment(int(pn), p)
 }
 
 func WrapperCrossConfirmPayment(pn int, p []string) {

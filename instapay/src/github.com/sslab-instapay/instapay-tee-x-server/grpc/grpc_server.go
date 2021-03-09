@@ -410,6 +410,13 @@ func (s *ServerGrpc) CrossPaymentPrepared(ctx context.Context, rs *pbXServer.Cro
 	is_verified := C.ecall_cross_verify_all_prepared_res_msg_w(convertedOriginalMsg, convertedSignatureMsg)
 	fmt.Println("all prepared msg result : ", is_verified)
 
+	//chain1Server := "chain1Server"
+	//C.ecall_cross_update_preparedServer_list_w(C.uint(pn), &([]C.uchar(chain1Server))[0])
+
+	for C.ecall_cross_check_prepared_unanimity_w(C.uint(pn), C.int(0)) != 1 {
+
+	}
+
 	connectionForChain1, err := grpc.Dial(config.EthereumConfig["chain1ServerGrpcHost"] + ":" + config.EthereumConfig["chain1ServerGrpcPort"], grpc.WithInsecure())
 	if err != nil {
 		log.Println(err)
@@ -469,6 +476,10 @@ func (s *ServerGrpc) CrossPaymentCommitted(ctx context.Context, rs *pbXServer.Cr
 
 	is_verified := C.ecall_cross_verify_all_committed_res_msg_w(convertedOriginalMsg, convertedSignatureMsg)
 	fmt.Println("all committed msg result : ", is_verified)
+
+	for C.ecall_cross_check_committed_unanimity_w(C.uint(pn), C.int(0)) != 1 {
+
+	}
 
 	connectionForChain1, err := grpc.Dial(config.EthereumConfig["chain1ServerGrpcHost"] + ":" + config.EthereumConfig["chain1ServerGrpcPort"], grpc.WithInsecure())
 	if err != nil {

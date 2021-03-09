@@ -1,6 +1,11 @@
 #include "app.h"
 #include "enclave_u.h"
 
+/*  OCall functions */
+void ocall_print_string(const char *str)
+{
+    printf("%s", str);
+}
 
 unsigned int ecall_accept_request_w(unsigned char *sender, unsigned char *receiver, unsigned int amount)
 {
@@ -38,7 +43,6 @@ int ecall_check_unanimity_w(unsigned int payment_num, int which_list)
 
     return is_unanimous;
 }
-
 
 void ecall_update_payment_status_to_success_w(unsigned int payment_num)
 {
@@ -147,6 +151,48 @@ unsigned int ecall_verify_ud_res_msg_w(unsigned char *pubaddr, unsigned char *re
  * InstaPay 3.0
  */
 
+unsigned int ecall_cross_accept_request_w(unsigned char *chain1Server, unsigned char *chain1Sender, unsigned char *chain1Receiver, unsigned int chain1Amount, unsigned char *chain2Server, unsigned char *chain2Sender, unsigned char *chain2Receiver, unsigned int chain2Amount)
+{
+    unsigned int payment_num;
+
+    ecall_cross_accept_request(global_eid, chain1Server, chain1Sender, chain1Receiver, chain1Amount, chain2Server, chain2Sender, chain2Receiver, chain2Amount, &payment_num);
+
+    return payment_num;
+}
+
+void ecall_cross_add_participant_w(unsigned int payment_num, unsigned char *addr)
+{
+    ecall_cross_add_participant(global_eid, payment_num, addr);
+}
+
+void ecall_cross_update_preparedServer_list_w(unsigned int payment_num, unsigned char *addr)
+{
+    ecall_cross_update_preparedServer_list(global_eid, payment_num, addr);
+}
+
+void ecall_cross_update_committedServer_list_w(unsigned int payment_num, unsigned char *addr)
+{
+    ecall_cross_update_committedServer_list(global_eid, payment_num, addr);
+}
+
+unsigned int ecall_cross_check_prepared_unanimity_w(unsigned int payment_num, int which_list)
+{
+    unsigned int is_unanimous;
+
+    ecall_cross_check_prepared_unanimity(global_eid, payment_num, which_list, &is_unanimous);
+
+    return is_unanimous;
+}
+
+unsigned int ecall_cross_check_committed_unanimity_w(unsigned int payment_num, int which_list)
+{
+    unsigned int is_unanimous;
+
+    ecall_cross_check_committed_unanimity(global_eid, payment_num, which_list, &is_unanimous);
+
+    return is_unanimous;
+}
+
 void ecall_cross_create_all_prepare_req_msg_w(unsigned int payment_num, unsigned char **original_msg, unsigned char **output)
 {
     unsigned char *req_msg = new unsigned char[sizeof(message)];
@@ -165,6 +211,7 @@ unsigned int ecall_cross_verify_all_prepared_res_msg_w(unsigned char *res_msg, u
 {
     unsigned int is_verified;
 
+    printf("########################################### \n");
     ecall_cross_verify_all_prepared_res_msg(global_eid, res_msg, res_sig, &is_verified);
     return is_verified;
 }

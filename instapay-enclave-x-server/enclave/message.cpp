@@ -86,6 +86,10 @@ int verify_message(unsigned int from, unsigned char *signature, unsigned char *o
     }
     else if(from == 1) {
         unsigned char *server_pubaddr = ::arr_to_bytes(SERVER_PUBADDR, 40);
+	printf("server_pubaddr :");
+	for(int i=0; i<20; i++)
+		printf("%02x", server_pubaddr[i]);
+	printf("\n");
         if(memcmp(sender, server_pubaddr, 20) == 0)
             return 0;
         return 1;

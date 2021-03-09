@@ -73,6 +73,39 @@ enclave {
          *
          * InstaPay 3.0
          */
+        
+        public void ecall_cross_accept_request(
+            [user_check] unsigned char *chain1Server,
+            [user_check] unsigned char *chain1Sender, 
+            [user_check] unsigned char *chain1Receiver, 
+            unsigned int chain1Amount,
+            [user_check] unsigned char *chain2Server,
+            [user_check] unsigned char *chain2Sender, 
+            [user_check] unsigned char *chain2Receiver, 
+            unsigned int chain2Amount,
+            [user_check] unsigned int *payment_num);
+
+        public void ecall_cross_add_participant(
+            unsigned int payment_num, 
+            [in, size=40] unsigned char *addr);
+
+        public void ecall_cross_update_preparedServer_list(
+            unsigned int payment_num, 
+            [in, size=40] unsigned char *addr);
+
+        public void ecall_cross_update_committedServer_list(
+            unsigned int payment_num, 
+            [in, size=40] unsigned char *addr);
+
+        public void ecall_cross_check_prepared_unanimity(
+            unsigned int payment_num, 
+            int which_list,
+            [user_check] unsigned int *unanimous);
+
+        public void ecall_cross_check_committed_unanimity(
+            unsigned int payment_num, 
+            int which_list,
+            [user_check] unsigned int *unanimous);
 
         public void ecall_cross_create_all_prepare_req_msg(
             unsigned int payment_num, 
