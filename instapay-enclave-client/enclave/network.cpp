@@ -268,7 +268,7 @@ void ecall_cross_go_pre_update(unsigned char *msg, unsigned char *signature, uns
 
     for(int i = 0; i < payment_size; i++) {
         payments.find(payment_num)->second.add_element(channel_ids[i], payment_amount[i]);
-        channels.find(channel_ids[i])->second.transition_to_pre_update();
+        channels.find(channel_ids[i])->second.transition_to_cross_pre_update();
 
         if(payment_amount[i] < 0)
             channels.find(channel_ids[i])->second.m_locked_balance += payment_amount[i] * -1;
@@ -349,7 +349,7 @@ void ecall_cross_go_post_update(unsigned char *msg, unsigned char *signature, un
             channels.find(channel_ids[i])->second.pay(value);
         }
 
-        channels.find(channel_ids[i])->second.transition_to_post_update();
+        channels.find(channel_ids[i])->second.transition_to_cross_post_update();
     }
 
     /* step 4. generate reply message */

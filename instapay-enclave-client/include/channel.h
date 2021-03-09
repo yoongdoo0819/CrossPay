@@ -6,10 +6,14 @@
 
 enum channel_status {
     PENDING     = 0,
-	IDLE		= 1,
-	PRE_UPDATE	= 2,
-	POST_UPDATE	= 3,
+    IDLE	= 1,
+    PRE_UPDATE	= 2,
+    POST_UPDATE	= 3,
     CLOSED      = 4,
+
+    /*** cross-payment ***/
+    C_PRE       = 5,
+    C_POST      = 6,
 };
 
 
@@ -24,6 +28,11 @@ typedef struct _channel
     unsigned int m_balance;
     unsigned int m_locked_balance;
     unsigned char m_other_addr[20];
+
+    /*** cross-payment ***/
+    unsigned int m_reserved_balance;
+
+
     // unsigned char *m_other_ip;   this field must be requested from the server newly
     // unsigned int m_other_port;   this field must be requested from the server newly
 } channel;
@@ -69,6 +78,11 @@ class Channel {
         void transition_to_post_update(void);
         void transition_to_idle(void);
 
+	/*** cross-payment ***/
+        void transition_to_cross_pre_update(void);
+        void transition_to_cross_post_update(void);
+	/*** cross-payment ***/
+
         unsigned int get_balance(void);
 
 
@@ -85,6 +99,9 @@ class Channel {
         unsigned int m_other_port;
 
         unsigned int m_counter;
+
+	/*** cross-payment ***/
+	unsigned int m_reserved_balance;
 };
 
 using namespace std;

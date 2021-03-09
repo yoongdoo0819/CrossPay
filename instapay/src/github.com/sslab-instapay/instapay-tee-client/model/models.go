@@ -54,6 +54,8 @@ type Channel struct {
 	OtherAddress  string        `bson:"otherAddress" json:"otherAddress"`
 	OtherIp       string        `bson:"otherIp" json:"otherIp"`
 	OtherPort     int           `bson:"otherPort" json:"otherPort"`
+
+	ReservedBalance int
 }
 
 type CreateChannelEvent struct {

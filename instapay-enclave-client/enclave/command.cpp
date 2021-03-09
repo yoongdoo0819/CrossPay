@@ -388,6 +388,9 @@ void ecall_get_channel_info(unsigned int channel_id, unsigned char *channel_info
     ch_struct.m_balance = ch.m_balance;
     ch_struct.m_locked_balance = ch.m_locked_balance;
     memcpy(ch_struct.m_other_addr, ch.m_other_addr, 20);
+    
+    // cross-payment
+    ch_struct.m_reserved_balance = ch.m_reserved_balance;
 
     memcpy((void*)channel_info, (void*)&ch_struct, sizeof(channel));
 }
@@ -396,6 +399,12 @@ void ecall_get_channel_info(unsigned int channel_id, unsigned char *channel_info
 void ecall_close_channel(unsigned int nonce, unsigned int channel_id, unsigned char *signed_tx, unsigned int *signed_tx_len)
 {
     std::vector<unsigned char> data;
+
+    /*** reject in cross-payment ***/
+    unsigned int stage = channels.find(channel_id)->second.m_status;
+    if(stage == C_PRE || stage == C_POST)
+	    return;
+
 
     /* encode ABI for calling "close_channel(uint256,uint256,uint256)" on the contract */
     sha3_context sha3_ctx;
@@ -479,6 +488,10 @@ void ecall_eject(unsigned int nonce, unsigned int pn, unsigned char *signed_tx, 
 
     e = payments.find(pn)->second.m_related_channels.at(0).channel_id;
     stage = channels.find(e)->second.m_status;
+
+    /*** cross-payment ***/
+    if(stage == C_PRE || stage == C_POST)
+	return;
 
     if(stage == PRE_UPDATE) {
         stage = 0;    // PRE_UPDATE on contract is 0, but PRE_UPDATE in channel.h is 1
@@ -711,7 +724,7 @@ void ecall_get_public_addrs(unsigned char *public_addrs)
 
 void ecall_test_func(void)
 {
-    // unsigned char *original_msg = (unsigned char*)"FUCKYOU";
+    // unsigned char *original_msg = (unsigned char*)"TEST";
     // unsigned int msg_size = 7;
     // unsigned char *seckey = (unsigned char*)"e113ff405699b7779fbe278ee237f2988b1e6769d586d8803860d49f28359fbd";
     // unsigned char signature[65];
@@ -789,13 +802,13 @@ void ecall_test_func(void)
     unsigned char *seckey = ::arr_to_bytes((unsigned char*)"e113ff405699b7779fbe278ee237f2988b1e6769d586d8803860d49f28359fbd", 64);
     unsigned char *pubaddr = ::arr_to_bytes((unsigned char*)"d03a2cc08755ec7d75887f0997195654b928893e", 40);
 
-    sign_message((unsigned char*)"FUCKYOU", 7, seckey, signature);
+    sign_message((unsigned char*)"TEST", 7, seckey, signature);
 
     for(int i = 0; i < 65; i++)
         printf("%02x", signature[i]);
     printf("\n");
 
-    verify_message(0, signature, (unsigned char*)"FUCKYOU", 7, pubaddr);
+    verify_message(0, signature, (unsigned char*)"TEST", 7, pubaddr);
 
-    printf(" ######################### TEST_FUNC ########################### \n");
+    printf(" ######################### TEST ########################### \n");
 }

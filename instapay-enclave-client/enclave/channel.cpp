@@ -38,6 +38,18 @@ unsigned int Channel::get_balance()
     return m_balance;
 }
 
+/*** cross-payment ***/
+void Channel::transition_to_cross_pre_update()
+{
+    m_status = C_PRE;
+}
+
+
+void Channel::transition_to_cross_post_update()
+{
+    m_status = C_POST;
+}
+
 
 map_channel channels;
 map_channel closed_channels;

@@ -40,6 +40,9 @@ typedef struct _channel   // channel.h
     unsigned char m_other_addr[20];
     // unsigned char *m_other_ip;   this field must be requested from the server newly
     // unsigned int m_other_port;   this field must be requested from the server newly
+
+    /*** cross-payment ***/
+    unsigned int m_reserved_balance;
 } channel;
 
 
