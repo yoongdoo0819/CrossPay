@@ -230,3 +230,5 @@ web3.fromWei(eth.getBalance("0x420c4f761ac9d98cb93e7d84a830324ab55043b0"), "ethe
 miner.start()
 eth.coinbase
 ls
+miner.start()
+miner.stop()

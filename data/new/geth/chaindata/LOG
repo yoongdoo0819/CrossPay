@@ -1286,3 +1286,13 @@
 11:33:07.610801 db@janitor F·19 G·1
 11:33:07.610807 db@janitor removing table-398
 11:33:07.610828 db@open done T·12.041714ms
+=============== Mar 10, 2021 (KST) ===============
+02:52:30.739990 db@close closing
+02:52:30.741026 db@close done T·1.033972ms
+=============== Mar 10, 2021 (KST) ===============
+02:52:45.430886 log@legend F·NumFile S·FileSize N·Entry C·BadEntry B·BadBlock Ke·KeyError D·DroppedEntry L·Level Q·SeqNum T·TimeElapsed
+02:52:45.430974 version@stat F·[1 15] S·31MiB[219B 31MiB] Sc·[0.25 0.31]
+02:52:45.430989 db@open opening
+02:52:45.432374 version@stat F·[1 15] S·31MiB[219B 31MiB] Sc·[0.25 0.31]
+02:52:45.440888 db@janitor F·18 G·0
+02:52:45.440962 db@open done T·9.940529ms
