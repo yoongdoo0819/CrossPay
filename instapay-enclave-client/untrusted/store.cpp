@@ -54,7 +54,7 @@ void ocall_store_sealed_channel_data(char *chfile, unsigned char *sealed_channel
     FILE *fp = fopen(chfile, "ab");
     int count;
 
-    count = fwrite(sealed_channel_data, sizeof(unsigned char), 628, fp);
+    count = fwrite(sealed_channel_data, sizeof(unsigned char), 632, fp);
     printf("write %d bytes to %s\n", count, chfile);
 
     fclose(fp);

@@ -33,8 +33,8 @@ void ecall_load_channel_data_w(char *chfile)
     if(fp == NULL) return;
 
     while(1) {
-        count = fread(sealed_channel_data, sizeof(unsigned char), 628, fp);
-        if(count < 628) break;
+        count = fread(sealed_channel_data, sizeof(unsigned char), 632, fp);
+        if(count < 632) break;
         printf("read %d bytes from ./data/channel/c0\n", count);
         ecall_load_channel_data(global_eid, sealed_channel_data);
     }

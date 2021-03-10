@@ -396,10 +396,11 @@ void ecall_get_channel_info(unsigned int channel_id, unsigned char *channel_info
 }
 
 
-void ecall_close_channel(unsigned int nonce, unsigned int channel_id, unsigned char *signed_tx, unsigned int *signed_tx_len)
+void ecall_close_channel(unsigned int nonce, unsigned char *owner, unsigned int channel_id, unsigned char *signed_tx, unsigned int *signed_tx_len)
 {
     std::vector<unsigned char> data;
 
+    printf("===== CLOSE CHANNEL START IN ENCLAVE ===== \n");
     /*** reject in cross-payment ***/
     unsigned int stage = channels.find(channel_id)->second.m_status;
     if(stage == C_PRE || stage == C_POST)
@@ -443,21 +444,45 @@ void ecall_close_channel(unsigned int nonce, unsigned int channel_id, unsigned c
     data.insert(data.end(), source_bal_bytes, source_bal_bytes + 32);
     data.insert(data.end(), target_bal_bytes, target_bal_bytes + 32);
 
-
+    printf("===== CLOSE CHANNEL TX IS GENERATED IN ENCLAVE ===== \n");
     /* generate a transaction creating a channel */
     Transaction tx(nonce, CONTRACT_ADDR, 0, data.data(), data.size());
 
     // find the account's private key and sign on transaction using
     unsigned char *addr = channels.find(channel_id)->second.m_my_addr;
-    addr = ::arr_to_bytes(addr, 40);
+
+//    printf("addr : ");
+//	    printf("%s", (unsigned char*)addr);
+//    printf("\n");
+
+    //addr = ::arr_to_bytes(addr, 40);
+    addr = ::arr_to_bytes(owner, 40);
     std::vector<unsigned char> pubkey(addr, addr + 20);
     std::vector<unsigned char> seckey = accounts.find(pubkey)->second.get_seckey();
+ 
+    printf("addr : ");
+    for(int i=0; i<32; i++) {
+	    printf("%02x", addr[i]);
+    };printf("\n");
 
+    printf("pubkey : ");
+    for(int i=0; i<20; i++) {
+	    printf("%02x", pubkey[i]);
+    }printf("\n");
+
+    printf("seckey : ");
+    for(int i=0; i<32; i++) {
+	    printf("%02x", seckey[i]);
+    }
+
+    printf("seckey : %s \n", (unsigned char*)seckey.data());
     tx.sign((unsigned char*)seckey.data());
-
+    
+    printf("===== CLOSE CHANNEL TX SIGN IS COMPLETE ===== \n");
     memcpy(signed_tx, tx.signed_tx.data(), tx.signed_tx.size());
     *signed_tx_len = tx.signed_tx.size();
 
+    printf("===== CLOSE CHANNEL END IN ENCLAVE ===== \n");
     return;
 }
 

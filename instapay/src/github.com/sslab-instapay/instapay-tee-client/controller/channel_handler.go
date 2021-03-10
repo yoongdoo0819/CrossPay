@@ -46,7 +46,10 @@ func OpenChannelHandler(ctx *gin.Context) {
 }
 
 func CloseChannelHandler(ctx *gin.Context) {
-	channelIdParam := ctx.PostForm("channelId")
+
+	log.Println("===== CloseChannelHandler =====")
+
+	channelIdParam := ctx.PostForm("ch_id")
 	log.Println(channelIdParam)
 	channelId, _ := strconv.Atoi(channelIdParam)
 	log.Println(channelId)

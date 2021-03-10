@@ -182,16 +182,29 @@ func SendCloseChannelTransaction(channelId int64) {
 	if err != nil {
 		log.Println(err)
 	}
+
+
+	account := config.GetAccountConfig()
+	//address := common.HexToAddress(config.GetAccountConfig().PublicKeyAddress)
+
 	address := common.HexToAddress(config.GetAccountConfig().PublicKeyAddress)
 	nonce, err := client.PendingNonceAt(context.Background(), address)
+	owner := []C.uchar(account.PublicKeyAddress[2:])
+
 	if err != nil {
 		log.Println(err)
 	}
 
+
+	fmt.Println("account: ", account);
+	fmt.Println("owner : ", &owner[0]);
+        fmt.Println("address : ", address)
+	fmt.Println("channel Id : ", channelId)
+
 	ChannelID := C.uint(channelId)
 	SigLen := C.uint(0)
 
-	var sig2 *C.uchar = C.ecall_close_channel_w(C.uint(nonce), ChannelID, &SigLen)
+	var sig2 *C.uchar = C.ecall_close_channel_w(C.uint(nonce), &owner[0], ChannelID, &SigLen)
 	hdr := reflect.SliceHeader{
 		Data: uintptr(unsafe.Pointer(sig2)),
 		Len:  int(SigLen),
@@ -204,7 +217,24 @@ func SendCloseChannelTransaction(channelId int64) {
 	rawTxBytes, err := hex.DecodeString(convertedRawTx)
 	tx := new(types.Transaction)
 	rlp.DecodeBytes(rawTxBytes, &tx)
-	client.SendTransaction(context.Background(), tx)
+	//client.SendTransaction(context.Background(), tx)
+
+	err = client.SendTransaction(context.Background(), tx)
+	if err != nil {
+		log.Println("error : ", err)
+	}
+	fmt.Println("TX hash : ", tx.Hash().Hex())
+
+	fromAddr, err := types.NewEIP155Signer(tx.ChainId()).Sender(tx)
+	if err != nil {
+		log.Fatal(err)
+	}
+	for i:= 0; i<20; i++ {
+		fmt.Printf("%02x", fromAddr[i])
+	}
+	fmt.Println()
+	fmt.Println("fromAddr : ", fromAddr.Hex())
+
 }
 
 func ListenContractEvent() {

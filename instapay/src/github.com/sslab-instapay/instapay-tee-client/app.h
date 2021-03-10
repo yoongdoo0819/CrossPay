@@ -97,7 +97,7 @@ void ecall_pay_accepted_w(unsigned char *msg, unsigned char *signature);
 int ecall_get_balance_w(unsigned int channel_id);
 void* ecall_get_channel_info_w(unsigned int channel_id);
 
-unsigned char* ecall_close_channel_w(unsigned int nonce, unsigned int channel_id, unsigned int *sig_len);
+unsigned char* ecall_close_channel_w(unsigned int nonce, unsigned char *owner, unsigned int channel_id, unsigned int *sig_len);
 unsigned char* ecall_eject_w(unsigned int nonce, unsigned int pn, unsigned int *sig_len);
 
 unsigned int ecall_get_num_open_channels_w(void);

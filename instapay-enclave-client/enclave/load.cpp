@@ -37,8 +37,10 @@ void ecall_load_channel_data(unsigned char *sealed_channel_data)
     uint32_t unsealed_size = sizeof(channel);
     channel unsealed_channel_data;
 
-    sgx_unseal_data((sgx_sealed_data_t *)sealed_channel_data, NULL, 0, (uint8_t *)&unsealed_channel_data, &unsealed_size);
-
+    printf("unsealed_size : %d \n", unsealed_size);
+    sgx_status_t status = sgx_unseal_data((sgx_sealed_data_t *)sealed_channel_data, NULL, 0, (uint8_t *)&unsealed_channel_data, &unsealed_size);
+    if(status != SGX_SUCCESS)
+	    printf("LOAD CHANNEL DATA FAILURE !! \n");
 
     printf("=========== UNSEALED CHANNEL DATA ===========\n");
     printf("channel id: %d\n", unsealed_channel_data.m_id);
@@ -54,6 +56,7 @@ void ecall_load_channel_data(unsigned char *sealed_channel_data)
     printf("other deposit: %d\n", unsealed_channel_data.m_other_deposit);
     printf("my balance: %d\n", unsealed_channel_data.m_balance);
     printf("locked balance: %d\n", unsealed_channel_data.m_locked_balance);
+    printf("reserved balance : %d \n", unsealed_channel_data.m_reserved_balance);
 
     printf("other address: ");
     for(int i = 0; i < 20; i++)
@@ -77,6 +80,7 @@ void ecall_load_channel_data(unsigned char *sealed_channel_data)
 
     ch.m_other_addr = ::copy_bytes(unsealed_channel_data.m_other_addr, 20);
     ch.m_counter = 0;
+    ch.m_reserved_balance = unsealed_channel_data.m_reserved_balance;
 
     channels.insert(map_channel_value(ch.m_id, ch));
 

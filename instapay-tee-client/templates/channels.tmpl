@@ -39,7 +39,7 @@
                 <tbody>
                 {{ range $i, $channel := .channelList }}
                     <tr>
-                        <form method="post" action="close">
+                        <form method="post" action="/channels/requests/close">
                             <td>{{ $channel.ChannelId }}</td>
                             <td>{{ $channel.MyAddress }}</td>
                             <td>{{ $channel.OtherAddress }}</td>

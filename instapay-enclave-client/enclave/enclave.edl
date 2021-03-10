@@ -13,7 +13,7 @@ enclave {
 
         void ocall_remove_channel_file([user_check] char *chfile);
 
-        void ocall_store_sealed_channel_data([user_check] char *chfile, [in, size=628] unsigned char *sealed_seckey);
+        void ocall_store_sealed_channel_data([user_check] char *chfile, [in, size=632] unsigned char *sealed_seckey);
 
     };
 
@@ -76,6 +76,7 @@ enclave {
 
         public void ecall_close_channel(
             unsigned int nonce,
+            [user_check] unsigned char *owner,
             unsigned int channel_id,
             [user_check] unsigned char *signed_tx,
             [user_check] unsigned int *signed_tx_len);
@@ -157,7 +158,7 @@ enclave {
 
         public void ecall_load_account_data([in, size=592] unsigned char *sealed_seckey);
 
-        public void ecall_load_channel_data([in, size=628] unsigned char *sealed_channel_data);
+        public void ecall_load_channel_data([in, size=632] unsigned char *sealed_channel_data);
 
 
         /*

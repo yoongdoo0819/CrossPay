@@ -124,9 +124,16 @@ void ecall_store_channel_data(char *chfile)
         data.m_balance = iter->second.m_balance;
         data.m_locked_balance = iter->second.m_locked_balance;
         memcpy(data.m_other_addr, iter->second.m_other_addr, 20);
+	data.m_reserved_balance = iter->second.m_reserved_balance;
 
-        size = sgx_calc_sealed_data_size((const uint32_t)0, (const uint32_t)sizeof(channel));  // sealed log size = 628
-        sgx_seal_data(0, NULL, sizeof(channel), (uint8_t *)&data, size, (sgx_sealed_data_t*)sealed_log);
+	printf("ch id : %d \n", data.m_id);
+	printf("my deposit : %d \n", data.m_my_deposit);
+	printf("reserved bal : %d \n", data.m_reserved_balance);
+
+        size = sgx_calc_sealed_data_size((const uint32_t)0, (const uint32_t)sizeof(channel));  // sealed log size = 632
+        sgx_status_t status = sgx_seal_data(0, NULL, sizeof(channel), (uint8_t *)&data, size, (sgx_sealed_data_t*)sealed_log);
+	if(status != SGX_SUCCESS)
+		printf("CHANNEL DATA SEAL FAILURE !! \n");
 
         printf("CHANNEL DATA IS SEALED SUCCESSFULLY !! (SEALED DATA SIZE: %d)\n", size);
         ocall_store_sealed_channel_data(chfile, sealed_log);

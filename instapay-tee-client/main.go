@@ -71,7 +71,7 @@ func main() {
 		LoadChannelData(*channelFile)
 	}
 
-	// LoadDataToTEE(os.Getenv("key_file"), os.Getenv("channel_file"))
+	LoadDataToTEE(os.Getenv("key_file"), os.Getenv("channel_file"))
 
 	go service.ListenContractEvent()
 	go startGrpcServer()

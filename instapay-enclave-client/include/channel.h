@@ -60,12 +60,14 @@ class Channel {
                 m_other_deposit = t_deposit;
                 m_balance = 0;
                 m_locked_balance = 0;
+		m_reserved_balance = 0;
             }
             else {
                 m_my_deposit = t_deposit;
                 m_other_deposit = 0;
                 m_balance = t_deposit;
                 m_locked_balance = 0;
+		m_reserved_balance = 0;
             }
 
             m_counter = 0;

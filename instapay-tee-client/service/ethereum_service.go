@@ -88,15 +88,21 @@ func SendOpenChannelTransaction(deposit int, otherAddress string) (string, error
 
 func SendCloseChannelTransaction(channelId int64) {
 
-	client, err := ethclient.Dial("ws://" + config.EthereumConfig["wsHost"] + ":" + config.EthereumConfig["wsPort"])
+	//client, err := ethclient.Dial("ws://" + config.EthereumConfig["wsHost"] + ":" + config.EthereumConfig["wsPort"])
+	client, err := ethclient.Dial("http:141.223.121.164:8555");
 	if err != nil {
 		log.Println(err)
 	}
+
 	address := common.HexToAddress(config.GetAccountConfig().PublicKeyAddress)
 	nonce, err := client.PendingNonceAt(context.Background(), address)
+
 	if err != nil {
 		log.Println(err)
 	}
+
+	fmt.Println("address : ", address)
+	fmt.Println("channel Id : ", channelId)
 
 	ChannelID := C.uint(channelId)
 	SigLen := C.uint(0)
