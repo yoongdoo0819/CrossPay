@@ -42,6 +42,7 @@ func (s *ClientGrpc) UpdateRequest(ctx context.Context, in *clientPb.UpdateReque
 	log.Println("----REceive Update Request----")
 	convertedOriginalMsg, convertedSignatureMsg := convertByteToPointer(in.OriginalMessage, in.Signature)
 
+
 	var originalMsg *C.uchar
 	var signature *C.uchar
 	C.ecall_go_post_update_w(convertedOriginalMsg, convertedSignatureMsg, &originalMsg, &signature)
@@ -141,7 +142,7 @@ func convertPointerToByte(originalMsg *C.uchar, signature *C.uchar) ([]byte, []b
  */
 
 func (s *ClientGrpc) CrossPaymentPrepareClientRequest(ctx context.Context, in *clientPb.crossPaymentPrepareRequestMessage) (*clientPb.AgreementResult, error) {
-	log.Println("----REceive Aggreement Request----")
+	log.Println("----CROSS PAYMENT PREPARE IN CLIENT----")
 	convertedOriginalMsg, convertedSignatureMsg := convertByteToPointer(in.OriginalMessage, in.Signature)
 
 	var originalMsg *C.uchar
@@ -155,7 +156,9 @@ func (s *ClientGrpc) CrossPaymentPrepareClientRequest(ctx context.Context, in *c
 
 func (s *ClientGrpc) CrossPaymentCommitClientRequest(ctx context.Context, in *clientPb.UpdateRequestsMessage) (*clientPb.UpdateResult, error) {
 	// 채널 정보를 업데이트 한다던지 잔액을 변경.
-	log.Println("----REceive Update Request----")
+	log.Println("----CROSS PAYMENT COMMIT IN CLIENT----")
+
+	while(1) {}
 	convertedOriginalMsg, convertedSignatureMsg := convertByteToPointer(in.OriginalMessage, in.Signature)
 
 	var originalMsg *C.uchar
@@ -168,11 +171,11 @@ func (s *ClientGrpc) CrossPaymentCommitClientRequest(ctx context.Context, in *cl
 }
 
 func (s *ClientGrpc) CrossPaymentConfirmClientRequest(ctx context.Context, in *clientPb.ConfirmRequestsMessage) (*clientPb.ConfirmResult, error) {
-	log.Println("----ConfirmPayment Request Receive----")
+	log.Println("----CROSS PAYMENT CONFIRM IN CLIENT----")
 
 	convertedOriginalMsg, convertedSignatureMsg := convertByteToPointer(in.OriginalMessage, in.Signature)
 	C.ecall_cross_go_idle_w(convertedOriginalMsg, convertedSignatureMsg)
-	log.Println("----ConfirmPayment Request End----")
+	log.Println("----CROSS PAYMENT CONFIRM END IN CLIENT----")
 
 	// fmt.Println(C.ecall_get_balance_w(C.uint(1)))
 	// fmt.Println(C.ecall_get_balance_w(C.uint(2)))

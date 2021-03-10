@@ -31,6 +31,7 @@ import (
 	"github.com/sslab-instapay/instapay-tee-client/config"
 	instapay "github.com/sslab-instapay/instapay-tee-client/contracts"
 	"github.com/sslab-instapay/instapay-tee-client/model"
+	"github.com/sslab-instapay/instapay-tee-client/repository"
 	serverPb "github.com/sslab-instapay/instapay-tee-client/proto/server"
 	"google.golang.org/grpc"
 )
@@ -183,7 +184,12 @@ func SendCloseChannelTransaction(channelId int64) {
 		log.Println(err)
 	}
 
-
+	var channel model.Channel
+	channel, err = repository.GetChannelById(int(channelId))
+	if(channel.Status == model.C_PRE || channel.Status == model.C_POST) {
+		fmt.Println("BANNED IN C_PRE or C_POST \n")
+		return
+	}
 	account := config.GetAccountConfig()
 	//address := common.HexToAddress(config.GetAccountConfig().PublicKeyAddress)
 

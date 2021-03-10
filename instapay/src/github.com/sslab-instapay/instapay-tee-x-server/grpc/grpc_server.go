@@ -477,9 +477,19 @@ func (s *ServerGrpc) CrossPaymentCommitted(ctx context.Context, rs *pbXServer.Cr
 	is_verified := C.ecall_cross_verify_all_committed_res_msg_w(convertedOriginalMsg, convertedSignatureMsg)
 	fmt.Println("all committed msg result : ", is_verified)
 
-	for C.ecall_cross_check_committed_unanimity_w(C.uint(pn), C.int(0)) != 1 {
+	time.AfterFunc(time.Second * 2, func() {
+		if C.ecall_cross_check_committed_unanimity_w(C.uint(pn), C.int(0)) != 1 {
+			// refund message
 
+
+			return
+		}
+	})
+
+	for C.ecall_cross_check_committed_unanimity_w(C.uint(pn), C.int(0)) != 1 {
+		fmt.Println("waiting............")
 	}
+
 
 	connectionForChain1, err := grpc.Dial(config.EthereumConfig["chain1ServerGrpcHost"] + ":" + config.EthereumConfig["chain1ServerGrpcPort"], grpc.WithInsecure())
 	if err != nil {

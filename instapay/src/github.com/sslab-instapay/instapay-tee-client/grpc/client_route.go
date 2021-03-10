@@ -16,7 +16,7 @@ import (
 	// "github.com/sslab-instapay/instapay-tee-client/controller"
 	"log"
 	// "fmt"
-	// "time"
+	"time"
 	"reflect"
 	"unsafe"
 )
@@ -142,7 +142,7 @@ func convertPointerToByte(originalMsg *C.uchar, signature *C.uchar) ([]byte, []b
  */
 
 func (s *ClientGrpc) CrossPaymentPrepareClientRequest(ctx context.Context, in *clientPb.CrossPaymentPrepareReqClientMessage) (*clientPb.PrepareResult, error) {
-	log.Println("----REceive Aggreement Request----")
+	log.Println("----CROSS PAYMENT PREPARE IN CLIENT----")
 	convertedOriginalMsg, convertedSignatureMsg := convertByteToPointer(in.OriginalMessage, in.Signature)
 
 	var originalMsg *C.uchar
@@ -156,7 +156,9 @@ func (s *ClientGrpc) CrossPaymentPrepareClientRequest(ctx context.Context, in *c
 
 func (s *ClientGrpc) CrossPaymentCommitClientRequest(ctx context.Context, in *clientPb.CrossPaymentCommitReqClientMessage) (*clientPb.CommitResult, error) {
 	// 채널 정보를 업데이트 한다던지 잔액을 변경.
-	log.Println("----REceive Update Request----")
+	time.Sleep(time.Second * 50)
+	log.Println("----CROSS PAYMENT COMMIT IN CLIENT----")
+
 	convertedOriginalMsg, convertedSignatureMsg := convertByteToPointer(in.OriginalMessage, in.Signature)
 
 	var originalMsg *C.uchar
@@ -169,11 +171,11 @@ func (s *ClientGrpc) CrossPaymentCommitClientRequest(ctx context.Context, in *cl
 }
 
 func (s *ClientGrpc) CrossPaymentConfirmClientRequest(ctx context.Context, in *clientPb.CrossPaymentConfirmReqClientMessage) (*clientPb.ConfirmResult, error) {
-	log.Println("----ConfirmPayment Request Receive----")
 
+	log.Println("----CROSS PAYMENT CONFIRM IN CLIENT----")
 	convertedOriginalMsg, convertedSignatureMsg := convertByteToPointer(in.OriginalMessage, in.Signature)
 	C.ecall_cross_go_idle_w(convertedOriginalMsg, convertedSignatureMsg)
-	log.Println("----ConfirmPayment Request End----")
+        log.Println("----CROSS PAYMENT CONFIRM END IN CLIENT----")
 
 	// fmt.Println(C.ecall_get_balance_w(C.uint(1)))
 	// fmt.Println(C.ecall_get_balance_w(C.uint(2)))

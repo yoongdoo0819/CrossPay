@@ -216,18 +216,18 @@ func SearchPath(pn int64, amount int64) ([]string, map[string]PaymentInformation
 
 	/* composing p */
 
-	p = append(p, "ed26fa51b429c5c5922bee06184ec058c99a73c1")
-	p = append(p, "75c6a898f5b92c15035cf05d344fd5123c4949a2")
-	p = append(p, "59d853e0fef578589bd8609afbf1f5e5559a73ac")
+	p = append(p, "f55ba9376db959fab2af86d565325829b08ea3c4")
+	p = append(p, "c60f640c4505d15b972e6fc2a2a7cba09d05d9f7")
+	p = append(p, "70603f1189790fcd0fd753a7fef464bdc2c2ad36")
 
 	/* composing w */
 	var channelInform1, channelInform2, channelInform3 []C.uint
 	var amountInform1, amountInform2, amountInform3 []C.int
 
-	channelInform1 = append(channelInform1, C.uint(75))
-	channelInform2 = append(channelInform2, C.uint(75))
-	channelInform2 = append(channelInform2, C.uint(71))
-	channelInform3 = append(channelInform3, C.uint(71))
+	channelInform1 = append(channelInform1, C.uint(117))
+	channelInform2 = append(channelInform2, C.uint(117))
+	channelInform2 = append(channelInform2, C.uint(120))
+	channelInform3 = append(channelInform3, C.uint(120))
 
 	amountInform1 = append(amountInform1, C.int(-amount))
 	amountInform2 = append(amountInform2, C.int(amount))
@@ -240,9 +240,9 @@ func SearchPath(pn int64, amount int64) ([]string, map[string]PaymentInformation
 
 	paymentInformation := make(map[string]PaymentInformation)
 
-	paymentInformation["ed26fa51b429c5c5922bee06184ec058c99a73c1"] = paymentInform1
-	paymentInformation["75c6a898f5b92c15035cf05d344fd5123c4949a2"] = paymentInform2
-	paymentInformation["59d853e0fef578589bd8609afbf1f5e5559a73ac"] = paymentInform3
+	paymentInformation["f55ba9376db959fab2af86d565325829b08ea3c4"] = paymentInform1
+	paymentInformation["c60f640c4505d15b972e6fc2a2a7cba09d05d9f7"] = paymentInform2
+	paymentInformation["70603f1189790fcd0fd753a7fef464bdc2c2ad36"] = paymentInform3
 
 	log.Println("===== SearchPath End =====")
 	return p, paymentInformation
@@ -702,7 +702,9 @@ func WrapperCrossAgreementRequest(pn int64, p []string, paymentInformation map[s
 
 func WrapperCrossUpdateRequest(pn int64, p []string, paymentInformation map[string]PaymentInformation) {
 	for _, address := range p {
-		go SendCrossUpdateRequest(pn, address, paymentInformation[address])
+		if(address != "f55ba9376db959fab2af86d565325829b08ea3c4") {
+			go SendCrossUpdateRequest(pn, address, paymentInformation[address])
+		}
 	}
 
 	fmt.Println("pn : ", pn)

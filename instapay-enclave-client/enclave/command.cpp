@@ -403,8 +403,10 @@ void ecall_close_channel(unsigned int nonce, unsigned char *owner, unsigned int 
     printf("===== CLOSE CHANNEL START IN ENCLAVE ===== \n");
     /*** reject in cross-payment ***/
     unsigned int stage = channels.find(channel_id)->second.m_status;
-    if(stage == C_PRE || stage == C_POST)
+    if(stage == C_PRE || stage == C_POST) {
+	    printf("===== IMPOSSIBLE IN C_PRE or C_POST ===== \n");
 	    return;
+    }
 
 
     /* encode ABI for calling "close_channel(uint256,uint256,uint256)" on the contract */
