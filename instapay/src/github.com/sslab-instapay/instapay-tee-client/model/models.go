@@ -27,6 +27,8 @@ const (
 	PRE_UPDATE                = "PRE_UPDATE"
 	POST_UPDATE               = "POST_UPDATE"
 	CLOSED                    = "CLOSED"
+	C_PRE			  = "C_PRE"
+	C_POST			  = "C_POST"
 )
 
 type ChannelType string

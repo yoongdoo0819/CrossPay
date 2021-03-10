@@ -125,6 +125,10 @@ func GetOpenedChannelList() ([]model.Channel, error) {
 			channel.Status = model.POST_UPDATE
 		case 4:
 			channel.Status = model.CLOSED
+		case 5:
+			channel.Status = model.C_PRE
+		case 6:
+			channel.Status = model.C_POST
 		}
 		channel.MyDeposit = int(channelSlice[i].m_my_deposit)
 		channel.OtherDeposit = int(channelSlice[i].m_other_deposit)

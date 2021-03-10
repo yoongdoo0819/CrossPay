@@ -656,6 +656,10 @@ void ecall_get_open_channels(unsigned char *open_channels)
         data.m_other_deposit = iter->second.m_other_deposit;
         data.m_balance = iter->second.m_balance;
         data.m_locked_balance = iter->second.m_locked_balance;
+
+	/*** cross-payment ***/
+	data.m_reserved_balance = iter->second.m_reserved_balance;
+
         memcpy(data.m_other_addr, iter->second.m_other_addr, 20);
 
         memcpy(open_channels + cursor, (unsigned char*)&data, sizeof(channel));

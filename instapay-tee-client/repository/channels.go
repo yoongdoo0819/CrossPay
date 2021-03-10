@@ -130,6 +130,7 @@ func GetOpenedChannelList() ([]model.Channel, error) {
 		channel.OtherDeposit = int(channelSlice[i].m_other_deposit)
 		channel.MyBalance = int(channelSlice[i].m_balance)
 		channel.LockedBalance = int(channelSlice[i].m_locked_balance)
+		channel.ReservedBalance = int(channelSlice[i].m_reserved_balance)
 
 		var sig *C.uchar = &(channelSlice[i].m_my_addr[0])
 		hdr := reflect.SliceHeader{
