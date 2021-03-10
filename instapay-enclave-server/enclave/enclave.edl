@@ -161,6 +161,15 @@ enclave {
             [user_check] unsigned char *signature,
             [user_check] unsigned int *is_verified);
 
+        public void ecall_cross_create_all_refund_msg(
+            [user_check] unsigned char *msg, 
+            [user_check] unsigned char *signature, 
+            [user_check] unsigned int *is_verified);
+
+        public void ecall_cross_create_refund_msg(
+            unsigned int payment_num, 
+            [user_check] unsigned char *refund_msg, 
+            [user_check] unsigned char *refund_sig);
 
 
 /*

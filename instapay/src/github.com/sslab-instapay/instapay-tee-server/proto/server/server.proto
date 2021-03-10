@@ -7,6 +7,7 @@ service Server {
     rpc crossPaymentPrepareRequest(crossPaymentPrepareReqMessage) returns (Result) {}
     rpc crossPaymentCommitRequest(crossPaymentCommitReqMessage) returns (Result) {}
     rpc crossPaymentConfirmRequest(crossPaymentConfirmReqMessage) returns (Result) {}
+    rpc crossPaymentRefundRequest(crossPaymentRefundReqMessage) returns (Result) {}
 
 }
 
@@ -56,4 +57,11 @@ message crossPaymentConfirmReqMessage {
     bytes signature = 6;
 }
 
-
+message crossPaymentRefundReqMessage {
+    int64 pn = 1;
+    string from = 2;
+    string to = 3;
+    int64 amount = 4;
+    bytes originalMessage = 5;
+    bytes signature = 6;
+}

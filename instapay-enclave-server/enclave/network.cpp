@@ -504,6 +504,54 @@ void ecall_cross_create_all_confirm_msg(unsigned char *msg, unsigned char *signa
      return;
 }
 
+
+void ecall_cross_create_all_refund_msg(unsigned char *msg, unsigned char *signature, unsigned int *is_verified)
+{
+	
+     Cross_Message * all_refund_req = (Cross_Message*)msg;
+
+     if(verify_message(1, signature, msg, sizeof(Cross_Message), NULL))
+     {
+	*is_verified = 0;
+	return; 
+     }
+
+     if(all_refund_req->type != CROSS_ALL_REFUND_REQ)
+     {
+	*is_verified = 0;
+	return;
+     }
+
+     *is_verified = 1;
+     return;
+}
+
+
+void ecall_cross_create_refund_msg(unsigned int payment_num, unsigned char *refund_msg, unsigned char *refund_sig)
+{
+    unsigned char refund_signature[65] = {0, };
+    unsigned char *seckey_arr = (unsigned char*)"5a5e2194e0639fd017158793812dd5f5668f5bfc9a146f93f39237a4b4ed7dd5";
+    unsigned char *seckey = ::arr_to_bytes(seckey_arr, 64);
+
+    Cross_Message refund;
+
+    memset((unsigned char*)&refund, 0x00, sizeof(Cross_Message));
+
+    /* create cross payment refund message */
+
+    refund.type = CROSS_REFUND_REQ;
+    refund.payment_num = payment_num;
+
+    sign_message((unsigned char*)&refund, sizeof(Cross_Message), seckey, refund_signature);
+
+    memcpy(refund_msg, (unsigned char*)&refund, sizeof(Cross_Message));
+    memcpy(refund_sig, refund_signature, 65);
+
+    return;
+}
+
+
+
 /*void ecall_cross_create_all_prepare_msg(unsigned char *msg, unsigned char *signature, unsigned char* is_verified)
 {
 	

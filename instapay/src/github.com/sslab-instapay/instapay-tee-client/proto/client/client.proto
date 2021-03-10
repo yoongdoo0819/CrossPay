@@ -9,6 +9,8 @@ service Client {
     rpc crossPaymentPrepareClientRequest(crossPaymentPrepareReqClientMessage) returns (PrepareResult) {}
     rpc crossPaymentCommitClientRequest(crossPaymentCommitReqClientMessage) returns (CommitResult) {}
     rpc crossPaymentConfirmClientRequest(crossPaymentConfirmReqClientMessage) returns (ConfirmResult) {}
+    rpc crossPaymentRefundClientRequest(crossPaymentRefundReqClientMessage) returns (RefundResult) {}
+
 }
 
 message AgreeRequestsMessage {
@@ -98,6 +100,12 @@ message crossPaymentConfirmReqClientMessage{
     bytes signature = 3;
 }
 
+message crossPaymentRefundReqClientMessage{
+    int64 paymentNumber = 1;
+    bytes originalMessage = 2;
+    bytes signature = 3;
+}
+
 message PrepareResult{
     int64 paymentNumber = 1;
     bool result = 2;
@@ -110,5 +118,10 @@ message CommitResult{
     bool result = 2;
     bytes originalMessage = 3;
     bytes signature = 4;
+}
+
+message RefundResult {
+    int64 paymentNumber = 1;
+    bool result = 2;
 }
 

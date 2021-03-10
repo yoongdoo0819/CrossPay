@@ -397,3 +397,32 @@ void ecall_cross_create_all_confirm_req_msg(unsigned int payment_num, unsigned c
     return;
 }
 
+void ecall_cross_create_all_refund_req_msg(unsigned int payment_num, unsigned char *refund_msg, unsigned char *refund_sig)
+{
+
+    if(cross_payments.find(payment_num)->second.m_cross_status == COMMITTED) {
+	    printf("CAN NOT BE REFUNDED IN COMMITTED STATUS !! \n"); 
+	    return;
+    }
+
+    unsigned char refund_signature[65] = {0, };
+    unsigned char *seckey_arr = (unsigned char*)"5a5e2194e0639fd017158793812dd5f5668f5bfc9a146f93f39237a4b4ed7dd5";
+    unsigned char *seckey = ::arr_to_bytes(seckey_arr, 64);
+
+    Cross_Message refund;
+
+    memset((unsigned char*)&refund, 0x00, sizeof(Cross_Message));
+
+    /* create cross payment refund message */
+    
+    refund.type = CROSS_ALL_REFUND_REQ;
+    refund.payment_num = payment_num;
+
+    sign_message((unsigned char*)&refund, sizeof(Cross_Message), seckey, refund_signature);
+
+    memcpy(refund_msg, (unsigned char*)&refund, sizeof(Cross_Message));
+    memcpy(refund_sig, refund_signature, 65);
+
+    return;
+}
+

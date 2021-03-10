@@ -509,6 +509,35 @@ func (s *ServerGrpc) CrossPaymentConfirmRequest(ctx context.Context, rq *pbServe
 	return &pbServer.Result{Result: true}, nil
 }
 
+func (s *ServerGrpc) CrossPaymentRefundRequest(ctx context.Context, rq *pbServer.CrossPaymentRefundReqMessage) (*pbServer.Result, error) {
+
+
+	log.Println("===== Cross Payment Refund Start =====")
+
+	//from := rq.From
+	//to := rq.To
+	pn := rq.Pn
+	amount := rq.Amount
+	log.Println("pn : ", pn)
+	log.Println("amount : ", amount)
+	//sender := []C.uchar(from)
+	//receiver := []C.uchar(to)
+
+	convertedOriginalMsg, convertedSignatureMsg := convertByteToPointer(rq.OriginalMessage, rq.Signature)
+
+	is_verified := C.ecall_cross_create_all_refund_msg_w(convertedOriginalMsg, convertedSignatureMsg)
+	fmt.Println("all confirm msg : ", is_verified)
+
+	//PaymentNum := C.ecall_accept_request_w(&sender[0], &receiver[0], C.uint(amount))
+	p, _ := SearchPath(pn, amount)
+	
+	go WrapperCrossRefundPayment(int(pn), p)
+	//go WrapperCrossUpdateRequest(pn, p, paymentInformation)
+	
+	log.Println("===== Cross Payment Confirm End =====")
+	return &pbServer.Result{Result: true}, nil
+}
+
 func SendCrossAgreementRequest(pn int64, address string, paymentInformation PaymentInformation) {
 	
 	log.Println("pn : ", pn)
@@ -656,6 +685,34 @@ func SendCrossConfirmPayment(pn int, address string) {
 	}
 }
 
+func SendCrossRefundPayment(pn int, address string) {
+	info, err := repository.GetClientInfo(address)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	clientAddr := (*info).IP + ":" + strconv.Itoa((*info).Port)
+	conn, err := grpc.Dial(clientAddr, grpc.WithInsecure())
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	defer conn.Close()
+
+	client := pbClient.NewClientClient(conn)
+
+	var originalMessage *C.uchar
+	var signature *C.uchar
+	C.ecall_cross_create_refund_msg_w(C.uint(int32(pn)), &originalMessage, &signature)
+
+	originalMessageByte, signatureByte := convertPointerToByte(originalMessage, signature)
+
+	_, err = client.CrossPaymentRefundClientRequest(context.Background(), &pbClient.CrossPaymentRefundReqClientMessage{PaymentNumber: int64(pn), OriginalMessage: originalMessageByte, Signature: signatureByte}, )
+	if err != nil {
+		log.Println(err)
+	}
+}
+
 func WrapperCrossAgreementRequest(pn int64, p []string, paymentInformation map[string]PaymentInformation) {
 	/* remove C's address from p */
 	var q []string
@@ -751,4 +808,12 @@ func WrapperCrossConfirmPayment(pn int, p []string) {
 	fmt.Println("SENT CONFIRMATION TO ALL USERS")
 }
 
+func WrapperCrossRefundPayment(pn int, p []string) {
+	/* update payment's status */
+	//C.ecall_cross_update_payment_status_to_success_w(C.uint(pn))
 
+	for _, address := range p {
+		go SendCrossRefundPayment(pn, address)
+	}
+	fmt.Println("REFUND MSG TO ALL USERS")
+}

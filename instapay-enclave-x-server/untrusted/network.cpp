@@ -252,3 +252,17 @@ void ecall_cross_create_all_confirm_req_msg_w(unsigned int payment_num, unsigned
     *output = confirm_sig;
 }
 
+void ecall_cross_create_all_refund_req_msg_w(unsigned int payment_num, unsigned char **original_msg, unsigned char **output)
+{
+    unsigned char *refund_msg = new unsigned char[sizeof(message)];
+    unsigned char *refund_sig = new unsigned char[65];
+
+    memset(refund_msg, 0x00, sizeof(message));
+    memset(refund_sig, 0x00, 65);
+
+    ecall_cross_create_all_refund_req_msg(global_eid, payment_num, refund_msg, refund_sig);
+
+    *original_msg = refund_msg;
+    *output = refund_sig;
+}
+

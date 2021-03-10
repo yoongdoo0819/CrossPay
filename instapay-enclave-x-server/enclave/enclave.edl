@@ -131,5 +131,11 @@ enclave {
             unsigned int payment_num,
             [user_check] unsigned char *confirm_msg,
             [user_check] unsigned char *confirm_sig);
+
+        public void ecall_cross_create_all_refund_req_msg(
+            unsigned int payment_num, 
+            [user_check] unsigned char *refund_msg, 
+            [user_check] unsigned char *refund_sig);
+
     };
 };

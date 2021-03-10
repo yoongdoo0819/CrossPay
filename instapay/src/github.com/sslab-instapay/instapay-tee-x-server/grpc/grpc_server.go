@@ -541,6 +541,39 @@ func (s *ServerGrpc) CrossPaymentCommitted(ctx context.Context, rs *pbXServer.Cr
 	return &pbXServer.CrossResult{Result: true}, nil
 }
 
+func crossPaymentRefund(pn int64) {
+
+	log.Println("===== CROSS PAYMENT REFUND START =====")
+
+	connectionForChain1, err := grpc.Dial(config.EthereumConfig["chain1ServerGrpcHost"] + ":" + config.EthereumConfig["chain1ServerGrpcPort"], grpc.WithInsecure())
+	if err != nil {
+		log.Println(err)
+		return
+	}
+
+	defer connectionForChain1.Close()
+
+	client1 := pbServer.NewServerClient(connectionForChain1)
+	client1Context, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
+
+	var originalMessage *C.uchar
+	var signature *C.uchar
+
+	C.ecall_cross_create_all_refund_req_msg_w(C.uint(pn), &originalMessage, &signature)
+	originalMessageByte, signatureByte := convertPointerToByte(originalMessage, signature)
+
+	r, err := client1.CrossPaymentRefundRequest(client1Context, &pbServer.CrossPaymentRefundReqMessage{Pn: pn, From: "0xed26fa51b429c5c5922bee06184ec058c99a73c1", To: "0x59d853e0fef578589bd8609afbf1f5e5559a73ac", Amount: 3, OriginalMessage: originalMessageByte, Signature: signatureByte})
+	if err != nil {
+		log.Println(err)
+		return
+	}
+
+	log.Println(r.GetResult())
+
+	log.Println("===== CROSS PAYMENT REFUND END =====")
+}
+
 func convertByteToPointer(originalMsg []byte, signature []byte) (*C.uchar, *C.uchar) {
 
 	log.Println("----- convertByteToPointer Server Start -----")

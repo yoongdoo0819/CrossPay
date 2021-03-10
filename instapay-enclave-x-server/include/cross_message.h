@@ -40,6 +40,9 @@ enum cross_message_type {
 
     CROSS_ALL_CONFIRM_REQ = 9,
     CROSS_CONFIRM_REQ     = 10,
+
+    CROSS_ALL_REFUND_REQ  = 11,
+    CROSS_REFUND_REQ      = 12,
 };
 
 typedef struct cross_message {

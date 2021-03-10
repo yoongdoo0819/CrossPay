@@ -133,6 +133,9 @@ void ecall_cross_create_all_committed_msg_w(unsigned int payment_num, unsigned c
 unsigned int ecall_cross_create_all_confirm_msg_w(unsigned char *msg, unsigned char *signature);
 //unsigned int ecall_cross_create_all_prepare_msg_w(unsigned char *msg, unsigned char *signature);
 
+unsigned int ecall_cross_create_all_refund_msg_w(unsigned char *msg, unsigned char *signature);	
+void ecall_cross_create_refund_msg_w(unsigned int payment_num, unsigned char **original_msg, unsigned char **output);
+
 
 #if defined(__cplusplus)
 }

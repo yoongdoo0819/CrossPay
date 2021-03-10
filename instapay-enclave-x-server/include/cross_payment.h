@@ -10,6 +10,7 @@ enum cross_payment_status {
 	NONE      = 0,
 	PREPARED  = 1,
 	COMMITTED = 2,
+	REFUNDED  = 3,
 };
 
 using namespace std;
