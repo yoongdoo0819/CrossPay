@@ -1296,3 +1296,48 @@
 02:52:45.432374 version@stat F·[1 15] S·31MiB[219B 31MiB] Sc·[0.25 0.31]
 02:52:45.440888 db@janitor F·18 G·0
 02:52:45.440962 db@open done T·9.940529ms
+=============== Mar 11, 2021 (KST) ===============
+13:28:12.852323 log@legend F·NumFile S·FileSize N·Entry C·BadEntry B·BadBlock Ke·KeyError D·DroppedEntry L·Level Q·SeqNum T·TimeElapsed
+13:28:12.852433 version@stat F·[1 15] S·31MiB[219B 31MiB] Sc·[0.25 0.31]
+13:28:12.852445 db@open opening
+13:28:12.852488 journal@recovery F·1
+13:28:12.853817 journal@recovery recovering @419
+13:28:12.904078 memdb@flush created L0@421 N·35056 S·1MiB "B\x00\x00..\xc7W\xe4,v882548":"r\x00\x00..\xfe-\b,v895042"
+13:28:12.907717 version@stat F·[2 15] S·33MiB[1MiB 31MiB] Sc·[0.50 0.31]
+13:28:12.915207 db@janitor F·19 G·0
+13:28:12.915233 db@open done T·62.780548ms
+13:28:12.952638 table@compaction L0·2 -> L1·15 S·33MiB Q·895047
+13:28:12.986133 table@build created L1@424 N·74240 S·2MiB "\x00o ..\vK\x0f,v606204":"HXv..\x99\xe5\x82,v88603"
+13:28:13.011462 table@build created L1@425 N·48215 S·2MiB "HXw..'5V,v623950":"H۟..\"\\\xed,v475975"
+13:28:13.038585 table@build created L1@426 N·47706 S·2MiB "H۟..6\xe3\xf1,v781671":"b\x00\x00..o\xd2@,v320696"
+13:28:13.066089 table@build created L1@427 N·50342 S·2MiB "b\x00\x00..p\xb0\xa1,v320705":"b\x00\x00..3\xf5\xaf,v798270"
+13:28:13.100719 table@build created L1@428 N·27852 S·2MiB "b\x00\x00..J،,v798279":"h\x00\x00..\xa5+\xb6,v22947"
+13:28:13.124812 table@build created L1@429 N·23839 S·2MiB "h\x00\x00..+\xb6t,v22944":"h\x00\x00..po\x90,v163278"
+13:28:13.149799 table@build created L1@430 N·27662 S·2MiB "h\x00\x00..o\x90t,v163275":"h\x00\x00..'\am,v260683"
+13:28:13.175231 table@build created L1@431 N·30492 S·2MiB "h\x00\x00..\amt,v260680":"h\x00\x00..\xfe\x1c7,v358568"
+13:28:13.202697 table@build created L1@432 N·30535 S·2MiB "h\x00\x00..\x1c7t,v358565":"h\x00\x00..\xfdC6,v456320"
+13:28:13.243210 table@build created L1@433 N·30533 S·2MiB "h\x00\x00..C6t,v456317":"h\x00\x00..\x8d,\xba,v552022"
+13:28:13.280502 table@build created L1@434 N·26778 S·2MiB "h\x00\x00..,\xbat,v552019":"h\x00\x00..{y\x8e,v618191"
+13:28:13.304903 table@build created L1@435 N·26256 S·2MiB "h\x00\x00..y\x8et,v618188":"h\x00\x00..\x80\xf4D,v738743"
+13:28:13.329706 table@build created L1@436 N·28224 S·2MiB "h\x00\x00..\xf4Dt,v738740":"h\x00\x00..\xbc{\t,v836853"
+13:28:13.353590 table@build created L1@437 N·38194 S·2MiB "h\x00\x00..{\tt,v836850":"r\x00\x00..a\xaa\x8c,v171211"
+13:28:13.379121 table@build created L1@438 N·52401 S·2MiB "r\x00\x00..\xf0W\xd6,v171220":"r\x00\x00..\x94\x19T,v646197"
+13:28:13.395556 table@build created L1@439 N·24484 S·1MiB "r\x00\x00..\xcey\xe1,v646206":"\xff\xd6\x0f..#\xd3\x19,v744319"
+13:28:13.395610 version@stat F·[0 16] S·32MiB[0B 32MiB] Sc·[0.00 0.33]
+13:28:13.397349 table@compaction committed F-1 S-422KiB Ke·0 D·10908 T·444.684243ms
+13:28:13.397407 table@remove removed @416
+13:28:13.397582 table@remove removed @401
+13:28:13.397741 table@remove removed @402
+13:28:13.397900 table@remove removed @403
+13:28:13.398061 table@remove removed @404
+13:28:13.398218 table@remove removed @405
+13:28:13.398378 table@remove removed @406
+13:28:13.398533 table@remove removed @407
+13:28:13.398698 table@remove removed @408
+13:28:13.398859 table@remove removed @409
+13:28:13.399019 table@remove removed @410
+13:28:13.399176 table@remove removed @411
+13:28:13.399332 table@remove removed @412
+13:28:13.399489 table@remove removed @413
+13:28:13.399644 table@remove removed @414
+13:28:13.399785 table@remove removed @415

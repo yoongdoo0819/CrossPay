@@ -158,7 +158,6 @@ func (s *ClientGrpc) CrossPaymentCommitClientRequest(ctx context.Context, in *cl
 	// 채널 정보를 업데이트 한다던지 잔액을 변경.
 	log.Println("----CROSS PAYMENT COMMIT IN CLIENT----")
 
-	while(1) {}
 	convertedOriginalMsg, convertedSignatureMsg := convertByteToPointer(in.OriginalMessage, in.Signature)
 
 	var originalMsg *C.uchar

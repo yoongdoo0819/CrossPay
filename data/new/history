@@ -232,3 +232,12 @@ eth.coinbase
 ls
 miner.start()
 miner.stop()
+miner.start()
+eth.coinbase
+web3.fromWei(eth.getBalance("0x420c4f761ac9d98cb93e7d84a830324ab55043b0"), "ether")
+eth.getCode("58CD83F2ae9d11628bE3753e70564049c435c148")
+web3.fromWei(eth.getBalance("0x420c4f761ac9d98cb93e7d84a830324ab55043b0"), "ether")
+eth.getTransaction('0x544559d127082965ce16ea77010f5afdf6efd39dcde794402d9b1cced1ac23d6')
+miner.stop()
+miner.start()
+miner.stop()

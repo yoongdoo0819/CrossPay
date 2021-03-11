@@ -16,7 +16,7 @@ import (
 	// "github.com/sslab-instapay/instapay-tee-client/controller"
 	"log"
 	// "fmt"
-	"time"
+	//"time"
 	"reflect"
 	"unsafe"
 )
@@ -156,7 +156,7 @@ func (s *ClientGrpc) CrossPaymentPrepareClientRequest(ctx context.Context, in *c
 
 func (s *ClientGrpc) CrossPaymentCommitClientRequest(ctx context.Context, in *clientPb.CrossPaymentCommitReqClientMessage) (*clientPb.CommitResult, error) {
 	// 채널 정보를 업데이트 한다던지 잔액을 변경.
-	time.Sleep(time.Second * 50)
+//	time.Sleep(time.Second * 50)
 	log.Println("----CROSS PAYMENT COMMIT IN CLIENT----")
 
 	convertedOriginalMsg, convertedSignatureMsg := convertByteToPointer(in.OriginalMessage, in.Signature)
@@ -173,6 +173,8 @@ func (s *ClientGrpc) CrossPaymentCommitClientRequest(ctx context.Context, in *cl
 func (s *ClientGrpc) CrossPaymentConfirmClientRequest(ctx context.Context, in *clientPb.CrossPaymentConfirmReqClientMessage) (*clientPb.ConfirmResult, error) {
 
 	log.Println("----CROSS PAYMENT CONFIRM IN CLIENT----")
+//	time.Sleep(time.Second * 50)
+
 	convertedOriginalMsg, convertedSignatureMsg := convertByteToPointer(in.OriginalMessage, in.Signature)
 	C.ecall_cross_go_idle_w(convertedOriginalMsg, convertedSignatureMsg)
         log.Println("----CROSS PAYMENT CONFIRM END IN CLIENT----")

@@ -273,7 +273,7 @@ void ecall_cross_create_ud_req_msg(unsigned int payment_num, unsigned int paymen
 }
 
 
-void ecall_cross_create_confirm_msg(unsigned int payment_num, unsigned char *confirm_msg, unsigned char *confirm_sig)
+void ecall_cross_create_confirm_msg(unsigned int payment_num, unsigned int payment_size, unsigned int *channel_ids, int *amount, unsigned char *confirm_msg, unsigned char *confirm_sig)
 {
     unsigned char confirm_signature[65] = {0, };
     unsigned char *seckey_arr = (unsigned char*)"5a5e2194e0639fd017158793812dd5f5668f5bfc9a146f93f39237a4b4ed7dd5";
@@ -287,6 +287,10 @@ void ecall_cross_create_confirm_msg(unsigned int payment_num, unsigned char *con
 
     confirm.type = CROSS_CONFIRM_REQ;
     confirm.payment_num = payment_num;
+    confirm.payment_size = payment_size;
+
+    memcpy(confirm.channel_ids, channel_ids, sizeof(unsigned int) * payment_size);
+    memcpy(confirm.payment_amount, amount, sizeof(int) * payment_size);
 
     sign_message((unsigned char*)&confirm, sizeof(Cross_Message), seckey, confirm_signature);
 

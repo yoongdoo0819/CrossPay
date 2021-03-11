@@ -270,8 +270,10 @@ void ecall_cross_go_pre_update(unsigned char *msg, unsigned char *signature, uns
         payments.find(payment_num)->second.add_element(channel_ids[i], payment_amount[i]);
         channels.find(channel_ids[i])->second.transition_to_cross_pre_update();
 
-        if(payment_amount[i] < 0)
-            channels.find(channel_ids[i])->second.m_locked_balance += payment_amount[i] * -1;
+        if(payment_amount[i] < 0) {
+            channels.find(channel_ids[i])->second.m_reserved_balance += payment_amount[i] * -1;
+            channels.find(channel_ids[i])->second.m_balance -= payment_amount[i] * -1;
+	}
     }
 
     /* step 4. generate reply message */
@@ -343,10 +345,12 @@ void ecall_cross_go_post_update(unsigned char *msg, unsigned char *signature, un
         value = (payment_amount[i] < 0) ? payment_amount[i] * -1 : payment_amount[i];
 
         if(0 < payment_amount[i])
-            channels.find(channel_ids[i])->second.paid(value);
+	    channels.find(channel_ids[i])->second.m_reserved_balance += value;
+            //channels.find(channel_ids[i])->second.paid(value);
         else {
-            channels.find(channel_ids[i])->second.m_locked_balance += payment_amount[i];
-            channels.find(channel_ids[i])->second.pay(value);
+            //channels.find(channel_ids[i])->second.m_reserved_balance += payment_amount[i];
+
+            //channels.find(channel_ids[i])->second.pay(value);
         }
 
         channels.find(channel_ids[i])->second.transition_to_cross_post_update();
@@ -375,7 +379,11 @@ void ecall_cross_go_post_update(unsigned char *msg, unsigned char *signature, un
 void ecall_cross_go_idle(unsigned char *msg, unsigned char *signature)
 {
     unsigned char reply_signature[65] = {0, };
-    unsigned int payment_num;
+
+    unsigned int payment_num, payment_size;
+    unsigned int *channel_ids;
+    int *payment_amount; 
+
 
     Cross_Message *confirm = (Cross_Message*)msg;
 
@@ -392,12 +400,54 @@ void ecall_cross_go_idle(unsigned char *msg, unsigned char *signature)
         return;
 
     /* step 3. complete payment */
-
+/*
     payment_num = confirm->payment_num;
 
     std::vector<Related> c = payments.find(payment_num)->second.m_related_channels;
-    for(int i = 0; i < c.size(); i++)
+    for(int i = 0; i < c.size(); i++) {
         channels.find(c.at(i).channel_id)->second.transition_to_idle();
+
+    }
+*/
+
+    payment_num = confirm->payment_num;
+    payment_size = confirm->payment_size;
+    channel_ids = confirm->channel_ids;
+    payment_amount = confirm->payment_amount;
+
+    printf("channel ids: ");
+    for(int i = 0; i < payment_size; i++)
+        printf("[%d] ", channel_ids[i]);
+    printf("\n");    
+
+    unsigned int value;
+
+    if(payments.find(payment_num) == payments.end()) {
+        payments.insert(map_payment_value(payment_num, Payment(payment_num)));
+        for(int i = 0; i < payment_size; i++)
+            payments.find(payment_num)->second.add_element(channel_ids[i], payment_amount[i]);
+    }
+
+    for(int i = 0; i < payment_size; i++) {
+        value = (payment_amount[i] < 0) ? payment_amount[i] * -1 : payment_amount[i];
+
+        if(0 < payment_amount[i]) {
+	    channels.find(channel_ids[i])->second.m_reserved_balance -= value;
+            channels.find(channel_ids[i])->second.m_balance += value;    
+	//channels.find(channel_ids[i])->second.paid(value);
+        }
+        else {
+	    channels.find(channel_ids[i])->second.m_reserved_balance -= value;
+            //channels.find(channel_ids[i])->second.m_balance -= value;    
+
+            //channels.find(channel_ids[i])->second.m_reserved_balance += payment_amount[i];
+            //channels.find(channel_ids[i])->second.pay(value);
+        }
+
+        channels.find(channel_ids[i])->second.transition_to_idle();
+    }
+
+
 
     return;
 }

@@ -220,8 +220,7 @@ void ecall_cross_create_ud_req_msg_w(unsigned int payment_num, unsigned int paym
     *output = req_sig;
 }
 
-
-void ecall_cross_create_confirm_msg_w(unsigned int payment_num, unsigned char **original_msg, unsigned char **output)
+void ecall_cross_create_confirm_msg_w(unsigned int payment_num, unsigned int payment_size, unsigned int *channel_ids, int *amount, unsigned char **original_msg, unsigned char **output)
 {
     unsigned char *confirm_msg = new unsigned char[sizeof(message)];
     unsigned char *confirm_sig = new unsigned char[65];
@@ -229,7 +228,7 @@ void ecall_cross_create_confirm_msg_w(unsigned int payment_num, unsigned char **
     memset(confirm_msg, 0x00, sizeof(message));
     memset(confirm_sig, 0x00, 65);
 
-    ecall_cross_create_confirm_msg(global_eid, payment_num, confirm_msg, confirm_sig);
+    ecall_cross_create_confirm_msg(global_eid, payment_num, payment_size, channel_ids, amount, confirm_msg, confirm_sig);
 
     *original_msg = confirm_msg;
     *output = confirm_sig;

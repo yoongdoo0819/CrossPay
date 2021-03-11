@@ -112,10 +112,18 @@ enclave {
             [user_check] unsigned char *req_sig);
 
         public void ecall_cross_create_confirm_msg(
+            unsigned int payment_num, 
+            unsigned int payment_size, 
+            [user_check] unsigned int *channel_ids, 
+            [user_check] int *amount, 
+            [user_check] unsigned char *confirm_msg, 
+            [user_check] unsigned char *confirm_sig);
+/*
+        public void ecall_cross_create_confirm_msg(
             unsigned int payment_num,
             [user_check] unsigned char *confirm_msg,
             [user_check] unsigned char *confirm_sig);
-
+*/
         public void ecall_cross_verify_ag_res_msg(
             [user_check] unsigned char *pubaddr,
             [user_check] unsigned char *res_msg,

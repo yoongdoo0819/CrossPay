@@ -500,9 +500,9 @@ func (s *ServerGrpc) CrossPaymentConfirmRequest(ctx context.Context, rq *pbServe
 	fmt.Println("all confirm msg : ", is_verified)
 
 	//PaymentNum := C.ecall_accept_request_w(&sender[0], &receiver[0], C.uint(amount))
-	p, _ := SearchPath(pn, amount)
+	p, paymentInformation := SearchPath(pn, amount)
 	
-	go WrapperCrossConfirmPayment(int(pn), p)
+	go WrapperCrossConfirmPayment(int(pn), p, paymentInformation)
 	//go WrapperCrossUpdateRequest(pn, p, paymentInformation)
 	
 	log.Println("===== Cross Payment Confirm End =====")
@@ -657,7 +657,7 @@ func SendCrossUpdateRequest(pn int64, address string, paymentInformation Payment
 	return
 }
 
-func SendCrossConfirmPayment(pn int, address string) {
+func SendCrossConfirmPayment(pn int, address string, paymentInformation PaymentInformation) {
 	info, err := repository.GetClientInfo(address)
 	if err != nil {
 		log.Fatal(err)
@@ -673,9 +673,13 @@ func SendCrossConfirmPayment(pn int, address string) {
 
 	client := pbClient.NewClientClient(conn)
 
+
+	channelSlice := paymentInformation.ChannelInform
+	amountSlice := paymentInformation.AmountInform
 	var originalMessage *C.uchar
 	var signature *C.uchar
-	C.ecall_cross_create_confirm_msg_w(C.uint(int32(pn)), &originalMessage, &signature)
+
+	C.ecall_cross_create_confirm_msg_w(C.uint(int32(pn)), C.uint(len(channelSlice)), &channelSlice[0], &amountSlice[0], &originalMessage, &signature)
 
 	originalMessageByte, signatureByte := convertPointerToByte(originalMessage, signature)
 
@@ -759,7 +763,7 @@ func WrapperCrossAgreementRequest(pn int64, p []string, paymentInformation map[s
 
 func WrapperCrossUpdateRequest(pn int64, p []string, paymentInformation map[string]PaymentInformation) {
 	for _, address := range p {
-		if(address != "f55ba9376db959fab2af86d565325829b08ea3c4") {
+		if(address != "af55ba9376db959fab2af86d565325829b08ea3c4") {
 			go SendCrossUpdateRequest(pn, address, paymentInformation[address])
 		}
 	}
@@ -798,12 +802,12 @@ func WrapperCrossUpdateRequest(pn int64, p []string, paymentInformation map[stri
 	//go WrapperCrossConfirmPayment(int(pn), p)
 }
 
-func WrapperCrossConfirmPayment(pn int, p []string) {
+func WrapperCrossConfirmPayment(pn int, p []string, paymentInformation map[string]PaymentInformation) {
 	/* update payment's status */
 	C.ecall_cross_update_payment_status_to_success_w(C.uint(pn))
 
 	for _, address := range p {
-		go SendCrossConfirmPayment(pn, address)
+		go SendCrossConfirmPayment(pn, address, paymentInformation[address])
 	}
 	fmt.Println("SENT CONFIRMATION TO ALL USERS")
 }
