@@ -176,9 +176,18 @@ enclave {
 
         public void ecall_cross_create_refund_msg(
             unsigned int payment_num, 
+            unsigned int payment_size, 
+            [user_check] unsigned int *channel_ids, 
+            [user_check] int *amount, 
             [user_check] unsigned char *refund_msg, 
             [user_check] unsigned char *refund_sig);
 
+/*
+        public void ecall_cross_create_refund_msg(
+            unsigned int payment_num, 
+            [user_check] unsigned char *refund_msg, 
+            [user_check] unsigned char *refund_sig);
+*/
 
 /*
         public void ecall_cross_create_all_prepare_msg(

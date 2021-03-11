@@ -21,11 +21,6 @@ extern "C" {
 using namespace std;
 
 
-enum cross_payment_server {
-	chain1Server = 0,
-	chain2Server = 1,
-};
-
 enum cross_message_type {
     
     CROSS_ALL_PREPARE_REQ = 1,
@@ -45,9 +40,17 @@ enum cross_message_type {
     CROSS_REFUND_REQ      = 12,
 };
 
+enum cross_payment_server {
+	CHAIN1_SERVER = 13,
+	CHAIN2_SERVER = 14,
+};
+
 typedef struct cross_message {
     /********* common *********/
     cross_message_type type;
+
+    /*** cross-payment ***/
+    cross_payment_server server;
 
     /***** direct payment *****/
     unsigned int channel_id;
@@ -63,7 +66,7 @@ typedef struct cross_message {
     unsigned int e;
 
     /*** cross-payment ***/
-    cross_payment_server server;
+    //cross_payment_server server;
 
 } Cross_Message;
 

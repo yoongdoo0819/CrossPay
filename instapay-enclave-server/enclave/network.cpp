@@ -397,10 +397,10 @@ void ecall_cross_create_all_prepared_msg(unsigned int payment_num, unsigned char
 
     /* create agreement request message */
 
-    response.server = chain1Server;
+    response.server = CHAIN1_SERVER;
     response.type = CROSS_ALL_PREPARED;
     response.payment_num = payment_num;
-    //request.payment_size = payment_size;
+    response.payment_size = 0;
     //memcpy(request.channel_ids, channel_ids, sizeof(unsigned int) * payment_size);
     //memcpy(request.payment_amount, amount, sizeof(int) * payment_size);
 
@@ -472,7 +472,7 @@ void ecall_cross_create_all_committed_msg(unsigned int payment_num, unsigned cha
 
     /* create agreement request message */
 
-    response.server = chain1Server;
+    response.server = CHAIN1_SERVER;
     response.type = CROSS_ALL_COMMITTED;
     response.payment_num = payment_num;
     //request.payment_size = payment_size;
@@ -531,6 +531,35 @@ void ecall_cross_create_all_refund_msg(unsigned char *msg, unsigned char *signat
 }
 
 
+
+void ecall_cross_create_refund_msg(unsigned int payment_num, unsigned int payment_size, unsigned int *channel_ids, int *amount, unsigned char *refund_msg, unsigned char *refund_sig)
+{
+    unsigned char refund_signature[65] = {0, };
+    unsigned char *seckey_arr = (unsigned char*)"5a5e2194e0639fd017158793812dd5f5668f5bfc9a146f93f39237a4b4ed7dd5";
+    unsigned char *seckey = ::arr_to_bytes(seckey_arr, 64);
+
+    Cross_Message refund;
+
+    memset((unsigned char*)&refund, 0x00, sizeof(Cross_Message));
+
+    /* create payment refund message */
+
+    refund.type = CROSS_REFUND_REQ;
+    refund.payment_num = payment_num;
+    refund.payment_size = payment_size;
+
+    memcpy(refund.channel_ids, channel_ids, sizeof(unsigned int) * payment_size);
+    memcpy(refund.payment_amount, amount, sizeof(int) * payment_size);
+
+    sign_message((unsigned char*)&refund, sizeof(Cross_Message), seckey, refund_signature);
+
+    memcpy(refund_msg, (unsigned char*)&refund, sizeof(Cross_Message));
+    memcpy(refund_sig, refund_signature, 65);
+
+    return;
+}
+
+/*
 void ecall_cross_create_refund_msg(unsigned int payment_num, unsigned char *refund_msg, unsigned char *refund_sig)
 {
     unsigned char refund_signature[65] = {0, };
@@ -541,7 +570,7 @@ void ecall_cross_create_refund_msg(unsigned int payment_num, unsigned char *refu
 
     memset((unsigned char*)&refund, 0x00, sizeof(Cross_Message));
 
-    /* create cross payment refund message */
+    // create cross payment refund message 
 
     refund.type = CROSS_REFUND_REQ;
     refund.payment_num = payment_num;
@@ -554,7 +583,7 @@ void ecall_cross_create_refund_msg(unsigned int payment_num, unsigned char *refu
     return;
 }
 
-
+*/
 
 /*void ecall_cross_create_all_prepare_msg(unsigned char *msg, unsigned char *signature, unsigned char* is_verified)
 {

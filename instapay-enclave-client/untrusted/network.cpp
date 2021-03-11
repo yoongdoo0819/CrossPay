@@ -86,4 +86,8 @@ void ecall_cross_go_idle_w(unsigned char *msg, unsigned char *signature)
     ecall_cross_go_idle(global_eid, msg, signature);    
 }
 
+void ecall_cross_refund_w(unsigned char *msg, unsigned char *signature)
+{
+    ecall_cross_refund(global_eid, msg, signature);    
+}
 

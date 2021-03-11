@@ -156,6 +156,8 @@ void ecall_load_channel_data_w(char *chfile);
 void ecall_cross_go_pre_update_w(unsigned char *msg, unsigned char *signature, unsigned char **original_msg, unsigned char **output);
 void ecall_cross_go_post_update_w(unsigned char *msg, unsigned char *signature, unsigned char **original_msg, unsigned char **output);
 void ecall_cross_go_idle_w(unsigned char *msg, unsigned char *signature);
+void ecall_cross_refund_w(unsigned char *msg, unsigned char *signature);
+
 
 #if defined(__cplusplus)
 }

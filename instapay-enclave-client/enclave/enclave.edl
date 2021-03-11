@@ -182,5 +182,10 @@ enclave {
             [user_check] unsigned char *msg,
             [user_check] unsigned char *signature);
 
+        public void ecall_cross_refund(
+            [user_check] unsigned char *msg,
+            [user_check] unsigned char *signature);
+
+
     };
 };

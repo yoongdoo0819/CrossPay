@@ -34,6 +34,10 @@ type ServerGrpc struct {
 	pbServer.UnimplementedServerServer
 	pbXServer.UnimplementedCross_ServerServer
 }
+
+var prepared int = 0
+var committed int = 0
+
 /*
 var rwMutex = new(sync.RWMutex)
 
@@ -417,17 +421,36 @@ func (s *ServerGrpc) CrossPaymentPrepared(ctx context.Context, rs *pbXServer.Cro
 
 	}
 
+	if prepared == 1 {
+		return &pbXServer.CrossResult{Result: true}, nil
+	}
+
+	if prepared == 0 {
+		prepared = 1
+	}
+
 	connectionForChain1, err := grpc.Dial(config.EthereumConfig["chain1ServerGrpcHost"] + ":" + config.EthereumConfig["chain1ServerGrpcPort"], grpc.WithInsecure())
 	if err != nil {
 		log.Println(err)
 		return &pbXServer.CrossResult{Result: false}, nil
 	}
-
 	defer connectionForChain1.Close()
+
+	connectionForChain2, err := grpc.Dial(config.EthereumConfig["chain2ServerGrpcHost"] + ":" + config.EthereumConfig["chain2ServerGrpcPort"], grpc.WithInsecure())
+	if err != nil {
+		log.Println(err)
+		return &pbXServer.CrossResult{Result: false}, nil
+	}
+	defer connectionForChain2.Close()
 
 	client1 := pbServer.NewServerClient(connectionForChain1)
 	client1Context, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
+
+	client2 := pbServer.NewServerClient(connectionForChain2)
+	client2Context, cancel2 := context.WithTimeout(context.Background(), time.Second)
+	defer cancel2()
+
 
 	var originalMessage *C.uchar
 	var signature *C.uchar
@@ -435,13 +458,23 @@ func (s *ServerGrpc) CrossPaymentPrepared(ctx context.Context, rs *pbXServer.Cro
 	C.ecall_cross_create_all_commit_req_msg_w(C.uint(pn), &originalMessage, &signature)
 	originalMessageByte, signatureByte := convertPointerToByte(originalMessage, signature)
 
-	r, err := client1.CrossPaymentCommitRequest(client1Context, &pbServer.CrossPaymentCommitReqMessage{Pn: pn, From: "0xed26fa51b429c5c5922bee06184ec058c99a73c1", To: "0x59d853e0fef578589bd8609afbf1f5e5559a73ac", Amount: 3, OriginalMessage: originalMessageByte, Signature: signatureByte})
+	r1, err := client1.CrossPaymentCommitRequest(client1Context, &pbServer.CrossPaymentCommitReqMessage{Pn: pn, From: "0xed26fa51b429c5c5922bee06184ec058c99a73c1", To: "0x59d853e0fef578589bd8609afbf1f5e5559a73ac", Amount: 3, OriginalMessage: originalMessageByte, Signature: signatureByte})
 	if err != nil {
 		log.Println(err)
 		return &pbXServer.CrossResult{Result: false}, nil
 	}
 
-	log.Println(r.GetResult())
+	log.Println(r1.GetResult())
+
+
+	r2, err := client2.CrossPaymentCommitRequest(client2Context, &pbServer.CrossPaymentCommitReqMessage{Pn: pn, From: "0xed26fa51b429c5c5922bee06184ec058c99a73c1", To: "0x59d853e0fef578589bd8609afbf1f5e5559a73ac", Amount: 3, OriginalMessage: originalMessageByte, Signature: signatureByte})
+	if err != nil {
+		log.Println(err)
+		return &pbXServer.CrossResult{Result: false}, nil
+	}
+
+	log.Println(r2.GetResult())
+
 	// Lv2 off-chain server sends the cross-payment request to Lv1 off-chain server
 /*
 	log.Println("===== Cross Payment Request Start =====")
@@ -477,19 +510,13 @@ func (s *ServerGrpc) CrossPaymentCommitted(ctx context.Context, rs *pbXServer.Cr
 	is_verified := C.ecall_cross_verify_all_committed_res_msg_w(convertedOriginalMsg, convertedSignatureMsg)
 	fmt.Println("all committed msg result : ", is_verified)
 
-	time.AfterFunc(time.Second * 2, func() {
-		if C.ecall_cross_check_committed_unanimity_w(C.uint(pn), C.int(0)) != 1 {
-			// refund message
+/*
+	var refundMessage *C.uchar
+	var refundSignature *C.uchar
+*/
 
-
-			return
-		}
-	})
-
-	for C.ecall_cross_check_committed_unanimity_w(C.uint(pn), C.int(0)) != 1 {
-		fmt.Println("waiting............")
-	}
-
+	var originalMessage *C.uchar
+	var signature *C.uchar
 
 	connectionForChain1, err := grpc.Dial(config.EthereumConfig["chain1ServerGrpcHost"] + ":" + config.EthereumConfig["chain1ServerGrpcPort"], grpc.WithInsecure())
 	if err != nil {
@@ -499,23 +526,84 @@ func (s *ServerGrpc) CrossPaymentCommitted(ctx context.Context, rs *pbXServer.Cr
 
 	defer connectionForChain1.Close()
 
-	client1 := pbServer.NewServerClient(connectionForChain1)
-	client1Context, cancel := context.WithTimeout(context.Background(), time.Second)
-	defer cancel()
-
-	var originalMessage *C.uchar
-	var signature *C.uchar
-
-	C.ecall_cross_create_all_confirm_req_msg_w(C.uint(pn), &originalMessage, &signature)
-	originalMessageByte, signatureByte := convertPointerToByte(originalMessage, signature)
-
-	r, err := client1.CrossPaymentConfirmRequest(client1Context, &pbServer.CrossPaymentConfirmReqMessage{Pn: pn, From: "0xed26fa51b429c5c5922bee06184ec058c99a73c1", To: "0x59d853e0fef578589bd8609afbf1f5e5559a73ac", Amount: 3, OriginalMessage: originalMessageByte, Signature: signatureByte})
+	connectionForChain2, err := grpc.Dial(config.EthereumConfig["chain2ServerGrpcHost"] + ":" + config.EthereumConfig["chain2ServerGrpcPort"], grpc.WithInsecure())
 	if err != nil {
 		log.Println(err)
 		return &pbXServer.CrossResult{Result: false}, nil
 	}
 
-	log.Println(r.GetResult())
+	defer connectionForChain2.Close()
+
+	client1 := pbServer.NewServerClient(connectionForChain1)
+	client1Context, cancel := context.WithTimeout(context.Background(), time.Second*10)
+	defer cancel()
+
+	client2 := pbServer.NewServerClient(connectionForChain2)
+	client2Context, cancel2 := context.WithTimeout(context.Background(), time.Second*10)
+	defer cancel2()
+
+
+	//refund message
+/*	time.Sleep(time.Second * 7)
+
+	if committed == 1 {
+		return &pbXServer.CrossResult{Result: true}, nil
+	}
+
+			C.ecall_cross_create_all_refund_req_msg_w(C.uint(pn), &refundMessage, &refundSignature)
+			refundMessageByte, refundSignatureByte := convertPointerToByte(refundMessage, refundSignature)
+
+			r1, err := client1.CrossPaymentRefundRequest(client1Context, &pbServer.CrossPaymentRefundReqMessage{Pn: pn, From: "0xed26fa51b429c5c5922bee06184ec058c99a73c1", To: "0x59d853e0fef578589bd8609afbf1f5e5559a73ac", Amount: 3, OriginalMessage: refundMessageByte, Signature: refundSignatureByte})
+			if err != nil {
+				log.Println(err)
+				return &pbXServer.CrossResult{Result: true}, nil
+			}
+
+			log.Println(r1.GetResult())
+
+			r2, err := client2.CrossPaymentRefundRequest(client2Context, &pbServer.CrossPaymentRefundReqMessage{Pn: pn, From: "0xed26fa51b429c5c5922bee06184ec058c99a73c1", To: "0x59d853e0fef578589bd8609afbf1f5e5559a73ac", Amount: 3, OriginalMessage: refundMessageByte, Signature: refundSignatureByte})
+			if err != nil {
+				log.Println(err)
+				return &pbXServer.CrossResult{Result: true}, nil
+			}
+
+			log.Println(r2.GetResult())
+
+			fmt.Println("TIMER EXPIRED !!!!!")
+			committed = 1
+			return &pbXServer.CrossResult{Result: true}, nil
+*/	
+
+
+	for C.ecall_cross_check_committed_unanimity_w(C.uint(pn), C.int(0)) != 1 {
+	
+	}
+
+	if committed == 1 {
+		return &pbXServer.CrossResult{Result: true}, nil
+	}
+	if committed == 0 {
+		committed = 1
+	}
+
+	C.ecall_cross_create_all_confirm_req_msg_w(C.uint(pn), &originalMessage, &signature)
+	originalMessageByte, signatureByte := convertPointerToByte(originalMessage, signature)
+
+	r1, err := client1.CrossPaymentConfirmRequest(client1Context, &pbServer.CrossPaymentConfirmReqMessage{Pn: pn, From: "0xed26fa51b429c5c5922bee06184ec058c99a73c1", To: "0x59d853e0fef578589bd8609afbf1f5e5559a73ac", Amount: 3, OriginalMessage: originalMessageByte, Signature: signatureByte})
+	if err != nil {
+		log.Println(err)
+		return &pbXServer.CrossResult{Result: false}, nil
+	}
+
+	log.Println(r1.GetResult())
+
+	r2, err := client2.CrossPaymentConfirmRequest(client2Context, &pbServer.CrossPaymentConfirmReqMessage{Pn: pn, From: "0xed26fa51b429c5c5922bee06184ec058c99a73c1", To: "0x59d853e0fef578589bd8609afbf1f5e5559a73ac", Amount: 3, OriginalMessage: originalMessageByte, Signature: signatureByte})
+	if err != nil {
+		log.Println(err)
+		return &pbXServer.CrossResult{Result: false}, nil
+	}
+
+	log.Println(r2.GetResult())
 
 	// Lv2 off-chain server sends the cross-payment request to Lv1 off-chain server
 /*

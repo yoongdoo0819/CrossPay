@@ -226,13 +226,14 @@ void ecall_cross_update_committedServer_list(unsigned int payment_num, unsigned 
 void ecall_cross_check_prepared_unanimity(unsigned int payment_num, int which_list, unsigned int *is_unanimous)
 {
 
-    if (cross_payments.find(payment_num)->second.m_chain1Server_prepared == 1) {
+    if (cross_payments.find(payment_num)->second.m_chain1Server_prepared == 1
+	&& cross_payments.find(payment_num)->second.m_chain2Server_prepared == 1) {
 	    cross_payments.find(payment_num)->second.m_cross_status = PREPARED;
 	    ocall_print_string((const char*)"Status : PREPARED \n");
 	    *is_unanimous = 1;
     }
     else {
-	    ocall_print_string((const char*)"Status : NONE \n");
+	 // ocall_print_string((const char*)"Status : NONE \n");
 	    *is_unanimous = 0;
     }
     //*is_unanimous = cross_payments.find(payment_num)->second.check_unanimity(which_list);
@@ -240,7 +241,8 @@ void ecall_cross_check_prepared_unanimity(unsigned int payment_num, int which_li
 
 void ecall_cross_check_committed_unanimity(unsigned int payment_num, int which_list, unsigned int *is_unanimous)
 {
-    if (cross_payments.find(payment_num)->second.m_chain1Server_committed == 1) {
+    if (cross_payments.find(payment_num)->second.m_chain1Server_committed == 1
+	&& cross_payments.find(payment_num)->second.m_chain2Server_committed == 1) {
 	    cross_payments.find(payment_num)->second.m_cross_status = COMMITTED;
 	    ocall_print_string((const char*)"Status : COMMITTED \n");
 	    *is_unanimous = 1;
@@ -299,11 +301,19 @@ void ecall_cross_verify_all_prepared_res_msg(unsigned char *res_msg, unsigned ch
         return;
     }
 
-    if(res->server == chain1Server) {
+    printf("payment num : %d \n", res->payment_num);
+    printf(" own server : %d \n", CHAIN1_SERVER);
+    printf("@@@@@@@@@@@@@@ server : %d \n", res->server);
+    printf("@@@@@@@@@@@@@@ type : %d \n", res->type);
+
+    if(res->server == CHAIN1_SERVER) {
+	    printf("prepared server chain1 : %d \n", res->server);
 	    cross_payments.find(res->payment_num)->second.m_chain1Server_prepared = 1;
     }
-    else if(res->server == chain2Server)
+    else if(res->server == CHAIN2_SERVER) {	    
+	    printf("prepared server chain2 : %d \n", res->server);
 	    cross_payments.find(res->payment_num)->second.m_chain2Server_prepared = 1;
+    }
 
     /* step 3. mark as verified */
 
@@ -362,9 +372,9 @@ void ecall_cross_verify_all_committed_res_msg(unsigned char *res_msg, unsigned c
         return;
     }
 
-    if(res->server == chain1Server)
+    if(res->server == CHAIN1_SERVER)
 	    cross_payments.find(res->payment_num)->second.m_chain1Server_committed = 1;
-    else if(res->server == chain2Server)
+    else if(res->server == CHAIN2_SERVER)
 	    cross_payments.find(res->payment_num)->second.m_chain2Server_committed = 1;
 
     /* step 3. mark as verified */

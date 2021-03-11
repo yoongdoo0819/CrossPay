@@ -32,7 +32,7 @@ var EthereumConfig = map[string]string{
 	"clientProto":      "",
 	"receiver":         "",
 
-	"chain2ServerGrpcHost":   "141.223.121.163",
+	"chain2ServerGrpcHost":   "141.223.121.164",
 	"chain2ServerGrpcPort":   "50008",
 }
 

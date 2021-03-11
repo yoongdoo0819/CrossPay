@@ -185,3 +185,23 @@ func (s *ClientGrpc) CrossPaymentConfirmClientRequest(ctx context.Context, in *c
 
 	return &clientPb.ConfirmResult{Result: true}, nil
 }
+
+func (s *ClientGrpc) CrossPaymentRefundClientRequest(ctx context.Context, in *clientPb.CrossPaymentRefundReqClientMessage) (*clientPb.RefundResult, error) {
+
+	log.Println("----CROSS PAYMENT REFUND IN CLIENT----")
+//	time.Sleep(time.Second * 50)
+
+	convertedOriginalMsg, convertedSignatureMsg := convertByteToPointer(in.OriginalMessage, in.Signature)
+	C.ecall_cross_refund_w(convertedOriginalMsg, convertedSignatureMsg)
+        log.Println("----CROSS PAYMENT REFUND END IN CLIENT----")
+
+	// fmt.Println(C.ecall_get_balance_w(C.uint(1)))
+	// fmt.Println(C.ecall_get_balance_w(C.uint(2)))
+	// fmt.Println(time.Since(controller.ExecutionTime))
+
+	return &clientPb.RefundResult{Result: true}, nil
+}
+
+
+
+

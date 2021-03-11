@@ -332,6 +332,21 @@ unsigned int ecall_cross_create_all_refund_msg_w(unsigned char *msg, unsigned ch
     return is_verified;
 }
 
+void ecall_cross_create_refund_msg_w(unsigned int payment_num, unsigned int payment_size, unsigned int *channel_ids, int *amount, unsigned char **original_msg, unsigned char **output)
+{
+    unsigned char *refund_msg = new unsigned char[sizeof(message)];
+    unsigned char *refund_sig = new unsigned char[65];
+
+    memset(refund_msg, 0x00, sizeof(message));
+    memset(refund_sig, 0x00, 65);
+
+    ecall_cross_create_refund_msg(global_eid, payment_num, payment_size, channel_ids, amount, refund_msg, refund_sig);
+
+    *original_msg = refund_msg;
+    *output = refund_sig;
+}
+
+/*
 void ecall_cross_create_refund_msg_w(unsigned int payment_num, unsigned char **original_msg, unsigned char **output)
 {
     unsigned char *refund_msg = new unsigned char[sizeof(message)];
@@ -346,5 +361,5 @@ void ecall_cross_create_refund_msg_w(unsigned int payment_num, unsigned char **o
     *original_msg = refund_msg;
     *output = refund_sig;
 }
-
+*/
 

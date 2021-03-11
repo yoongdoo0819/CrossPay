@@ -241,3 +241,4 @@ eth.getTransaction('0x544559d127082965ce16ea77010f5afdf6efd39dcde794402d9b1cced1
 miner.stop()
 miner.start()
 miner.stop()
+miner.start()
