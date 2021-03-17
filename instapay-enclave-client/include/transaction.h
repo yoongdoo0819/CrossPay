@@ -28,8 +28,8 @@ class Transaction {
                     unsigned int t_data_size
                     )
                     : m_nonce(t_nonce)
-                    , m_gas_price(20000000000)   // 2000000000, 20000000000
-                    , m_gas_limit(2000000)  // 2000000
+                    , m_gas_price(20000000)   // 2000000000, 20000000000
+                    , m_gas_limit(60000)  // 2000000
                     , m_value(t_value)
                     , m_v(11)
                     , m_data_size(t_data_size)

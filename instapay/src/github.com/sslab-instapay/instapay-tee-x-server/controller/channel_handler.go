@@ -17,6 +17,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/sslab-instapay/instapay-tee-x-server/config"
+	serverGrpc "github.com/sslab-instapay/instapay-tee-x-server/grpc"
         serverPb "github.com/sslab-instapay/instapay-tee-x-server/proto/server"
 	//xServerPb "github.com/sslab-instapay/instapay-tee-x-server/proto/cross-server"
 	"google.golang.org/grpc"
@@ -113,20 +114,21 @@ func CrossPaymentToServerChannelHandler(ctx *gin.Context) {
 		log.Println(err)
 	}
 
-	fmt.Println("chain1 from : ", chain1From)
-	fmt.Println("chain1 val : ", chain1Val)
-	fmt.Println("chain1 to : ", chain1To)
+	fmt.Println("CHAIN1 From : ", chain1From)
+	fmt.Println("CHAIN1 Val : ", chain1Val)
+	fmt.Println("CHAIN1 To : ", chain1To)
 
-	fmt.Println("chain2 from : ", chain2From)
-	fmt.Println("chain2 val : ", chain2Val)
-	fmt.Println("chain2 to : ", chain2To)
-
+	fmt.Println("CHAIN2 From : ", chain2From)
+	fmt.Println("CHAIN2 Val : ", chain2Val)
+	fmt.Println("CHAIN2 To : ", chain2To)
+	
 	chain1Sender := []C.uchar(chain1From)
 	chain1Receiver := []C.uchar(chain1To)
 
 	//chain2Sender := []C.uchar(chain2From)
 	//chain2Receiver := []C.uchar(chain2To)
 
+	serverGrpc.StartTime = time.Now()
 	PaymentNum := C.ecall_cross_accept_request_w(&chain1Sender[0], &chain1Sender[0], &chain1Receiver[0], C.uint(chain1Val), &chain1Sender[0], &chain1Sender[0], &chain1Receiver[0], C.uint(chain1Val));
 
 	//C.ecall_cross_add_participant_w(C.uint(PaymentNum), &([]C.uchar(chain1Server))[0])
@@ -140,7 +142,7 @@ func CrossPaymentToServerChannelHandler(ctx *gin.Context) {
 	fmt.Println("===== CREATE CROSS ALL PREPARE MSG END =====")
 
 
-	log.Println("pn : ", PaymentNum)
+	log.Println("PN : ", PaymentNum)
 	log.Println("chain1 server : ", config.EthereumConfig["chain1ServerGrpcHost"] + ":" + config.EthereumConfig["chain1ServerGrpcPort"])
 	log.Println("chain2 server : ", config.EthereumConfig["chain2ServerGrpcHost"] + ":" + config.EthereumConfig["chain2ServerGrpcPort"])
 

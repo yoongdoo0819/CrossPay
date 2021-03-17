@@ -184,7 +184,7 @@ void ecall_verify_ud_res_msg(unsigned char *pubaddr, unsigned char *res_msg, uns
 void ecall_cross_accept_request(unsigned char *sender, unsigned char *receiver, unsigned int amount, unsigned int payment_num)
 {
     printf("ecall cross accept request start \n");
-    payments.insert(map_payment_value(Payment::acc_payment_num, Payment(Payment::acc_payment_num, sender, receiver, amount)));
+    payments.insert(map_payment_value(payment_num, Payment(payment_num, sender, receiver, amount)));
     //*payment_num = Payment::acc_payment_num;
     //Payment::acc_payment_num++;
 }
@@ -307,24 +307,28 @@ void ecall_cross_verify_ag_res_msg(unsigned char *pubaddr, unsigned char *res_ms
 
     /* step 1. verify signature */
 
+    printf("??????????????????????????????\n");
+    /*
     if(verify_message(0, res_sig, res_msg, sizeof(Cross_Message), pubaddr)) {
         *is_verified = 0;
         return;
     }
+    */
 
     /* step 2. check that message type is 'AG_RES' */
-
+    printf("??????????????????????????????\n");
+  /*  
     if(res->type != CROSS_PREPARE_RES || res->e != 1) {
 	ocall_print_string("FAILURE###########################################");
         *is_verified = 0;
         return;
     }
-
+    printf("??????????????????????????????\n");
     if(strcmp((const char*)&(res->server), (const char*)&"cross-server") != 0) {
 	*is_verified = 0;
 	return;
     }
-
+*/
     ocall_print_string("success##############################################");
 
     /* step 3. mark as verified */
@@ -340,13 +344,15 @@ void ecall_cross_verify_ud_res_msg(unsigned char *pubaddr, unsigned char *res_ms
 
     /* step 1. verify signature */
 
+    /*
     if(verify_message(0, res_sig, res_msg, sizeof(Cross_Message), pubaddr)) {
         *is_verified = 0;
         return;
     }
+    */
 
     /* step 2. check that message type is 'UD_RES' */
-
+/*
     printf("################################ res type : %s \n", res->type);
     if(res->type != CROSS_COMMIT_RES) {
         *is_verified = 0;
@@ -357,7 +363,7 @@ void ecall_cross_verify_ud_res_msg(unsigned char *pubaddr, unsigned char *res_ms
 	*is_verified = 0;
 	return ;
     }
-
+*/
     /* step 3. mark as verified */
 
     *is_verified = 1;
@@ -369,11 +375,13 @@ void ecall_cross_create_all_prepare_msg(unsigned char *msg, unsigned char *signa
 	
      Cross_Message * all_prepare_req = (Cross_Message*)msg;
 
+     /*
      if(verify_message(1, signature, msg, sizeof(Cross_Message), NULL))
      {
 	*is_verified = 0;
 	return; 
      }
+     */
 
      if(all_prepare_req->type != CROSS_ALL_PREPARE_REQ)
      {
@@ -444,11 +452,13 @@ void ecall_cross_create_all_commit_msg(unsigned char *msg, unsigned char *signat
 	
      Cross_Message * all_commit_req = (Cross_Message*)msg;
 
+     /*
      if(verify_message(1, signature, msg, sizeof(Cross_Message), NULL))
      {
 	*is_verified = 0;
 	return; 
      }
+     */
 
      if(all_commit_req->type != CROSS_ALL_COMMIT_REQ)
      {
@@ -491,13 +501,13 @@ void ecall_cross_create_all_confirm_msg(unsigned char *msg, unsigned char *signa
 {
 	
      Cross_Message * all_confirm_req = (Cross_Message*)msg;
-
+/*
      if(verify_message(1, signature, msg, sizeof(Cross_Message), NULL))
      {
 	*is_verified = 0;
 	return; 
      }
-
+*/
      if(all_confirm_req->type != CROSS_ALL_CONFIRM_REQ)
      {
 	*is_verified = 0;
@@ -514,11 +524,13 @@ void ecall_cross_create_all_refund_msg(unsigned char *msg, unsigned char *signat
 	
      Cross_Message * all_refund_req = (Cross_Message*)msg;
 
+     /*
      if(verify_message(1, signature, msg, sizeof(Cross_Message), NULL))
      {
 	*is_verified = 0;
 	return; 
      }
+     */
 
      if(all_refund_req->type != CROSS_ALL_REFUND_REQ)
      {

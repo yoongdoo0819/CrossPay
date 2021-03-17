@@ -15,11 +15,13 @@ import (
 
 	// "github.com/sslab-instapay/instapay-tee-client/controller"
 	"log"
-	// "fmt"
-	//"time"
+	"fmt"
+	"time"
 	"reflect"
 	"unsafe"
 )
+
+var StartTime time.Time
 
 type ClientGrpc struct {
 	clientPb.UnimplementedClientServer
@@ -142,7 +144,10 @@ func convertPointerToByte(originalMsg *C.uchar, signature *C.uchar) ([]byte, []b
  */
 
 func (s *ClientGrpc) CrossPaymentPrepareClientRequest(ctx context.Context, in *clientPb.CrossPaymentPrepareReqClientMessage) (*clientPb.PrepareResult, error) {
-	log.Println("----CROSS PAYMENT PREPARE IN CLIENT----")
+	log.Println("----CROSS PAYMENT PREPARE START IN CLIENT----")
+	StartTime := time.Now()
+	fmt.Println("startTime : ", StartTime)
+
 	convertedOriginalMsg, convertedSignatureMsg := convertByteToPointer(in.OriginalMessage, in.Signature)
 
 	var originalMsg *C.uchar
@@ -151,13 +156,14 @@ func (s *ClientGrpc) CrossPaymentPrepareClientRequest(ctx context.Context, in *c
 
 	originalMessageStr, signatureStr := convertPointerToByte(originalMsg, signature)
 
+	log.Println("----CROSS PAYMENT PREPARE END IN CLIENT----")
 	return &clientPb.PrepareResult{Result: true, OriginalMessage: originalMessageStr, Signature: signatureStr}, nil
 }
 
 func (s *ClientGrpc) CrossPaymentCommitClientRequest(ctx context.Context, in *clientPb.CrossPaymentCommitReqClientMessage) (*clientPb.CommitResult, error) {
 	// 채널 정보를 업데이트 한다던지 잔액을 변경.
 //	time.Sleep(time.Second * 50)
-	log.Println("----CROSS PAYMENT COMMIT IN CLIENT----")
+	log.Println("----CROSS PAYMENT COMMIT START IN CLIENT----")
 
 	convertedOriginalMsg, convertedSignatureMsg := convertByteToPointer(in.OriginalMessage, in.Signature)
 
@@ -167,6 +173,7 @@ func (s *ClientGrpc) CrossPaymentCommitClientRequest(ctx context.Context, in *cl
 
 	originalMessageStr, signatureStr := convertPointerToByte(originalMsg, signature)
 
+	log.Println("----CROSS PAYMENT COMMIT END IN CLIENT----")
 	return &clientPb.CommitResult{Result: true, OriginalMessage: originalMessageStr, Signature: signatureStr}, nil
 }
 
@@ -178,6 +185,11 @@ func (s *ClientGrpc) CrossPaymentConfirmClientRequest(ctx context.Context, in *c
 	convertedOriginalMsg, convertedSignatureMsg := convertByteToPointer(in.OriginalMessage, in.Signature)
 	C.ecall_cross_go_idle_w(convertedOriginalMsg, convertedSignatureMsg)
         log.Println("----CROSS PAYMENT CONFIRM END IN CLIENT----")
+
+	elapsedTime := time.Since(StartTime)
+	fmt.Println("execution time : ", elapsedTime.Seconds())
+	fmt.Printf("execution time : %s", elapsedTime)
+
 
 	// fmt.Println(C.ecall_get_balance_w(C.uint(1)))
 	// fmt.Println(C.ecall_get_balance_w(C.uint(2)))
@@ -194,6 +206,10 @@ func (s *ClientGrpc) CrossPaymentRefundClientRequest(ctx context.Context, in *cl
 	convertedOriginalMsg, convertedSignatureMsg := convertByteToPointer(in.OriginalMessage, in.Signature)
 	C.ecall_cross_refund_w(convertedOriginalMsg, convertedSignatureMsg)
         log.Println("----CROSS PAYMENT REFUND END IN CLIENT----")
+
+	elapsedTime := time.Since(StartTime)
+	fmt.Println("execution time : ", elapsedTime.Seconds())
+	fmt.Printf("execution time : %s", elapsedTime)
 
 	// fmt.Println(C.ecall_get_balance_w(C.uint(1)))
 	// fmt.Println(C.ecall_get_balance_w(C.uint(2)))

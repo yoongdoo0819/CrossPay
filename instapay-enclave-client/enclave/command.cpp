@@ -99,6 +99,7 @@ void ecall_create_channel(unsigned int nonce, unsigned char *owner, unsigned cha
 {
     std::vector<unsigned char> data;
 
+    printf("############### nonce : %d \n", nonce);
     printf("ecall create channel start >> owner : %s \n", (unsigned char*)owner);
     for(int i=0; i<32; i++) 
 	    printf("%02x", owner[i]);
@@ -185,6 +186,9 @@ void ecall_create_channel(unsigned int nonce, unsigned char *owner, unsigned cha
 */
     //printf("signed_tx : %s \n", (unsigned char*)signed_tx);
     //printf("tx.signed_tx.data() : %s \n", (unsigned char*)tx.signed_tx.data());
+
+    for(int i=0; i<tx.signed_tx.size(); i++)
+	    printf("%02x", tx.signed_tx.data()[i]);
 
     memcpy(signed_tx, tx.signed_tx.data(), tx.signed_tx.size());
     *signed_tx_len = tx.signed_tx.size();

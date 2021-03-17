@@ -361,7 +361,7 @@ type PaymentInformation struct {
 func (s *ServerGrpc) CrossPaymentPrepareRequest(ctx context.Context, rq *pbServer.CrossPaymentPrepareReqMessage) (*pbServer.Result, error) {
 
 
-	log.Println("===== Cross Payment Prepare Start =====")
+	log.Println("===== CROSS PAYMENT PREPARE START BY LV2 SERVER=====")
 
 	from := rq.From
 	to := rq.To
@@ -371,16 +371,11 @@ func (s *ServerGrpc) CrossPaymentPrepareRequest(ctx context.Context, rq *pbServe
 	sender := []C.uchar(from)
 	receiver := []C.uchar(to)
 
-	log.Println("~~~~~~~~~~~~~~~~")
-	log.Println("sender : ", sender)
-	log.Println("receiver : ", receiver)
-	log.Println("amount : ", amount)
-	log.Println("pn : ", PaymentNum)
-
 	convertedOriginalMsg, convertedSignatureMsg := convertByteToPointer(rq.OriginalMessage, rq.Signature)
 
 	is_verified := C.ecall_cross_create_all_prepare_msg_w(convertedOriginalMsg, convertedSignatureMsg)
-	fmt.Println("all prepare msg : ", is_verified)
+	fmt.Printf("PN %d PREPARED MSG BY LV2 SERVER : %d \n", PaymentNum, is_verified)
+
 	C.ecall_cross_accept_request_w(&sender[0], &receiver[0], C.uint(amount), C.uint(PaymentNum))
 	p, paymentInformation := SearchPath(int64(PaymentNum), amount)
 
@@ -411,7 +406,7 @@ func (s *ServerGrpc) CrossPaymentPrepareRequest(ctx context.Context, rq *pbServe
 
 	log.Println(r.GetResult())
 */
-	log.Println("===== Cross Payment Prepare End =====")
+	log.Println("===== CROSS PAYMENT PREPARE START BY LV2 SERVER =====")
 
 	return &pbServer.Result{Result: true}, nil
 }
@@ -427,21 +422,19 @@ func (s *pbServer) mustEmbedUnimplementedServerServer() (*pbServer.Result, error
 func (s *ServerGrpc) CrossPaymentCommitRequest(ctx context.Context, rq *pbServer.CrossPaymentCommitReqMessage) (*pbServer.Result, error) {
 
 
-	log.Println("===== Cross Payment Commit Start =====")
+	log.Println("===== CROSS PAYMENT COMMIT START BY LV2 SERVER =====")
 
 	//from := rq.From
 	//to := rq.To
 	pn := rq.Pn
 	amount := rq.Amount
-	log.Println("pn : ", pn)
 	//sender := []C.uchar(from)
 	//receiver := []C.uchar(to)
 
 	convertedOriginalMsg, convertedSignatureMsg := convertByteToPointer(rq.OriginalMessage, rq.Signature)
 
 	is_verified := C.ecall_cross_create_all_commit_msg_w(convertedOriginalMsg, convertedSignatureMsg)
-	fmt.Println("all commit msg : ", is_verified)
-	log.Println("all commit msg : ", is_verified)
+	fmt.Printf("PN %d COMMIT MSG BY LV2 SERVER : %d \n", pn,  is_verified)
 
 	//PaymentNum := C.ecall_accept_request_w(&sender[0], &receiver[0], C.uint(amount))
 	p, paymentInformation := SearchPath(pn, amount)
@@ -475,7 +468,7 @@ func (s *ServerGrpc) CrossPaymentCommitRequest(ctx context.Context, rq *pbServer
 
 	log.Println(r.GetResult())
 */
-	log.Println("===== Cross Payment Commit End =====")
+	log.Println("===== CROSS PAYMENT COMMIT END BY LV2 SERVER =====")
 
 	return &pbServer.Result{Result: true}, nil
 }
@@ -483,21 +476,19 @@ func (s *ServerGrpc) CrossPaymentCommitRequest(ctx context.Context, rq *pbServer
 func (s *ServerGrpc) CrossPaymentConfirmRequest(ctx context.Context, rq *pbServer.CrossPaymentConfirmReqMessage) (*pbServer.Result, error) {
 
 
-	log.Println("===== Cross Payment Confirm Start =====")
+	log.Println("===== CROSS PAYMENT CONFIRM START BY LV2 SERVER =====")
 
 	//from := rq.From
 	//to := rq.To
 	pn := rq.Pn
 	amount := rq.Amount
-	log.Println("pn : ", pn)
-	log.Println("amount : ", amount)
 	//sender := []C.uchar(from)
 	//receiver := []C.uchar(to)
 
 	convertedOriginalMsg, convertedSignatureMsg := convertByteToPointer(rq.OriginalMessage, rq.Signature)
 
 	is_verified := C.ecall_cross_create_all_confirm_msg_w(convertedOriginalMsg, convertedSignatureMsg)
-	fmt.Println("all confirm msg : ", is_verified)
+	fmt.Printf("PN : %d CONFIRM MSG BY LV2 SERVER : %d \n", pn, is_verified)
 
 	//PaymentNum := C.ecall_accept_request_w(&sender[0], &receiver[0], C.uint(amount))
 	p, paymentInformation := SearchPath(pn, amount)
@@ -505,7 +496,7 @@ func (s *ServerGrpc) CrossPaymentConfirmRequest(ctx context.Context, rq *pbServe
 	go WrapperCrossConfirmPayment(int(pn), p, paymentInformation)
 	//go WrapperCrossUpdateRequest(pn, p, paymentInformation)
 	
-	log.Println("===== Cross Payment Confirm End =====")
+	log.Println("===== CROSS PAYMENT CONFIRM END BY LV2 SERVER =====")
 	return &pbServer.Result{Result: true}, nil
 }
 
@@ -540,8 +531,8 @@ func (s *ServerGrpc) CrossPaymentRefundRequest(ctx context.Context, rq *pbServer
 
 func SendCrossAgreementRequest(pn int64, address string, paymentInformation PaymentInformation) {
 	
-	log.Println("pn : ", pn)
-	log.Println("address : ", address)
+	log.Println("PN : ", pn)
+	log.Println("ADDR : ", address)
 	//fmt.Println("payment information : ", paymentInformation)
 	
 	info, err := repository.GetClientInfo(address)
@@ -564,13 +555,15 @@ func SendCrossAgreementRequest(pn int64, address string, paymentInformation Paym
 	if client == nil {
 		log.Fatal("client conn err")
 	}
-	fmt.Println("client : ", client)
+	//fmt.Println("client : ", client)
 	
 	channelSlice := paymentInformation.ChannelInform
 	amountSlice := paymentInformation.AmountInform
+	/*
 	fmt.Println("channelSlice : ", channelSlice)
 	fmt.Println("amountSlice  : ", amountSlice)
 	fmt.Println("len channelSlice : ", len(channelSlice))
+	*/
 
 	var originalMessage *C.uchar
 	var signature *C.uchar
@@ -585,7 +578,7 @@ func SendCrossAgreementRequest(pn int64, address string, paymentInformation Paym
 		log.Println("client AgreementRequest err : ", err)
 	}
 
-	log.Println("r.Result : ", r.Result)
+	log.Println("R Result : ", r.Result)
 	if r.Result {
 		agreementOriginalMessage, agreementSignature := convertByteToPointer(r.OriginalMessage, r.Signature)
 		is_verified := C.ecall_cross_verify_ag_res_msg_w(&([]C.uchar(address)[0]), agreementOriginalMessage, agreementSignature)
@@ -607,7 +600,7 @@ func SendCrossUpdateRequest(pn int64, address string, paymentInformation Payment
 	}
 
 	clientAddr := (*info).IP + ":" + strconv.Itoa((*info).Port)
-	log.Println("CrossUpdate Client : ", clientAddr)
+	//log.Println("CrossUpdate Client : ", clientAddr)
 
 	conn, err := grpc.Dial(clientAddr, grpc.WithInsecure())
 	if err != nil {
@@ -623,8 +616,10 @@ func SendCrossUpdateRequest(pn int64, address string, paymentInformation Payment
 	var originalMessage *C.uchar
 	var signature *C.uchar
 
-	log.Println("===== SendCrossUpdateRequest =====")
+	//log.Println("===== SendCrossUpdateRequest =====")
+	log.Println("===== CREATE UD REQ MSG START IN ENCLAVE =====")
 	C.ecall_cross_create_ud_req_msg_w(C.uint(pn), C.uint(len(channelSlice)), &channelSlice[0], &amountSlice[0], &originalMessage, &signature)
+	log.Println("===== CREATE UD REQ MSG END IN ENCLAVE =====")
 
 	originalMessageByte, signatureByte := convertPointerToByte(originalMessage, signature)
 
@@ -639,15 +634,13 @@ func SendCrossUpdateRequest(pn int64, address string, paymentInformation Payment
 		log.Fatal(err)
 	}
 
-	log.Println("r result : ", r.GetResult())
-	/*
+	log.Println("R Result : ", r.GetResult())
 	if r.Result {
 		updateOriginalMessage, updateSignature := convertByteToPointer(r.OriginalMessage, r.Signature)
 		C.ecall_cross_verify_ud_res_msg_w(&([]C.uchar(address)[0]), updateOriginalMessage, updateSignature)
 	}
-	*/
+	
 
-	log.Println("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$")
 	rwMutex.Lock()
 	log.Println("===== Mutex START =====")
 	C.ecall_cross_update_sentupt_list_w(C.uint(pn), &([]C.uchar(address))[0])
@@ -679,7 +672,9 @@ func SendCrossConfirmPayment(pn int, address string, paymentInformation PaymentI
 	var originalMessage *C.uchar
 	var signature *C.uchar
 
+	log.Println("===== CREATE CONFIRM MSG START IN ENCLAVE =====")
 	C.ecall_cross_create_confirm_msg_w(C.uint(int32(pn)), C.uint(len(channelSlice)), &channelSlice[0], &amountSlice[0], &originalMessage, &signature)
+	log.Println("===== CREATE CONFIRM MSG END IN ENCLAVE =====")
 
 	originalMessageByte, signatureByte := convertPointerToByte(originalMessage, signature)
 
@@ -765,7 +760,7 @@ func WrapperCrossAgreementRequest(pn int64, p []string, paymentInformation map[s
 	// C.ecall_cross_all_prepared_msg_w(C.uint(pn))
 //	var originalMessage *C.uchar
 //	var signature *C.uchar
-	fmt.Println("[ALARM] ALL USERS AGREED")
+	fmt.Println("[ALARM] ALL USERS PREPARED")
 
 	fmt.Println("===== CREATE CROSS ALL PREPARED MSG START IN ENCLAVE =====")
 	var originalMessage *C.uchar
@@ -801,11 +796,11 @@ func WrapperCrossUpdateRequest(pn int64, p []string, paymentInformation map[stri
 		}
 	}
 
-	fmt.Println("pn : ", pn)
+	//fmt.Println("pn : ", pn)
 	for C.ecall_cross_check_unanimity_w(C.uint(pn), C.int(1)) != 1 {
 	}
 
-	fmt.Println("[ALARM] ALL USERS UPDATED")
+	fmt.Println("[ALARM] ALL USERS COMMITTED")
 
 	fmt.Println("===== CREATE CROSS ALL COMMITTED MSG START IN ENCLAVE =====")
 	var originalMessage *C.uchar

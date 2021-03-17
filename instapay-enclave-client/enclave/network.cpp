@@ -239,8 +239,10 @@ void ecall_cross_go_pre_update(unsigned char *msg, unsigned char *signature, uns
     printf("\n");
 
     /* step 1. verify signature */
+    /*
     if(verify_message(1, signature, msg, sizeof(Cross_Message), NULL))
         return;
+*/
 
     /* step 2. check that message type is 'AG_REQ' */
 
@@ -312,10 +314,10 @@ void ecall_cross_go_post_update(unsigned char *msg, unsigned char *signature, un
     memset((unsigned char*)&reply, 0x00, sizeof(Cross_Message));
 
     /* step 1. verify signature */
-
+/*
     if(verify_message(1, signature, msg, sizeof(Cross_Message), NULL))
         return;
-
+*/
     /* step 2. check that message type is 'UD_REQ' */
 
     if(ud_req->type != CROSS_COMMIT_REQ)
@@ -390,9 +392,10 @@ void ecall_cross_go_idle(unsigned char *msg, unsigned char *signature)
     /* step 1. verify signature */
 
     printf("cross_go_idle sig verification \n");
+    /*
     if(verify_message(1, signature, msg, sizeof(Cross_Message), NULL))
         return;
-
+*/
     /* step 2. check that message type is 'UD_REQ' */
 
     printf("cross_go_idle type verification \n");
