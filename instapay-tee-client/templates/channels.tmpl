@@ -34,6 +34,10 @@
                     <th>Status</th>
                     <th>Detail</th>
                     <th>Close</th>
+                    <th>C_PRE_Y</th>
+                    <th>C_PRE_N</th>
+                    <th>C_POST_Y</th>
+                    <th>C_POST_N</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -45,9 +49,19 @@
                             <td>{{ $channel.OtherAddress }}</td>
                             <td>{{ $channel.Status }}</td>
                             <td><button type="button" id="detail_modal" class="btn btn-light" data-toggle="modal" data-target=#modal{{$i}}>detail</button></td>
+
                             <input type="hidden" id="ch_id" name="ch_id" value={{ $channel.ChannelId }}>
                             <td><button type="submit" class="btn btn-light">close</button></td>
                         </form>
+
+<td><button type="button" id="detail_modal" class="btn btn-light" data-toggle="modal" onclick="c_pre_yes()">YES</button></td>
+<td><button type="button" id="detail_modal" class="btn btn-light" data-toggle="modal" onclick="c_pre_no()">NO</button></td>
+
+<td><button type="button" id="detail_modal" class="btn btn-light" data-toggle="modal" onclick="c_post_yes()">YES</button></td>
+<td><button type="button" id="detail_modal" class="btn btn-light" data-toggle="modal" onclick="c_post_no()">NO</button></td>
+
+
+
                     </tr>
                     <div class="modal" id="modal{{$i}}">
                         <div class="modal-dialog">
@@ -74,5 +88,92 @@
 </div>
 
 </body>
+
+<script>
+function c_pre_yes() {
+
+   alert("c_pre_yes");
+
+   $.ajax({
+    type:"POST",
+    url: "/channels/requests/c_pre_yes",
+    data: {
+        "c_pre_answer": "1"
+    },
+    success: function() {
+        alert("success");
+    },
+    error: function() {
+        alert("error");
+    }
+
+   });
+ 
+}
+
+function c_pre_no() {
+
+   alert("c_pre_no");
+
+   $.ajax({
+    type:"POST",
+    url: "/channels/requests/c_pre_no",
+    data: {
+        "c_pre_answer": "1"
+    },
+    success: function() {
+        alert("success");
+    },
+    error: function() {
+        alert("error");
+    }
+
+   });
+ 
+}
+
+function c_post_yes() {
+
+   alert("c_post_yes");
+
+   $.ajax({
+    type:"POST",
+    url: "/channels/requests/c_post_yes",
+    data: {
+        "c_pre_answer": "1"
+    },
+    success: function() {
+        alert("success");
+    },
+    error: function() {
+        alert("error");
+    }
+
+   });
+}
+
+function c_post_no() {
+
+   alert("c_post_no");
+
+   $.ajax({
+    type:"POST",
+    url: "/channels/requests/c_post_no",
+    data: {
+        "c_pre_answer": "1"
+    },
+    success: function() {
+        alert("success");
+    },
+    error: function() {
+        alert("error");
+    }
+
+   });
+ 
+}
+
+</script>
+
 </html>
 {{ end }}

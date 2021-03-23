@@ -27,6 +27,7 @@ import (
 	"github.com/sslab-instapay/instapay-tee-client/service"
 	"github.com/sslab-instapay/instapay-tee-client/util"
 	"google.golang.org/grpc"
+	Grpc "github.com/sslab-instapay/instapay-tee-client/grpc"
 )
 
 var ExecutionTime time.Time
@@ -278,4 +279,35 @@ func convertPointerToByte(originalMsg *C.uchar, signature *C.uchar) ([]byte, []b
 	}
 
 	return returnMsg, returnSignature
+}
+
+
+/*
+ *
+ *
+ * InstaPay 3.0
+ */
+
+func C_pre_yes(ctx *gin.Context) {
+
+	Grpc.C_pre_yes = 1
+	return 
+}
+
+func C_pre_no(ctx *gin.Context) {
+
+	Grpc.C_pre_no = 2
+	return 
+}
+
+func C_post_yes(ctx *gin.Context) {
+
+	Grpc.C_post_yes = 1
+	return 
+}
+
+func C_post_no(ctx *gin.Context) {
+
+	Grpc.C_post_no = 2
+	return 
 }

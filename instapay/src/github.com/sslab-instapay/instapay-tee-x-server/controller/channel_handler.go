@@ -121,6 +121,8 @@ func CrossPaymentToServerChannelHandler(ctx *gin.Context) {
 	fmt.Println("CHAIN2 From : ", chain2From)
 	fmt.Println("CHAIN2 Val : ", chain2Val)
 	fmt.Println("CHAIN2 To : ", chain2To)
+
+//	time.Sleep(time.Second*1)
 	
 	chain1Sender := []C.uchar(chain1From)
 	chain1Receiver := []C.uchar(chain1To)

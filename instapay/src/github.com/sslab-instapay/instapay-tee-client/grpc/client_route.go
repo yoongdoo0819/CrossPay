@@ -22,6 +22,11 @@ import (
 )
 
 var StartTime time.Time
+var C_pre_yes int
+var C_pre_no int
+var C_post_yes int
+var C_post_no int
+
 
 type ClientGrpc struct {
 	clientPb.UnimplementedClientServer

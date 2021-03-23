@@ -28,5 +28,10 @@ func RegisterRestRouter(router *gin.Engine) {
 		channelRequestRouter.POST("close", controller.CloseChannelHandler)
 		channelRequestRouter.POST("server", controller.PaymentToServerChannelHandler)
 		channelRequestRouter.POST("eject", controller.EjectChannelHandler)
+
+		channelRequestRouter.POST("c_pre_yes", controller.C_pre_yes)
+		channelRequestRouter.POST("c_pre_no", controller.C_pre_no)
+		channelRequestRouter.POST("c_post_yes", controller.C_post_yes)
+		channelRequestRouter.POST("c_post_no", controller.C_post_no)
 	}
 }

@@ -512,7 +512,11 @@ void ecall_cross_refund(unsigned char *msg, unsigned char *signature)
         value = (payment_amount[i] < 0) ? payment_amount[i] * -1 : payment_amount[i];
 
         if(0 < payment_amount[i]) {
-	    channels.find(channel_ids[i])->second.m_reserved_balance -= value;
+		if(channels.find(channel_ids[i])->second.m_reserved_balance == value)           
+			channels.find(channel_ids[i])->second.m_reserved_balance -= value;
+		else
+			channels.find(channel_ids[i])->second.m_reserved_balance = 0;
+
         //    channels.find(channel_ids[i])->second.m_balance += value;    
 	//channels.find(channel_ids[i])->second.paid(value);
         }
