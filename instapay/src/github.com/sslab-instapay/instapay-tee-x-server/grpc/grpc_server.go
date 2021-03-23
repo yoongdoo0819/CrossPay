@@ -37,6 +37,8 @@ type ServerGrpc struct {
 
 var prepared [100000]int
 var committed [100000]int
+var timer [100000]int
+
 var StartTime time.Time
 
 /*
@@ -536,102 +538,97 @@ func (s *ServerGrpc) CrossPaymentCommitted(ctx context.Context, rs *pbXServer.Cr
 	defer cancel2()
 
 
-	/*
-	 *
-	 *
-	 * Refund message
-	 */
-	time.Sleep(time.Second * 25)
+	c1 := make(chan string, 1)
+	var originalMessage *C.uchar
+	var signature *C.uchar
 
-	var refundMessage *C.uchar
-	var refundSignature *C.uchar
+	go func() {
+		for C.ecall_cross_check_committed_unanimity_w(C.uint(pn), C.int(0)) != 1 {
+		}
+		timer[pn] = 1
+		c1 <- "no time out"
+	}()
 
-	if committed[pn] == 0 {
+	select {
+	case res := <-c1:
+		timer[pn] = 1
+		fmt.Println(res)
+	case <-time.After(time.Second * 18):
+		timer[pn] = 2
+	}
 
-		committed[pn] = 1
+	if timer[pn] == 1 {	// no time out
+		if committed[pn] == 1 {
+			return &pbXServer.CrossResult{Result: true}, nil
+		} else if committed[pn] == 0 {
+			committed[pn] = 1
+		}
 
-		C.ecall_cross_create_all_refund_req_msg_w(C.uint(pn), &refundMessage, &refundSignature)
-		refundMessageByte, refundSignatureByte := convertPointerToByte(refundMessage, refundSignature)
+		C.ecall_cross_create_all_confirm_req_msg_w(C.uint(pn), &originalMessage, &signature)
+		originalMessageByte, signatureByte := convertPointerToByte(originalMessage, signature)
 
-		r1, err := client1.CrossPaymentRefundRequest(client1Context, &pbServer.CrossPaymentRefundReqMessage{Pn: pn, From: "0xed26fa51b429c5c5922bee06184ec058c99a73c1", To: "0x59d853e0fef578589bd8609afbf1f5e5559a73ac", Amount: 1, OriginalMessage: refundMessageByte, Signature: refundSignatureByte})	
+		r1, err := client1.CrossPaymentConfirmRequest(client1Context, &pbServer.CrossPaymentConfirmReqMessage{Pn: pn, From: "0xed26fa51b429c5c5922bee06184ec058c99a73c1", To: "0x59d853e0fef578589bd8609afbf1f5e5559a73ac", Amount: 1, OriginalMessage: originalMessageByte, Signature: signatureByte})
+
 		if err != nil {
 			log.Println(err)
-			return &pbXServer.CrossResult{Result: true}, nil
+			return &pbXServer.CrossResult{Result: false}, nil
 		}
 
 		log.Println(r1.GetResult())
 
-		r2, err := client2.CrossPaymentRefundRequest(client2Context, &pbServer.CrossPaymentRefundReqMessage{Pn: pn, From: "0xed26fa51b429c5c5922bee06184ec058c99a73c1", To: "0x59d853e0fef578589bd8609afbf1f5e5559a73ac", Amount: 1, OriginalMessage: refundMessageByte, Signature: refundSignatureByte})
-		
+		r2, err := client2.CrossPaymentConfirmRequest(client2Context, &pbServer.CrossPaymentConfirmReqMessage{Pn: pn, From: "0xed26fa51b429c5c5922bee06184ec058c99a73c1", To: "0x59d853e0fef578589bd8609afbf1f5e5559a73ac", Amount: 1, OriginalMessage: originalMessageByte, Signature: signatureByte})
+
 		if err != nil {
 			log.Println(err)
-			return &pbXServer.CrossResult{Result: true}, nil
+			return &pbXServer.CrossResult{Result: false}, nil
 		}
 
 		log.Println(r2.GetResult())
 
-		fmt.Println("TIMER EXPIRED !!!!!")
+	} else if timer[pn] == 2 {	// time out
 
-		return &pbXServer.CrossResult{Result: true}, nil
+		/*
+		 *
+		 *
+		 * Refund message
+		 */
+
+		 time.Sleep(time.Second * 25)
+
+		 var refundMessage *C.uchar
+		 var refundSignature *C.uchar
+
+		 if committed[pn] == 0 {
+
+			 committed[pn] = 1
+
+			 C.ecall_cross_create_all_refund_req_msg_w(C.uint(pn), &refundMessage, &refundSignature)
+			 refundMessageByte, refundSignatureByte := convertPointerToByte(refundMessage, refundSignature)
+
+			 r1, err := client1.CrossPaymentRefundRequest(client1Context, &pbServer.CrossPaymentRefundReqMessage{Pn: pn, From: "0xed26fa51b429c5c5922bee06184ec058c99a73c1", To: "0x59d853e0fef578589bd8609afbf1f5e5559a73ac", Amount: 1, OriginalMessage: refundMessageByte, Signature: refundSignatureByte})	
+			 if err != nil {
+				 log.Println(err)
+				 return &pbXServer.CrossResult{Result: true}, nil
+			 }
+
+			 log.Println(r1.GetResult())
+
+			 r2, err := client2.CrossPaymentRefundRequest(client2Context, &pbServer.CrossPaymentRefundReqMessage{Pn: pn, From: "0xed26fa51b429c5c5922bee06184ec058c99a73c1", To: "0x59d853e0fef578589bd8609afbf1f5e5559a73ac", Amount: 1, OriginalMessage: refundMessageByte, Signature: refundSignatureByte})
+		
+			 if err != nil {
+				 log.Println(err)
+				 return &pbXServer.CrossResult{Result: true}, nil
+			 }
+
+			 log.Println(r2.GetResult())
+
+			 fmt.Println("TIMER EXPIRED !!!!!")
+			 return &pbXServer.CrossResult{Result: true}, nil
 	
-	}
-/*
-
-	var originalMessage *C.uchar
-	var signature *C.uchar
-
-	for C.ecall_cross_check_committed_unanimity_w(C.uint(pn), C.int(0)) != 1 {
-	
+		 }
 	}
 
-	if committed[pn] == 1 {
-		return &pbXServer.CrossResult{Result: true}, nil
-	}
-	if committed[pn] == 0 {
-		committed[pn] = 1
-	}
-
-	C.ecall_cross_create_all_confirm_req_msg_w(C.uint(pn), &originalMessage, &signature)
-	originalMessageByte, signatureByte := convertPointerToByte(originalMessage, signature)
-
-	r1, err := client1.CrossPaymentConfirmRequest(client1Context, &pbServer.CrossPaymentConfirmReqMessage{Pn: pn, From: "0xed26fa51b429c5c5922bee06184ec058c99a73c1", To: "0x59d853e0fef578589bd8609afbf1f5e5559a73ac", Amount: 1, OriginalMessage: originalMessageByte, Signature: signatureByte})
-	if err != nil {
-		log.Println(err)
-		return &pbXServer.CrossResult{Result: false}, nil
-	}
-
-	log.Println(r1.GetResult())
-
-	r2, err := client2.CrossPaymentConfirmRequest(client2Context, &pbServer.CrossPaymentConfirmReqMessage{Pn: pn, From: "0xed26fa51b429c5c5922bee06184ec058c99a73c1", To: "0x59d853e0fef578589bd8609afbf1f5e5559a73ac", Amount: 1, OriginalMessage: originalMessageByte, Signature: signatureByte})
-	if err != nil {
-		log.Println(err)
-		return &pbXServer.CrossResult{Result: false}, nil
-	}
-
-	log.Println(r2.GetResult())
-*/
-	// Lv2 off-chain server sends the cross-payment request to Lv1 off-chain server
-/*
-	log.Println("===== Cross Payment Request Start =====")
-	from := rq.From
-	to := rq.To
-	amount := rq.Amount
-
-	sender := []C.uchar(from)
-	receiver := []C.uchar(to)
-
-	PaymentNum := C.ecall_accept_request_w(&sender[0], &receiver[0], C.uint(amount))
-	p, paymentInformation := SearchPath(int64(PaymentNum), amount)
-
-	for i := 0; i < len(p); i++ {
-		C.ecall_add_participant_w(PaymentNum, &([]C.uchar(p[i]))[0])
-	}
-	C.ecall_update_sentagr_list_w(PaymentNum, &([]C.uchar(p[2]))[0])
-
-	go WrapperAgreementRequest(int64(PaymentNum), p, paymentInformation)
-*/
-
-        elapsedTime := time.Since(StartTime)
+	elapsedTime := time.Since(StartTime)
 	fmt.Println("execution time1 : ", elapsedTime.Seconds())
 	fmt.Printf("execution time2 : %s", elapsedTime)
 	

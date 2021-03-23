@@ -153,6 +153,24 @@ func (s *ClientGrpc) CrossPaymentPrepareClientRequest(ctx context.Context, in *c
 	StartTime := time.Now()
 	fmt.Println("startTime : ", StartTime)
 
+
+	/*
+	 *
+	 *
+	 * For client's voting
+	 */
+	/*
+	for {
+		if C_pre_yes == 1 {
+			C_pre_yes = 0
+			break
+		} else if C_pre_yes == 2 {
+			C_pre_yes = 0
+			return &clientPb.PrepareResult{Result: false}, nil
+		}
+	}
+	*/
+
 	convertedOriginalMsg, convertedSignatureMsg := convertByteToPointer(in.OriginalMessage, in.Signature)
 
 	var originalMsg *C.uchar
@@ -169,6 +187,23 @@ func (s *ClientGrpc) CrossPaymentCommitClientRequest(ctx context.Context, in *cl
 	// 채널 정보를 업데이트 한다던지 잔액을 변경.
 //	time.Sleep(time.Second * 50)
 	log.Println("----CROSS PAYMENT COMMIT START IN CLIENT----")
+
+	/*
+	 *
+	 *
+	 * For client's voting
+	 */
+	/* 
+	for {
+		if C_post_yes == 1 {
+			C_post_yes = 0
+			break
+		} else if C_post_yes == 2 {
+			C_post_yes = 0
+			return &clientPb.CommitResult{Result: false}, nil
+		}
+	}
+	*/
 
 	convertedOriginalMsg, convertedSignatureMsg := convertByteToPointer(in.OriginalMessage, in.Signature)
 
