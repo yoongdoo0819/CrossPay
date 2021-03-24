@@ -311,3 +311,26 @@ func C_post_no(ctx *gin.Context) {
 	Grpc.C_post_no = 2
 	return 
 }
+
+func CrossCloseChannelHandler(ctx *gin.Context) {
+
+	log.Println("===== CrossCloseChannelHandler =====")
+
+	channelIdParam := ctx.PostForm("chId")
+	log.Println(channelIdParam)
+	channelId, _ := strconv.Atoi(channelIdParam)
+	log.Println(channelId)
+
+	var channel model.Channel
+	channel, _ = repository.GetChannelById(int(channelId))
+	if(channel.Status == model.C_PRE || channel.Status == model.C_POST) {
+		fmt.Println("===== BANNED IN C_PRE or C_POST ===== \n")
+		return
+	}
+
+	service.SendCloseChannelTransaction(int64(channelId))
+	return 
+}
+
+
+

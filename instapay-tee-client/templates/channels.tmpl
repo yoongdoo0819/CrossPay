@@ -43,6 +43,7 @@
                 <tbody>
                 {{ range $i, $channel := .channelList }}
                     <tr>
+			<!--
                         <form method="post" action="/channels/requests/close">
                             <td>{{ $channel.ChannelId }}</td>
                             <td>{{ $channel.MyAddress }}</td>
@@ -53,12 +54,21 @@
                             <input type="hidden" id="ch_id" name="ch_id" value={{ $channel.ChannelId }}>
                             <td><button type="submit" class="btn btn-light">close</button></td>
                         </form>
+			-->
+			    <td>{{ $channel.ChannelId }}</td>
+                            <td>{{ $channel.MyAddress }}</td>
+                            <td>{{ $channel.OtherAddress }}</td>
+                            <td>{{ $channel.Status }}</td>
+                            <td><button type="button" id="detail_modal" class="btn btn-light" data-toggle="modal" data-target=#modal{{$i}}>detail</button></td>
 
-<td><button type="button" id="detail_modal" class="btn btn-light" data-toggle="modal" onclick="c_pre_yes()">YES</button></td>
-<td><button type="button" id="detail_modal" class="btn btn-light" data-toggle="modal" onclick="c_pre_no()">NO</button></td>
+                            <input type="hidden" id="ch_id" name="ch_id" value={{ $channel.ChannelId }}>
+                            <td><button type="button" class="btn btn-light" onclick="crossClose({{$channel.ChannelId}})">close</button></td>
 
-<td><button type="button" id="detail_modal" class="btn btn-light" data-toggle="modal" onclick="c_post_yes()">YES</button></td>
-<td><button type="button" id="detail_modal" class="btn btn-light" data-toggle="modal" onclick="c_post_no()">NO</button></td>
+			    <td><button type="button" id="detail_modal" class="btn btn-light" data-toggle="modal" onclick="c_pre_yes()">YES</button></td>
+			    <td><button type="button" id="detail_modal" class="btn btn-light" data-toggle="modal" onclick="c_pre_no()">NO</button></td>
+
+			    <td><button type="button" id="detail_modal" class="btn btn-light" data-toggle="modal" onclick="c_post_yes()">YES</button></td>
+			    <td><button type="button" id="detail_modal" class="btn btn-light" data-toggle="modal" onclick="c_post_no()">NO</button></td>
 
 
 
@@ -91,6 +101,25 @@
 </body>
 
 <script>
+
+function crossClose(chId) {
+
+   $.ajax({
+    type: "POST",
+    url: "/channels/requests/crossClose",
+    data: {"chId": chId
+    },
+
+    success: function(result) {
+      alert("CAN NOT CLOSE IN C_PRE OR C_POST);
+    },
+    error: function(result, error) {
+      alert(request.status +  "\n" + request.responseText + "\n" + "error: " +error);
+    }
+
+   });
+}
+
 function c_pre_yes() {
 
    alert("c_pre_yes");
