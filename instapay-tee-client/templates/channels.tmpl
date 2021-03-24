@@ -8,6 +8,8 @@
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.0/jquery.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
+    <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+
 </head>
 <body>
 
@@ -43,34 +45,29 @@
                 <tbody>
                 {{ range $i, $channel := .channelList }}
                     <tr>
-			<!--
-                        <form method="post" action="/channels/requests/close">
+                        <!--
+			    <form method="post" action="/channels/requests/close">
                             <td>{{ $channel.ChannelId }}</td>
                             <td>{{ $channel.MyAddress }}</td>
                             <td>{{ $channel.OtherAddress }}</td>
                             <td>{{ $channel.Status }}</td>
                             <td><button type="button" id="detail_modal" class="btn btn-light" data-toggle="modal" data-target=#modal{{$i}}>detail</button></td>
-
                             <input type="hidden" id="ch_id" name="ch_id" value={{ $channel.ChannelId }}>
                             <td><button type="submit" class="btn btn-light">close</button></td>
                         </form>
 			-->
-			    <td>{{ $channel.ChannelId }}</td>
+
+                            <td>{{ $channel.ChannelId }}</td>
                             <td>{{ $channel.MyAddress }}</td>
                             <td>{{ $channel.OtherAddress }}</td>
                             <td>{{ $channel.Status }}</td>
                             <td><button type="button" id="detail_modal" class="btn btn-light" data-toggle="modal" data-target=#modal{{$i}}>detail</button></td>
-
                             <input type="hidden" id="ch_id" name="ch_id" value={{ $channel.ChannelId }}>
                             <td><button type="button" class="btn btn-light" onclick="crossClose({{$channel.ChannelId}})">close</button></td>
-
-			    <td><button type="button" id="detail_modal" class="btn btn-light" data-toggle="modal" onclick="c_pre_yes()">YES</button></td>
-			    <td><button type="button" id="detail_modal" class="btn btn-light" data-toggle="modal" onclick="c_pre_no()">NO</button></td>
-
-			    <td><button type="button" id="detail_modal" class="btn btn-light" data-toggle="modal" onclick="c_post_yes()">YES</button></td>
-			    <td><button type="button" id="detail_modal" class="btn btn-light" data-toggle="modal" onclick="c_post_no()">NO</button></td>
-
-
+<td><button type="button" id="detail_modal" class="btn btn-light" data-toggle="modal" onclick="c_pre_yes()">YES</button></td>
+<td><button type="button" id="detail_modal" class="btn btn-light" data-toggle="modal" onclick="c_pre_no()">NO</button></td>
+<td><button type="button" id="detail_modal" class="btn btn-light" data-toggle="modal" onclick="c_post_yes()">YES</button></td>
+<td><button type="button" id="detail_modal" class="btn btn-light" data-toggle="modal" onclick="c_post_no()">NO</button></td>
 
                     </tr>
                     <div class="modal" id="modal{{$i}}">
@@ -105,16 +102,16 @@
 function crossClose(chId) {
 
    $.ajax({
-    type: "POST",
+    type:"POST",
     url: "/channels/requests/crossClose",
-    data: {"chId": chId
+    data: {
+       "chId": chId
     },
-
     success: function(result) {
-      alert("CAN NOT CLOSE IN C_PRE OR C_POST);
+       swal({title: "CAN NOT CLOSE IN C_PRE OR C_POST", icon: "warning", button: "close"});
     },
-    error: function(result, error) {
-      alert(request.status +  "\n" + request.responseText + "\n" + "error: " +error);
+    error: function(request, error) {
+       alert(request.status+"\n"+request.responseText+"\n"+"error"+error);
     }
 
    });
@@ -122,61 +119,56 @@ function crossClose(chId) {
 
 function c_pre_yes() {
 
-   alert("c_pre_yes");
-
+   //alert("c_pre_yes");
    $.ajax({
     type:"POST",
     url: "/channels/requests/c_pre_yes",
     data: {
-        "c_pre_answer": "1"
+
     },
     success: function() {
-        alert("success");
+       swal({title: "C_PRE YES", icon: "success", button: "close"});
     },
     error: function() {
-        alert("error");
+       alert("No");
     }
 
    });
- 
 }
 
 function c_pre_no() {
 
-   alert("c_pre_no");
-
+   //alert("c_pre_no");
    $.ajax({
     type:"POST",
     url: "/channels/requests/c_pre_no",
     data: {
-        "c_pre_answer": "1"
+
     },
     success: function() {
-        alert("success");
+       swal({title: "C_PRE NO", icon: "warning", button: "close"});
     },
     error: function() {
-        alert("error");
+       alert("No");
     }
 
    });
- 
 }
 
 function c_post_yes() {
 
-   alert("c_post_yes");
-
+   //alert("c_post_yes");
    $.ajax({
     type:"POST",
     url: "/channels/requests/c_post_yes",
     data: {
-        "c_pre_answer": "1"
+
     },
     success: function() {
-        alert("success");
+       swal({title: "C_POST YES", icon: "success", button: "close"});
     },
     error: function() {
-        alert("error");
+       alert("No");
     }
 
    });
@@ -184,23 +176,21 @@ function c_post_yes() {
 
 function c_post_no() {
 
-   alert("c_post_no");
-
+   //alert("c_post_no");
    $.ajax({
     type:"POST",
     url: "/channels/requests/c_post_no",
     data: {
-        "c_pre_answer": "1"
+
     },
     success: function() {
-        alert("success");
+      swal({title: "C_POST NO", icon: "warning", button: "close"});
     },
     error: function() {
-        alert("error");
+       alert("No");
     }
 
    });
- 
 }
 
 </script>
