@@ -26,7 +26,8 @@ var C_pre_yes int
 var C_pre_no int
 var C_post_yes int
 var C_post_no int
-
+var Addrs []string
+var Amount int64
 
 type ClientGrpc struct {
 	clientPb.UnimplementedClientServer
@@ -152,24 +153,20 @@ func (s *ClientGrpc) CrossPaymentPrepareClientRequest(ctx context.Context, in *c
 	log.Println("----CROSS PAYMENT PREPARE START IN CLIENT----")
 	StartTime := time.Now()
 	fmt.Println("startTime : ", StartTime)
+	
+	Addrs = in.Addr
+	Amount = in.Amount
 
-
-	/*
-	 *
-	 *
-	 * For client's voting
-	 */
-	/*
 	for {
-		if C_pre_yes == 1 {
-			C_pre_yes = 0
+		if C_pre_yes == 1{
 			break
-		} else if C_pre_yes == 2 {
+		}
+
+		if C_pre_yes == 2 {
 			C_pre_yes = 0
 			return &clientPb.PrepareResult{Result: false}, nil
 		}
 	}
-	*/
 
 	convertedOriginalMsg, convertedSignatureMsg := convertByteToPointer(in.OriginalMessage, in.Signature)
 
@@ -179,6 +176,7 @@ func (s *ClientGrpc) CrossPaymentPrepareClientRequest(ctx context.Context, in *c
 
 	originalMessageStr, signatureStr := convertPointerToByte(originalMsg, signature)
 
+	C_pre_yes = 0
 	log.Println("----CROSS PAYMENT PREPARE END IN CLIENT----")
 	return &clientPb.PrepareResult{Result: true, OriginalMessage: originalMessageStr, Signature: signatureStr}, nil
 }
@@ -188,22 +186,17 @@ func (s *ClientGrpc) CrossPaymentCommitClientRequest(ctx context.Context, in *cl
 //	time.Sleep(time.Second * 50)
 	log.Println("----CROSS PAYMENT COMMIT START IN CLIENT----")
 
-	/*
-	 *
-	 *
-	 * For client's voting
-	 */
-	/* 
 	for {
-		if C_post_yes == 1 {
-			C_post_yes = 0
+		if C_post_yes == 1{
 			break
-		} else if C_post_yes == 2 {
+		}
+
+		if C_post_yes == 2 {
 			C_post_yes = 0
 			return &clientPb.CommitResult{Result: false}, nil
 		}
 	}
-	*/
+
 
 	convertedOriginalMsg, convertedSignatureMsg := convertByteToPointer(in.OriginalMessage, in.Signature)
 
@@ -213,6 +206,7 @@ func (s *ClientGrpc) CrossPaymentCommitClientRequest(ctx context.Context, in *cl
 
 	originalMessageStr, signatureStr := convertPointerToByte(originalMsg, signature)
 
+	C_post_yes = 0
 	log.Println("----CROSS PAYMENT COMMIT END IN CLIENT----")
 	return &clientPb.CommitResult{Result: true, OriginalMessage: originalMessageStr, Signature: signatureStr}, nil
 }
@@ -235,6 +229,8 @@ func (s *ClientGrpc) CrossPaymentConfirmClientRequest(ctx context.Context, in *c
 	// fmt.Println(C.ecall_get_balance_w(C.uint(2)))
 	// fmt.Println(time.Since(controller.ExecutionTime))
 
+	Amount = 0
+	Addrs = nil
 	return &clientPb.ConfirmResult{Result: true}, nil
 }
 
@@ -255,6 +251,8 @@ func (s *ClientGrpc) CrossPaymentRefundClientRequest(ctx context.Context, in *cl
 	// fmt.Println(C.ecall_get_balance_w(C.uint(2)))
 	// fmt.Println(time.Since(controller.ExecutionTime))
 
+	Amount = 0
+	Addrs = nil
 	return &clientPb.RefundResult{Result: true}, nil
 }
 

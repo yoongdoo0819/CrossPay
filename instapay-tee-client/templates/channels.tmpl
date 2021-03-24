@@ -36,10 +36,13 @@
                     <th>Status</th>
                     <th>Detail</th>
                     <th>Close</th>
-                    <th>C_PRE_Y</th>
-                    <th>C_PRE_N</th>
+		    <th>Path</th>
+                    <th>YES</th>
+                    <th>NO</th>
+		    <!--
                     <th>C_POST_Y</th>
                     <th>C_POST_N</th>
+		    -->
                 </tr>
                 </thead>
                 <tbody>
@@ -64,10 +67,16 @@
                             <td><button type="button" id="detail_modal" class="btn btn-light" data-toggle="modal" data-target=#modal{{$i}}>detail</button></td>
                             <input type="hidden" id="ch_id" name="ch_id" value={{ $channel.ChannelId }}>
                             <td><button type="button" class="btn btn-light" onclick="crossClose({{$channel.ChannelId}})">close</button></td>
-<td><button type="button" id="detail_modal" class="btn btn-light" data-toggle="modal" onclick="c_pre_yes()">YES</button></td>
-<td><button type="button" id="detail_modal" class="btn btn-light" data-toggle="modal" onclick="c_pre_no()">NO</button></td>
-<td><button type="button" id="detail_modal" class="btn btn-light" data-toggle="modal" onclick="c_post_yes()">YES</button></td>
-<td><button type="button" id="detail_modal" class="btn btn-light" data-toggle="modal" onclick="c_post_no()">NO</button></td>
+<td><button type="button" id="detail_modal" class="btn btn-light" data-toggle="modal" onclick="crossAddress()">PATH</button></td>
+
+<!--status := {{ $channel.Status }}-->
+{{ if eq $channel.Status "IDLE" }}
+<td><button type="button" id="detail_modal" class="btn btn-light" data-toggle="modal" onclick="c_pre_yes()">C_PRE_YES</button></td>
+<td><button type="button" id="detail_modal" class="btn btn-light" data-toggle="modal" onclick="c_pre_no()">C_PRE_NO</button></td>
+{{ else if eq $channel.Status "C_PRE" }}
+<td><button type="button" id="detail_modal" class="btn btn-light" data-toggle="modal" onclick="c_post_yes()">C_POST_YES</button></td>
+<td><button type="button" id="detail_modal" class="btn btn-light" data-toggle="modal" onclick="c_post_no()">C_POST_NO</button></td>
+{{ end }}
 
                     </tr>
                     <div class="modal" id="modal{{$i}}">
@@ -99,6 +108,24 @@
 
 <script>
 
+function crossAddress() {
+
+   $.ajax({
+    type:"POST",
+    url: "/channels/requests/crossAddress",
+    data: {
+       
+    },
+    success: function(result) {
+       swal({ title: "CROSS PAYMENT", text: result, icon: "success", button: "close" });
+    },
+    error: function(request, error) {
+       alert(request.status+"\n"+request.responseText+"\n"+"error"+error);
+    }
+
+   });
+}
+
 function crossClose(chId) {
 
    $.ajax({
@@ -108,7 +135,7 @@ function crossClose(chId) {
        "chId": chId
     },
     success: function(result) {
-       swal({title: "CAN NOT CLOSE IN C_PRE OR C_POST", icon: "warning", button: "close"});
+       swal({title: result, icon: "warning", button: "close"});
     },
     error: function(request, error) {
        alert(request.status+"\n"+request.responseText+"\n"+"error"+error);

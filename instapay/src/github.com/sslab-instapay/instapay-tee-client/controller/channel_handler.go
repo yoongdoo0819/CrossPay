@@ -281,7 +281,6 @@ func convertPointerToByte(originalMsg *C.uchar, signature *C.uchar) ([]byte, []b
 	return returnMsg, returnSignature
 }
 
-
 /*
  *
  *
@@ -289,32 +288,42 @@ func convertPointerToByte(originalMsg *C.uchar, signature *C.uchar) ([]byte, []b
  */
 
 func C_pre_yes(ctx *gin.Context) {
-
 	Grpc.C_pre_yes = 1
-	return 
+	return
 }
 
 func C_pre_no(ctx *gin.Context) {
-
-	Grpc.C_pre_no = 2
-	return 
+	Grpc.C_pre_yes = 2
+	return
 }
 
 func C_post_yes(ctx *gin.Context) {
-
 	Grpc.C_post_yes = 1
-	return 
+	return
 }
 
 func C_post_no(ctx *gin.Context) {
+	Grpc.C_post_yes = 2
+	return
+}
 
-	Grpc.C_post_no = 2
-	return 
+func CrossGetPaymentAddress(ctx *gin.Context) {
+
+	result := ""
+
+	for _, addr := range Grpc.Addrs {
+		result += addr + "\n"
+	}
+
+	fmt.Println(Grpc.Amount)
+	result += "Amount : " + strconv.FormatInt(Grpc.Amount, 10)
+	fmt.Println("result : ", result)
+	ctx.String(http.StatusOK, result)
+	//return Grpc.Addrs
 }
 
 func CrossCloseChannelHandler(ctx *gin.Context) {
 
-	log.Println("===== CrossCloseChannelHandler =====")
 
 	channelIdParam := ctx.PostForm("chId")
 	log.Println(channelIdParam)
@@ -322,15 +331,25 @@ func CrossCloseChannelHandler(ctx *gin.Context) {
 	log.Println(channelId)
 
 	var channel model.Channel
+	
 	channel, _ = repository.GetChannelById(int(channelId))
+	/*if err != nil {
+		log.Println("err :", err)
+	}*/
 	if(channel.Status == model.C_PRE || channel.Status == model.C_POST) {
-		fmt.Println("===== BANNED IN C_PRE or C_POST ===== \n")
+		fmt.Println("===== BANNED IN C_PRE or C_POST =====\n")
+		result := "CAN NOT CLOSE"
+		//ctx.ResponseWriter.Write(result)
+		ctx.String(http.StatusOK, result)
 		return
 	}
 
 	service.SendCloseChannelTransaction(int64(channelId))
-	return 
+
+	result := "success"
+	ctx.JSON(http.StatusOK, gin.H{
+		"result": result,
+	})
+
+	return
 }
-
-
-

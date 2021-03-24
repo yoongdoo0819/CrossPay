@@ -34,6 +34,7 @@ func RegisterRestRouter(router *gin.Engine) {
 		channelRequestRouter.POST("c_post_yes", controller.C_post_yes)
 		channelRequestRouter.POST("c_post_no", controller.C_post_no)
 		channelRequestRouter.POST("crossClose", controller.CrossCloseChannelHandler)
+		channelRequestRouter.POST("crossAddress", controller.CrossGetPaymentAddress)
 
 	}
 }
