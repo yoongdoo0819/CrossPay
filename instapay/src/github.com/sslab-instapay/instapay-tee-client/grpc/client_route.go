@@ -14,6 +14,7 @@ import (
 	clientPb "github.com/sslab-instapay/instapay-tee-client/proto/client"
 
 	// "github.com/sslab-instapay/instapay-tee-client/controller"
+	"sync"
 	"log"
 	"fmt"
 	"time"
@@ -28,6 +29,8 @@ var C_post_yes int
 var C_post_no int
 var Addrs []string
 var Amount int64
+
+var rwMutex = new(sync.Mutex)
 
 type ClientGrpc struct {
 	clientPb.UnimplementedClientServer
@@ -153,26 +156,29 @@ func (s *ClientGrpc) CrossPaymentPrepareClientRequest(ctx context.Context, in *c
 	log.Println("----CROSS PAYMENT PREPARE START IN CLIENT----")
 	StartTime := time.Now()
 	fmt.Println("startTime : ", StartTime)
-	
+
 	Addrs = in.Addr
-	Amount = in.Amount
-
+        Amount = in.Amount
+/*
 	for {
-		if C_pre_yes == 1{
-			break
-		}
 
-		if C_pre_yes == 2 {
+		if C_pre_yes == 1 {
+			break
+		} else if C_pre_yes == 2 {
 			C_pre_yes = 0
 			return &clientPb.PrepareResult{Result: false}, nil
+
 		}
 	}
-
+*/
 	convertedOriginalMsg, convertedSignatureMsg := convertByteToPointer(in.OriginalMessage, in.Signature)
 
 	var originalMsg *C.uchar
 	var signature *C.uchar
+
+	rwMutex.Lock()
 	C.ecall_cross_go_pre_update_w(convertedOriginalMsg, convertedSignatureMsg, &originalMsg, &signature)
+	rwMutex.Unlock()
 
 	originalMessageStr, signatureStr := convertPointerToByte(originalMsg, signature)
 
@@ -185,24 +191,28 @@ func (s *ClientGrpc) CrossPaymentCommitClientRequest(ctx context.Context, in *cl
 	// 채널 정보를 업데이트 한다던지 잔액을 변경.
 //	time.Sleep(time.Second * 50)
 	log.Println("----CROSS PAYMENT COMMIT START IN CLIENT----")
-
+/*
 	for {
-		if C_post_yes == 1{
+		if C_post_yes == 1 {
 			break
 		}
-
+		
 		if C_post_yes == 2 {
 			C_post_yes = 0
 			return &clientPb.CommitResult{Result: false}, nil
+
 		}
 	}
-
+*/
 
 	convertedOriginalMsg, convertedSignatureMsg := convertByteToPointer(in.OriginalMessage, in.Signature)
 
 	var originalMsg *C.uchar
 	var signature *C.uchar
+
+	rwMutex.Lock()
 	C.ecall_cross_go_post_update_w(convertedOriginalMsg, convertedSignatureMsg, &originalMsg, &signature)
+	rwMutex.Unlock()
 
 	originalMessageStr, signatureStr := convertPointerToByte(originalMsg, signature)
 
@@ -217,7 +227,11 @@ func (s *ClientGrpc) CrossPaymentConfirmClientRequest(ctx context.Context, in *c
 //	time.Sleep(time.Second * 50)
 
 	convertedOriginalMsg, convertedSignatureMsg := convertByteToPointer(in.OriginalMessage, in.Signature)
+
+	rwMutex.Lock()
 	C.ecall_cross_go_idle_w(convertedOriginalMsg, convertedSignatureMsg)
+	rwMutex.Unlock()
+
         log.Println("----CROSS PAYMENT CONFIRM END IN CLIENT----")
 
 	elapsedTime := time.Since(StartTime)
