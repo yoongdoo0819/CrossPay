@@ -83,6 +83,10 @@ enclave {
             [user_check] unsigned char *chain2Sender, 
             [user_check] unsigned char *chain2Receiver, 
             unsigned int chain2Amount,
+	    [user_check] unsigned char *chain3Server,
+            [user_check] unsigned char *chain3Sender, 
+            [user_check] unsigned char *chain3Receiver, 
+            unsigned int chain3Amount,
             [user_check] unsigned int *payment_num);
 
         public void ecall_cross_add_participant(

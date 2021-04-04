@@ -34,6 +34,10 @@ var EthereumConfig = map[string]string{
 
 	"chain2ServerGrpcHost":   "141.223.121.166",
 	"chain2ServerGrpcPort":   "50004",
+
+	"chain3ServerGrpcHost":   "141.223.121.169",
+	"chain3ServerGrpcPort":   "50004",
+
 }
 
 var contractInstance *instapay.Instapay

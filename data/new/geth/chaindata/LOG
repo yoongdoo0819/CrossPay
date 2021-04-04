@@ -1687,3 +1687,6 @@
 17:17:39.153765 table@remove removed @556
 17:17:39.155328 table@remove removed @557
 17:17:39.155388 table@remove removed @558
+=============== Mar 26, 2021 (KST) ===============
+20:39:03.880379 db@close closing
+20:39:03.880721 db@close done T·334.223µs

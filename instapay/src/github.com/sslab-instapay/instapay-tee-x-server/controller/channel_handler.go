@@ -9,23 +9,26 @@ package controller
 import "C"
 
 import (
-	"context"
+	//"context"
 	"net/http"
 	"time"
 	"unsafe"
 	"reflect"
+	"sync"
 
 	"github.com/gin-gonic/gin"
 	"github.com/sslab-instapay/instapay-tee-x-server/config"
 	serverGrpc "github.com/sslab-instapay/instapay-tee-x-server/grpc"
-        serverPb "github.com/sslab-instapay/instapay-tee-x-server/proto/server"
+        //serverPb "github.com/sslab-instapay/instapay-tee-x-server/proto/server"
 	//xServerPb "github.com/sslab-instapay/instapay-tee-x-server/proto/cross-server"
-	"google.golang.org/grpc"
+	//"google.golang.org/grpc"
 	"github.com/sslab-instapay/instapay-tee-x-server/repository"
 	"log"
 	"fmt"
 	"strconv"
 )
+
+var rwMutex = new(sync.RWMutex)
 
 func OpenChannelHandler(context *gin.Context)  {
 	//channelName := context.PostForm("ch_name")
@@ -114,6 +117,25 @@ func CrossPaymentToServerChannelHandler(ctx *gin.Context) {
 		log.Println(err)
 	}
 
+	chain3From := ctx.PostForm("chain3_sender")
+	chain3To := ctx.PostForm("chain3_receiver")
+	chain3Val, err := strconv.Atoi(ctx.PostForm("chain3_sender_val"))
+	if err != nil {
+		log.Println(err)
+	}
+
+	serverGrpc.ChainFrom[1] = chain1From
+	serverGrpc.ChainTo[1] = chain1To
+	serverGrpc.ChainVal[1] = chain1Val
+
+	serverGrpc.ChainFrom[2] = chain2From
+	serverGrpc.ChainTo[2] = chain2To
+	serverGrpc.ChainVal[2] = chain2Val
+
+	serverGrpc.ChainFrom[3] = chain3From
+	serverGrpc.ChainTo[3] = chain3To
+	serverGrpc.ChainVal[3] = chain3Val
+
 	fmt.Println("CHAIN1 From : ", chain1From)
 	fmt.Println("CHAIN1 Val : ", chain1Val)
 	fmt.Println("CHAIN1 To : ", chain1To)
@@ -123,7 +145,7 @@ func CrossPaymentToServerChannelHandler(ctx *gin.Context) {
 	fmt.Println("CHAIN2 To : ", chain2To)
 
 //	time.Sleep(time.Second*1)
-	
+
 	chain1Sender := []C.uchar(chain1From)
 	chain1Receiver := []C.uchar(chain1To)
 
@@ -131,11 +153,25 @@ func CrossPaymentToServerChannelHandler(ctx *gin.Context) {
 	//chain2Receiver := []C.uchar(chain2To)
 
 	serverGrpc.StartTime = time.Now()
-	PaymentNum := C.ecall_cross_accept_request_w(&chain1Sender[0], &chain1Sender[0], &chain1Receiver[0], C.uint(chain1Val), &chain1Sender[0], &chain1Sender[0], &chain1Receiver[0], C.uint(chain1Val));
-
+	rwMutex.Lock()
+	PaymentNum := C.ecall_cross_accept_request_w(
+		&chain1Sender[0],
+		&chain1Sender[0],
+		&chain1Receiver[0],
+		C.uint(chain1Val),
+		&chain1Sender[0],
+		&chain1Sender[0],
+		&chain1Receiver[0],
+		C.uint(chain1Val),
+		&chain1Sender[0],
+		&chain1Sender[0],
+		&chain1Receiver[0],
+		C.uint(chain1Val))
+	rwMutex.Unlock()
 	//C.ecall_cross_add_participant_w(C.uint(PaymentNum), &([]C.uchar(chain1Server))[0])
 	//C.ecall_cross_add_participant_w(C.uint(PaymentNum), &([]C.uchar(chain2Server))[0])
 
+	serverGrpc.ChanCreate()
 	var originalMessage *C.uchar
 	var signature *C.uchar
 
@@ -143,11 +179,24 @@ func CrossPaymentToServerChannelHandler(ctx *gin.Context) {
 	C.ecall_cross_create_all_prepare_req_msg_w(C.uint(PaymentNum), &originalMessage, &signature)
 	fmt.Println("===== CREATE CROSS ALL PREPARE MSG END =====")
 
+	originalMessageByte, signatureByte := convertPointerToByte(originalMessage, signature)
 
 	log.Println("PN : ", PaymentNum)
 	log.Println("chain1 server : ", config.EthereumConfig["chain1ServerGrpcHost"] + ":" + config.EthereumConfig["chain1ServerGrpcPort"])
 	log.Println("chain2 server : ", config.EthereumConfig["chain2ServerGrpcHost"] + ":" + config.EthereumConfig["chain2ServerGrpcPort"])
+	log.Println("chain3 server : ", config.EthereumConfig["chain3ServerGrpcHost"] + ":" + config.EthereumConfig["chain3ServerGrpcPort"])
 
+
+	for i:= 1; i<=3; i++ {
+		go serverGrpc.WrapperCrossPaymentPrepareRequest(i, int64(PaymentNum), serverGrpc.ChainFrom[i], serverGrpc.ChainTo[i], int64(serverGrpc.ChainVal[i]), originalMessageByte, signatureByte)
+	}
+/*
+	connectionForChain3, err := grpc.Dial(config.EthereumConfig["chain3ServerGrpcHost"] + ":" + config.EthereumConfig["chain3ServerGrpcPort"], grpc.WithInsecure())
+	if err != nil {
+		log.Println(err)
+		ctx.JSON(http.StatusBadRequest, gin.H{"message": err})
+		return
+	}
 
 	connectionForChain1, err := grpc.Dial(config.EthereumConfig["chain1ServerGrpcHost"] + ":" + config.EthereumConfig["chain1ServerGrpcPort"], grpc.WithInsecure())
 	if err != nil {
@@ -165,17 +214,24 @@ func CrossPaymentToServerChannelHandler(ctx *gin.Context) {
 
 	defer connectionForChain1.Close()
 	defer connectionForChain2.Close()
+	defer connectionForChain3.Close()
 
 	client1 := serverPb.NewServerClient(connectionForChain1)
 	client2 := serverPb.NewServerClient(connectionForChain2)
+	client3 := serverPb.NewServerClient(connectionForChain3)
 
-	client1Context, cancel := context.WithTimeout(context.Background(), time.Second)
+	client1Context, cancel := context.WithTimeout(context.Background(), time.Second*180)
 	defer cancel()
-	client2Context, cancel2 := context.WithTimeout(context.Background(), time.Second)
+	client2Context, cancel2 := context.WithTimeout(context.Background(), time.Second*180)
 	defer cancel2()
+	client3Context, cancel3 := context.WithTimeout(context.Background(), time.Second*180)
+	defer cancel3()
+
 
 	originalMessageByte, signatureByte := convertPointerToByte(originalMessage, signature)
 
+
+	serverGrpc.StartTime1 = time.Now()
 	r1, err := client1.CrossPaymentPrepareRequest(client1Context, &serverPb.CrossPaymentPrepareReqMessage{Pn: int64(PaymentNum), From : chain1From, To : chain1To, Amount: int64(chain1Val), OriginalMessage: originalMessageByte, Signature: signatureByte})
 	if err != nil {
 		log.Println(err)
@@ -183,7 +239,8 @@ func CrossPaymentToServerChannelHandler(ctx *gin.Context) {
 		return
 	}
 	log.Println(r1.GetResult())
-	
+
+	serverGrpc.StartTime2 = time.Now()
 	r2, err := client2.CrossPaymentPrepareRequest(client2Context, &serverPb.CrossPaymentPrepareReqMessage{Pn: int64(PaymentNum), From : chain2From, To : chain2To, Amount: int64(chain2Val), OriginalMessage: originalMessageByte, Signature: signatureByte})
 	if err != nil {
 		log.Println(err)
@@ -192,9 +249,50 @@ func CrossPaymentToServerChannelHandler(ctx *gin.Context) {
 	}
 	log.Println(r2.GetResult())
 
+	serverGrpc.StartTime3 = time.Now()
+	r3, err := client3.CrossPaymentPrepareRequest(client3Context, &serverPb.CrossPaymentPrepareReqMessage{Pn: int64(PaymentNum), From : chain3From, To : chain3To, Amount: int64(chain3Val), OriginalMessage: originalMessageByte, Signature: signatureByte})
+	if err != nil {
+		log.Println(err)
+		ctx.JSON(http.StatusBadRequest, gin.H{"message":err})
+		return
+	}
+	log.Println(r3.GetResult())
+*/
 
+//time.Sleep(3000)
 	ctx.JSON(http.StatusOK, gin.H{"message":"Cross-Payment" })
 }
+
+/*
+func WrapperCrossPaymentPrepareRequest(index int, paymentNum int64, chainFrom string, chainTo string, chainVal int64, originalMessageByte []byte, signatureByte []byte) {
+
+	connectionForChain, err := grpc.Dial(config.EthereumConfig["chain" + strconv.Itoa(index) + "ServerGrpcHost"] + ":" + config.EthereumConfig["chain" + strconv.Itoa(index) + "ServerGrpcPort"], grpc.WithInsecure())
+	if err != nil {
+		log.Println(err)
+		//ctx.JSON(http.StatusBadRequest, gin.H{"message": err})
+		return
+	}
+
+	defer connectionForChain.Close()
+
+	client := serverPb.NewServerClient(connectionForChain)
+	clientContext, cancel := context.WithTimeout(context.Background(), time.Second*180)
+	defer cancel()
+
+
+	r, err := client.CrossPaymentPrepareRequest(clientContext, &serverPb.CrossPaymentPrepareReqMessage{Pn: paymentNum, From : chainFrom, To : chainTo, Amount: chainVal, OriginalMessage: originalMessageByte, Signature: signatureByte})
+	if err != nil {
+		log.Println(err)
+		//ctx.JSON(http.StatusBadRequest, gin.H{"message":err})
+		return
+	}
+	log.Println(r.GetResult())
+
+	fmt.Println("payment Num : ", paymentNum)
+	serverGrpc.Ch[int(paymentNum)] <- true
+//	serverGrpc.Ch <- true
+}
+*/
 
 func convertByteToPointer(originalMsg []byte, signature []byte) (*C.uchar, *C.uchar) {
 

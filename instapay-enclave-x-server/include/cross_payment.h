@@ -19,7 +19,22 @@ class Cross_Payment {
     public:
 	Cross_Payment() {}
 
-        Cross_Payment(unsigned int t_payment_num, unsigned char *chain1Server, unsigned char *chain1Sender, unsigned char *chain1Receiver, unsigned int chain1Amount, unsigned char *chain2Server, unsigned char *chain2Sender, unsigned char *chain2Receiver, unsigned int chain2Amount)
+        Cross_Payment(
+			unsigned int t_payment_num, 
+			unsigned char *chain1Server, 
+			unsigned char *chain1Sender, 
+			unsigned char *chain1Receiver, 
+			unsigned int chain1Amount, 
+			unsigned char *chain2Server, 
+			unsigned char *chain2Sender, 
+			unsigned char *chain2Receiver, 
+			unsigned int chain2Amount,
+			unsigned char *chain3Server, 
+			unsigned char *chain3Sender, 
+			unsigned char *chain3Receiver, 
+			unsigned int chain3Amount)
+
+
 		: m_cross_payment_num(t_payment_num)
         {
 
@@ -32,7 +47,12 @@ class Cross_Payment {
 		m_chain2Sender = ::arr_to_bytes(chain2Sender, 40);
 		m_chain2Receiver = ::arr_to_bytes(chain1Receiver, 40);
 		m_chain2Amount = chain2Amount;
-		
+	
+		m_chain3Server = ::arr_to_bytes(chain3Server, 40);
+		m_chain3Sender = ::arr_to_bytes(chain3Sender, 40);
+		m_chain3Receiver = ::arr_to_bytes(chain3Receiver, 40);
+		m_chain3Amount = chain3Amount;
+	
 		m_cross_status = NONE;
         };
 
@@ -52,6 +72,9 @@ class Cross_Payment {
 	unsigned int m_chain1Server_committed;
 	unsigned int m_chain2Server_committed;
 
+	unsigned int m_chain3Server_prepared;
+	unsigned int m_chain3Server_committed;
+
     private:
         unsigned int m_cross_payment_num;
 
@@ -64,6 +87,12 @@ class Cross_Payment {
         unsigned char *m_chain2Sender;
         unsigned char *m_chain2Receiver;
 	unsigned int m_chain2Amount;
+
+	unsigned char *m_chain3Server;
+        unsigned char *m_chain3Sender;
+        unsigned char *m_chain3Receiver;
+	unsigned int m_chain3Amount;
+
 
 //	unsigned int m_chain1Server_verification;
 //	unsigned int m_chain2Server_verification;

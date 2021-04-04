@@ -43,6 +43,7 @@ enum cross_message_type {
 enum cross_payment_server {
 	CHAIN1_SERVER = 13,
 	CHAIN2_SERVER = 14,
+	CHAIN3_SERVER = 15,
 };
 
 typedef struct cross_message {
