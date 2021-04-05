@@ -260,7 +260,11 @@ func CrossPaymentToServerChannelHandler(ctx *gin.Context) {
 */
 
 //time.Sleep(3000)
-	ctx.JSON(http.StatusOK, gin.H{"message":"Cross-Payment" })
+
+	var data = <- serverGrpc.ChComplete[int(PaymentNum)]
+	if data == true {
+		ctx.JSON(http.StatusOK, gin.H{"message":"Cross-Payment" })
+	}
 }
 
 /*

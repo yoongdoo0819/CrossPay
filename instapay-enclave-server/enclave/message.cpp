@@ -32,6 +32,8 @@ void sign_message(unsigned char *original_msg, unsigned int msg_size, unsigned c
     memcpy(signature, output64, 32);  // copy r
     memcpy(signature + 32, output64 + 32, 32);  // copy s
     memcpy(&signature[64], &recid, 1);  // copy v (recovery id)
+
+    secp256k1_context_destroy(secp256k1_ctx);	
 }
 
 

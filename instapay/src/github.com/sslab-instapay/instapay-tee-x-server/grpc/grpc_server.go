@@ -37,6 +37,7 @@ type ServerGrpc struct {
 }
 
 var Ch [100000]chan bool
+var ChComplete [100000]chan bool
 //var Ch chan bool = make(chan bool)
 //var Ch = make(map[int](chan bool), 3)
 var chprepared [100000]int
@@ -814,6 +815,8 @@ func (s *ServerGrpc) CrossPaymentCommitted(ctx context.Context, rs *pbXServer.Cr
 	fmt.Println("****************************************************************")
 	fmt.Println("execution time : ", elapsedTime.Seconds())
 	fmt.Printf("execution time : %s", elapsedTime)
+
+	ChComplete[int(pn)] <- true
 //	log.Println("===== CROSS PAYMENT COMMIT END IN LV2 SERVER =====")
 	return &pbXServer.CrossResult{Result: true}, nil
 }
@@ -906,6 +909,7 @@ func ChanCreate() {
 	if chanCreateCheck == 0 {
 		for i:= range Ch {
 			Ch[i] = make(chan bool)
+			ChComplete[i] = make(chan bool)
 		}
 	} else {
 		return 
