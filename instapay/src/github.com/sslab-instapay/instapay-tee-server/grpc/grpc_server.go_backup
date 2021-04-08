@@ -27,6 +27,12 @@ import (
 	"reflect"
 )
 
+var ch [100000]chan bool
+//var chComplete [100000]chan bool
+
+var chprepared [100000]int
+var chanCreateCheck = 0
+
 var prepared [100000]int
 var committed [100000]int
 
@@ -219,18 +225,18 @@ func SearchPath(pn int64, amount int64) ([]string, map[string]PaymentInformation
 
 	/* composing p */
 
-	p = append(p, "f4444529d6221122d1712c52623ba119a60609e3")
-	p = append(p, "d95da40bbd2001abf1a558c0b1dffd75940b8fd9")
-	p = append(p, "73d8e5475278f7593b5293beaa45fb53f34c9ad2")
+	p = append(p, "f55ba9376db959fab2af86d565325829b08ea3c4")
+	p = append(p, "c60f640c4505d15b972e6fc2a2a7cba09d05d9f7")
+	p = append(p, "70603f1189790fcd0fd753a7fef464bdc2c2ad36")
 
 	/* composing w */
 	var channelInform1, channelInform2, channelInform3 []C.uint
 	var amountInform1, amountInform2, amountInform3 []C.int
 
-	channelInform1 = append(channelInform1, C.uint(3))
-	channelInform2 = append(channelInform2, C.uint(3))
-	channelInform2 = append(channelInform2, C.uint(5))
-	channelInform3 = append(channelInform3, C.uint(5))
+	channelInform1 = append(channelInform1, C.uint(117))
+	channelInform2 = append(channelInform2, C.uint(117))
+	channelInform2 = append(channelInform2, C.uint(120))
+	channelInform3 = append(channelInform3, C.uint(120))
 
 	amountInform1 = append(amountInform1, C.int(-amount))
 	amountInform2 = append(amountInform2, C.int(amount))
@@ -243,9 +249,9 @@ func SearchPath(pn int64, amount int64) ([]string, map[string]PaymentInformation
 
 	paymentInformation := make(map[string]PaymentInformation)
 
-	paymentInformation["f4444529d6221122d1712c52623ba119a60609e3"] = paymentInform1
-	paymentInformation["d95da40bbd2001abf1a558c0b1dffd75940b8fd9"] = paymentInform2
-	paymentInformation["73d8e5475278f7593b5293beaa45fb53f34c9ad2"] = paymentInform3
+	paymentInformation["f55ba9376db959fab2af86d565325829b08ea3c4"] = paymentInform1
+	paymentInformation["c60f640c4505d15b972e6fc2a2a7cba09d05d9f7"] = paymentInform2
+	paymentInformation["70603f1189790fcd0fd753a7fef464bdc2c2ad36"] = paymentInform3
 
 	log.Println("===== SearchPath End =====")
 	return p, paymentInformation
@@ -285,6 +291,9 @@ func (s *ServerGrpc) CommunicationInfoRequest(ctx context.Context, address *pbSe
 }
 
 func StartGrpcServer() {
+
+	ChanCreate()
+
 	grpcPort, err := strconv.Atoi(os.Getenv("grpc_port"))
 	if err != nil {
 		log.Fatal(err)
@@ -303,7 +312,7 @@ func StartGrpcServer() {
 
 func convertByteToPointer(originalMsg []byte, signature []byte) (*C.uchar, *C.uchar) {
 
-	log.Println("----- convertByteToPointer Server Start -----")
+	//log.Println("----- convertByteToPointer Server Start -----")
 	var uOriginal [44]C.uchar
 	var uSignature [65]C.uchar
 
@@ -314,8 +323,6 @@ func convertByteToPointer(originalMsg []byte, signature []byte) (*C.uchar, *C.uc
 	for i := 0; i < 65; i++ {
 		uSignature[i] = C.uchar(signature[i])
 	}
-        
-	log.Println("------------BTP FAILURE!!!!!!!!!!!! ---------------")
 
 	cOriginalMsg := (*C.uchar)(unsafe.Pointer(&uOriginal[0]))
 	cSignature := (*C.uchar)(unsafe.Pointer(&uSignature[0]))
@@ -328,7 +335,7 @@ func convertPointerToByte(originalMsg *C.uchar, signature *C.uchar) ([]byte, []b
 	var returnMsg []byte
 	var returnSignature []byte
 
-        log.Println("----- convertPointerToByte Server Start -----")
+	//log.Println("----- convertPointerToByte Server Start -----")
 
 	replyMsgHdr := reflect.SliceHeader{
 		Data: uintptr(unsafe.Pointer(originalMsg)),
@@ -351,8 +358,7 @@ func convertPointerToByte(originalMsg *C.uchar, signature *C.uchar) ([]byte, []b
 	for i := 0; i < 65; i++ {
 		returnSignature = append(returnSignature, byte(replySigS[i]))
 	}
-        
-	log.Println("------------PTB FAILURE!!!!!!!!!!!! ---------------")
+
 	return returnMsg, returnSignature
 }
 
@@ -392,7 +398,7 @@ func (s *ServerGrpc) CrossPaymentPrepareRequest(ctx context.Context, rq *pbServe
 	}
 	C.ecall_cross_update_sentagr_list_w(C.uint(PaymentNum), &([]C.uchar(p[2]))[0])
 
-	go WrapperCrossAgreementRequest(int64(PaymentNum), p, int64(amount),  paymentInformation)
+	go WrapperCrossAgreementRequest(int64(PaymentNum), p, int64(amount), paymentInformation)
 /*
 
 	connectionForXServer, err := grpc.Dial(config.EthereumConfig["Cross-ServerGrpcHost"] + ":" + config.EthereumConfig["Cross-ServerGrpcPort"], grpc.WithInsecure())
@@ -414,8 +420,7 @@ func (s *ServerGrpc) CrossPaymentPrepareRequest(ctx context.Context, rq *pbServe
 
 	log.Println(r.GetResult())
 */
-
-        log.Println("===== CROSS PAYMENT PREPARE START END LV2 SERVER =====")
+	log.Println("===== CROSS PAYMENT PREPARE START BY LV2 SERVER =====")
 
 	return &pbServer.Result{Result: true}, nil
 }
@@ -518,8 +523,6 @@ func (s *ServerGrpc) CrossPaymentRefundRequest(ctx context.Context, rq *pbServer
 	//to := rq.To
 	pn := rq.Pn
 	amount := rq.Amount
-	log.Println("pn : ", pn)
-	log.Println("amount : ", amount)
 	//sender := []C.uchar(from)
 	//receiver := []C.uchar(to)
 
@@ -540,9 +543,6 @@ func (s *ServerGrpc) CrossPaymentRefundRequest(ctx context.Context, rq *pbServer
 
 func SendCrossAgreementRequest(pn int64, address string, p []string, amount int64, paymentInformation PaymentInformation) {
 	
-	log.Println("PN : ", pn)
-	log.Println("ADDR : ", address)
-	//fmt.Println("payment information : ", paymentInformation)
 	
 	info, err := repository.GetClientInfo(address)
 	fmt.Println("client ip   : ", (*info).IP)
@@ -581,13 +581,8 @@ func SendCrossAgreementRequest(pn int64, address string, p []string, amount int6
 	C.ecall_cross_create_ag_req_msg_w(C.uint(pn), C.uint(len(channelSlice)), &channelSlice[0], &amountSlice[0], &originalMessage, &signature)
 	fmt.Println("===== CREATE AG REQ MSG END IN ENCLAVE =====")
 	originalMessageByte, signatureByte := convertPointerToByte(originalMessage, signature)
-/*
-	var addr []string
-	for key, val := range paymentInformation {
-		addr = append(addr, key)
-	}
-*/
-r, err := client.CrossPaymentPrepareClientRequest(context.Background(), &pbClient.CrossPaymentPrepareReqClientMessage{PaymentNumber: int64(pn), Addr: p, Amount: amount, OriginalMessage: originalMessageByte, Signature: signatureByte})
+
+	r, err := client.CrossPaymentPrepareClientRequest(context.Background(), &pbClient.CrossPaymentPrepareReqClientMessage{PaymentNumber: int64(pn), Addr: p, Amount: amount, OriginalMessage: originalMessageByte, Signature: signatureByte})
 	if err != nil {
 		log.Println("client AgreementRequest err : ", err)
 	}
@@ -595,19 +590,27 @@ r, err := client.CrossPaymentPrepareClientRequest(context.Background(), &pbClien
 	log.Println("R Result : ", r.Result)
 	if r.Result {
 		agreementOriginalMessage, agreementSignature := convertByteToPointer(r.OriginalMessage, r.Signature)
-		is_verified := C.ecall_cross_verify_ag_res_msg_w(&([]C.uchar(address)[0]), agreementOriginalMessage, agreementSignature)
-		log.Println("is_verified : ", is_verified)
+		C.ecall_cross_verify_ag_res_msg_w(&([]C.uchar(address)[0]), agreementOriginalMessage, agreementSignature)
+		//log.Println("is_verified : ", is_verified)
+		
+		/*
+		rwMutex.Lock()
 		prepared[pn]++
+		rwMutex.Unlock()
+		*/
+		fmt.Printf("pn : %d , ch[pn] start \n", pn)
+		ch[pn] <- true
+		fmt.Printf("pn : %d , ch[pn] end \n", pn)
 	}
-
+/*
 	rwMutex.Lock()
 	C.ecall_cross_update_sentagr_list_w(C.uint(pn), &([]C.uchar(address)[0]))
 	rwMutex.Unlock()
-
+*/
 	return
 }
 
-func SendCrossUpdateRequest(pn int64, address string, p []string, paymentInformation PaymentInformation) {
+func SendCrossUpdateRequest(pn int64, address string, paymentInformation PaymentInformation) {
 	info, err := repository.GetClientInfo(address)
 	if err != nil {
 		log.Fatal(err)
@@ -652,16 +655,22 @@ func SendCrossUpdateRequest(pn int64, address string, p []string, paymentInforma
 	if r.Result {
 		updateOriginalMessage, updateSignature := convertByteToPointer(r.OriginalMessage, r.Signature)
 		C.ecall_cross_verify_ud_res_msg_w(&([]C.uchar(address)[0]), updateOriginalMessage, updateSignature)
+
+		/*
+		rwMutex.Lock()
 		committed[pn]++
+		rwMutex.Unlock()
+		*/
+		ch[pn] <- true
 	}
 	
-
+/*
 	rwMutex.Lock()
 	log.Println("===== Mutex START =====")
 	C.ecall_cross_update_sentupt_list_w(C.uint(pn), &([]C.uchar(address))[0])
 	log.Println("===== Mutex END =====")
 	rwMutex.Unlock()
-
+*/
 	return
 }
 
@@ -762,17 +771,17 @@ func SendCrossRefundPayment(pn int, address string) {
 
 func WrapperCrossAgreementRequest(pn int64, p []string, amount int64, paymentInformation map[string]PaymentInformation) {
 	/* remove C's address from p */
-/*	var q []string
-	q = p[0:2]
-
+//	var q []string
+//	q = p[0:2]
+/*
 	for _, address := range q {
 		go SendCrossAgreementRequest(pn, address, paymentInformation[address])
 	}
 */
-
 	for _, address := range p {
 		go SendCrossAgreementRequest(pn, address, p, amount, paymentInformation[address])
 	}
+
 
 /*
 	for C.ecall_cross_check_unanimity_w(C.uint(pn), C.int(0)) != 1 {
@@ -781,14 +790,36 @@ func WrapperCrossAgreementRequest(pn int64, p []string, amount int64, paymentInf
 	// C.ecall_cross_all_prepared_msg_w(C.uint(pn))
 //	var originalMessage *C.uchar
 //	var signature *C.uchar
-	fmt.Printf("prepared[PN] %d \n", prepared[pn])
+
+	fmt.Printf("PN : %d, prepared[PN] %d \n", pn, prepared[pn])
+	/*
 	for {
-		if prepared[pn] == 2 {
+
+//		fmt.Printf("****************** PN : %d prepared[PN] :%d NONE ***************\n", pn, prepared[pn])
+		if prepared[pn] == 3 {
+			break
+		}
+	}
+	*/
+
+	for i := 1; i<=3; i++ {
+		fmt.Printf("pn : %d , ch[pn] waiting \n", pn)
+
+		var data = <- ch[pn]
+		fmt.Printf("pn : %d , ch[pn] data receving \n", pn)
+
+		if data == true {
+			chprepared[pn]++
+			fmt.Println("chprepared[pn] : ", chprepared[pn])
+		}
+
+		if chprepared[pn] == 3 {
 			break
 		}
 	}
 
-	fmt.Println("[ALARM] ALL USERS PREPARED")
+
+	fmt.Printf("PN : %d [ALARM] ALL USERS PREPARED %d \n", pn, prepared[pn])
 
 	fmt.Println("===== CREATE CROSS ALL PREPARED MSG START IN ENCLAVE =====")
 	var originalMessage *C.uchar
@@ -796,8 +827,8 @@ func WrapperCrossAgreementRequest(pn int64, p []string, amount int64, paymentInf
 	C.ecall_cross_create_all_prepared_msg_w(C.uint(pn), &originalMessage, &signature)
 	fmt.Println("===== CREATE CROSS ALL PREPARED MSG END IN ENCLAVE =====")
 	
-	originalMessageByte, signatureByte := convertPointerToByte(originalMessage, signature)
 
+	originalMessageByte, signatureByte := convertPointerToByte(originalMessage, signature)
 	connectionForXServer, err := grpc.Dial("141.223.121.164:50009", grpc.WithInsecure())
 	if err != nil {
 		log.Fatal("conn err : ", err)
@@ -805,23 +836,36 @@ func WrapperCrossAgreementRequest(pn int64, p []string, amount int64, paymentInf
 	defer connectionForXServer.Close()
 
 	XServer := pbXServer.NewCross_ServerClient(connectionForXServer)
-	XServerContext, cancel := context.WithTimeout(context.Background(), time.Second)
+	XServerContext, cancel := context.WithTimeout(context.Background(), time.Second*10)
 	defer cancel()
 
 	r, err := XServer.CrossPaymentPrepared(XServerContext, &pbXServer.CrossPaymentPrepareResMessage{Pn: pn, OriginalMessage: originalMessageByte, Signature: signatureByte, Result: true})
-	if err != nil {
-		return
-	}
 
-	log.Println(r.GetResult())
-	
+	if err != nil {
+		fmt.Printf("^^^^^^^^^^^^^^^^^^^^^^ PN %d FAILURE ^^^^^^^^^^^^^^^^^^^^^^^^^^ \n", pn)
+		log.Fatal("***** ERROR ***** ", err)
+
+		r, err := XServer.CrossPaymentPrepared(XServerContext, &pbXServer.CrossPaymentPrepareResMessage{Pn: pn, OriginalMessage: originalMessageByte, Signature: signatureByte, Result: true})
+
+		if err != nil {
+			fmt.Printf("^^^^^^^^^^^^^^^^^^^^^^ PN %d FAILURE ^^^^^^^^^^^^^^^^^^^^^^^^^^ \n", pn)
+			log.Fatal("***** ERROR ***** ", err)
+		} else {
+			fmt.Println("PN : %d Result : %t \n", pn, r.GetResult())
+			fmt.Printf("********************************* ALL PREPARED MSG %d SENT **************************************** \n", pn)
+		}
+		//return 
+	} else {
+	fmt.Println("PN : %d Result : %t \n", pn, r.GetResult())
+	fmt.Printf("********************************* ALL PREPARED MSG %d SENT **************************************** \n", pn)
+}
 	//go WrapperCrossUpdateRequest(pn, p, paymentInformation)
 }
 
 func WrapperCrossUpdateRequest(pn int64, p []string, paymentInformation map[string]PaymentInformation) {
 	for _, address := range p {
 		if(address != "af55ba9376db959fab2af86d565325829b08ea3c4") {
-			go SendCrossUpdateRequest(pn, address, p, paymentInformation[address])
+			go SendCrossUpdateRequest(pn, address, paymentInformation[address])
 		}
 	}
 
@@ -833,15 +877,28 @@ func WrapperCrossUpdateRequest(pn int64, p []string, paymentInformation map[stri
 
 	//committed[pn]++
 	fmt.Printf("committed[PN] %d \n", committed[pn])
+	/*
 	for {
+//		fmt.Printf("****************** PN : %d committed[PN] :%d PREPARE ***************\n", pn, committed[pn])
 		if committed[pn] == 3 {
 			break
 		}
 	}
-	/*if committed[pn] != 3 {
-		return
-	}
 	*/
+
+	for i := 1; i<=3; i++ {
+
+		var data = <- ch[pn]
+
+		if data == true {
+			chprepared[pn]++
+		}
+
+		if chprepared[pn] == 6 {
+			break
+		}
+	}
+
 
 	fmt.Println("[ALARM] ALL USERS COMMITTED")
 
@@ -860,16 +917,29 @@ func WrapperCrossUpdateRequest(pn int64, p []string, paymentInformation map[stri
 	defer connectionForXServer.Close()
 
 	XServer := pbXServer.NewCross_ServerClient(connectionForXServer)
-	XServerContext, cancel := context.WithTimeout(context.Background(), time.Second)
+	XServerContext, cancel := context.WithTimeout(context.Background(), time.Second*10)
 	defer cancel()
 
 	r, err := XServer.CrossPaymentCommitted(XServerContext, &pbXServer.CrossPaymentCommitResMessage{Pn: pn, OriginalMessage: originalMessageByte, Signature: signatureByte, Result: true})
+
 	if err != nil {
-		return
+		fmt.Printf("^^^^^^^^^^^^^^^^^^^^^^ C PN %d FAILURE ^^^^^^^^^^^^^^^^^^^^^^^^^^ \n", pn)
+		log.Fatal("***** ERROR ***** ", err)
+
+		r, err := XServer.CrossPaymentCommitted(XServerContext, &pbXServer.CrossPaymentCommitResMessage{Pn: pn, OriginalMessage: originalMessageByte, Signature: signatureByte, Result: true})
+
+		if err != nil {
+			fmt.Printf("^^^^^^^^^^^^^^^^^^^^^^ C PN %d FAILURE ^^^^^^^^^^^^^^^^^^^^^^^^^^ \n", pn)
+			log.Fatal("***** ERROR ***** ", err)
+		} else {
+			fmt.Println("PN : %d Result : %t \n", pn, r.GetResult())
+			fmt.Printf("********************************* ALL COMMITTED MSG %d SENT **************************************** \n", pn)
+		}
+		//return 
+	} else {
+		fmt.Println("PN : %d Result : %t \n", pn, r.GetResult())
+		fmt.Printf("********************************* ALL COMMITTED MSG %d SENT **************************************** \n", pn)
 	}
-
-	log.Println(r.GetResult())
-
 	//go WrapperCrossConfirmPayment(int(pn), p)
 }
 
@@ -903,3 +973,21 @@ func WrapperCrossRefundPayment(pn int, p []string) {
 }
 */
 
+func ChanCreate() {
+
+	fmt.Println("ChanCreate! ")
+
+	if chanCreateCheck == 0{
+		var i = 0
+		for i = range ch {
+			ch[i] = make(chan bool)
+			//chComplete[i] = make(chan bool)
+		}
+		fmt.Printf("%d ChanCreate! \n", i)
+
+	} else {
+		return
+	}
+
+	chanCreateCheck = 1
+}

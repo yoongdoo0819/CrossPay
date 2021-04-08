@@ -143,6 +143,9 @@ func convertPointerToByte(originalMsg *C.uchar, signature *C.uchar) ([]byte, []b
 		returnSignature = append(returnSignature, byte(replySigS[i]))
 	}
 
+	defer C.free(unsafe.Pointer(originalMsg))
+	defer C.free(unsafe.Pointer(signature))
+
 	return returnMsg, returnSignature
 }
 

@@ -151,10 +151,13 @@ func CrossPaymentToServerChannelHandler(ctx *gin.Context) {
 
 	//chain2Sender := []C.uchar(chain2From)
 	//chain2Receiver := []C.uchar(chain2To)
+	var PaymentNum C.uint
+	var originalMessage *C.uchar
+	var signature *C.uchar
 
 	serverGrpc.StartTime = time.Now()
 	rwMutex.Lock()
-	PaymentNum := C.ecall_cross_accept_request_w(
+	PaymentNum = C.ecall_cross_accept_request_w(
 		&chain1Sender[0],
 		&chain1Sender[0],
 		&chain1Receiver[0],
@@ -168,10 +171,11 @@ func CrossPaymentToServerChannelHandler(ctx *gin.Context) {
 		&chain1Receiver[0],
 		C.uint(chain1Val))
 	rwMutex.Unlock()
-	//C.ecall_cross_add_participant_w(C.uint(PaymentNum), &([]C.uchar(chain1Server))[0])
 
-	var originalMessage *C.uchar
-	var signature *C.uchar
+
+	C.ecall_cross_create_all_prepare_req_msg_w(C.uint(PaymentNum), &originalMessage, &signature)
+
+	//C.ecall_cross_add_participant_w(C.uint(PaymentNum), &([]C.uchar(chain1Server))[0])
 
 	fmt.Println("===== CREATE CROSS ALL PREPARE MSG START =====")
 	C.ecall_cross_create_all_prepare_req_msg_w(C.uint(PaymentNum), &originalMessage, &signature)
@@ -185,7 +189,7 @@ func CrossPaymentToServerChannelHandler(ctx *gin.Context) {
 	log.Println("chain3 server : ", config.EthereumConfig["chain3ServerGrpcHost"] + ":" + config.EthereumConfig["chain3ServerGrpcPort"])
 
 
-	for i:= 1; i<=3; i++ {
+	for i:= 1; i<=2; i++ {
 		go serverGrpc.WrapperCrossPaymentPrepareRequest(i, int64(PaymentNum), serverGrpc.ChainFrom[i], serverGrpc.ChainTo[i], int64(serverGrpc.ChainVal[i]), originalMessageByte, signatureByte)
 	}
 
