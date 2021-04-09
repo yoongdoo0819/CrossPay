@@ -17,7 +17,7 @@ import (
 	"sync"
 
 	"github.com/gin-gonic/gin"
-	"github.com/sslab-instapay/instapay-tee-x-server/config"
+//	"github.com/sslab-instapay/instapay-tee-x-server/config"
 	serverGrpc "github.com/sslab-instapay/instapay-tee-x-server/grpc"
         //serverPb "github.com/sslab-instapay/instapay-tee-x-server/proto/server"
 	//xServerPb "github.com/sslab-instapay/instapay-tee-x-server/proto/cross-server"
@@ -28,6 +28,7 @@ import (
 	"strconv"
 )
 
+var pn = 1
 var rwMutex = new(sync.RWMutex)
 
 func OpenChannelHandler(context *gin.Context)  {
@@ -136,16 +137,6 @@ func CrossPaymentToServerChannelHandler(ctx *gin.Context) {
 	serverGrpc.ChainTo[3] = chain3To
 	serverGrpc.ChainVal[3] = chain3Val
 
-	fmt.Println("CHAIN1 From : ", chain1From)
-	fmt.Println("CHAIN1 Val : ", chain1Val)
-	fmt.Println("CHAIN1 To : ", chain1To)
-
-	fmt.Println("CHAIN2 From : ", chain2From)
-	fmt.Println("CHAIN2 Val : ", chain2Val)
-	fmt.Println("CHAIN2 To : ", chain2To)
-
-//	time.Sleep(time.Second*1)
-
 	chain1Sender := []C.uchar(chain1From)
 	chain1Receiver := []C.uchar(chain1To)
 
@@ -169,11 +160,16 @@ func CrossPaymentToServerChannelHandler(ctx *gin.Context) {
 		&chain1Sender[0],
 		&chain1Sender[0],
 		&chain1Receiver[0],
-		C.uint(chain1Val))
+		C.uint(pn))
+	pn++
 	rwMutex.Unlock()
 
+	fmt.Printf(">>>>>>>>>>>>>>>>>>>>>>> PN : %d , pn : %d \n", PaymentNum, pn)
+	fmt.Println(reflect.TypeOf(PaymentNum), reflect.TypeOf(pn))
 
-	C.ecall_cross_create_all_prepare_req_msg_w(C.uint(PaymentNum), &originalMessage, &signature)
+	if PaymentNum == 0 || PaymentNum == 192 || PaymentNum >= 30000 {
+		return
+	}
 
 	//C.ecall_cross_add_participant_w(C.uint(PaymentNum), &([]C.uchar(chain1Server))[0])
 
@@ -182,12 +178,6 @@ func CrossPaymentToServerChannelHandler(ctx *gin.Context) {
 	fmt.Println("===== CREATE CROSS ALL PREPARE MSG END =====")
 
 	originalMessageByte, signatureByte := convertPointerToByte(originalMessage, signature)
-
-	log.Println("PN : ", PaymentNum)
-	log.Println("chain1 server : ", config.EthereumConfig["chain1ServerGrpcHost"] + ":" + config.EthereumConfig["chain1ServerGrpcPort"])
-	log.Println("chain2 server : ", config.EthereumConfig["chain2ServerGrpcHost"] + ":" + config.EthereumConfig["chain2ServerGrpcPort"])
-	log.Println("chain3 server : ", config.EthereumConfig["chain3ServerGrpcHost"] + ":" + config.EthereumConfig["chain3ServerGrpcPort"])
-
 
 	for i:= 1; i<=2; i++ {
 		go serverGrpc.WrapperCrossPaymentPrepareRequest(i, int64(PaymentNum), serverGrpc.ChainFrom[i], serverGrpc.ChainTo[i], int64(serverGrpc.ChainVal[i]), originalMessageByte, signatureByte)

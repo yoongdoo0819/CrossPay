@@ -232,18 +232,18 @@ func SearchPath(pn int64, amount int64) ([]string, map[string]PaymentInformation
 
 	/* composing p */
 
-	p = append(p, "f4444529d6221122d1712c52623ba119a60609e3")
-	p = append(p, "d95da40bbd2001abf1a558c0b1dffd75940b8fd9")
-	p = append(p, "73d8e5475278f7593b5293beaa45fb53f34c9ad2")
+	p = append(p, "f55ba9376db959fab2af86d565325829b08ea3c4")
+	p = append(p, "c60f640c4505d15b972e6fc2a2a7cba09d05d9f7")
+	p = append(p, "70603f1189790fcd0fd753a7fef464bdc2c2ad36")
 
 	/* composing w */
 	var channelInform1, channelInform2, channelInform3 []C.uint
 	var amountInform1, amountInform2, amountInform3 []C.int
 
-	channelInform1 = append(channelInform1, C.uint(3))
-	channelInform2 = append(channelInform2, C.uint(3))
-	channelInform2 = append(channelInform2, C.uint(5))
-	channelInform3 = append(channelInform3, C.uint(5))
+	channelInform1 = append(channelInform1, C.uint(117))
+	channelInform2 = append(channelInform2, C.uint(117))
+	channelInform2 = append(channelInform2, C.uint(120))
+	channelInform3 = append(channelInform3, C.uint(120))
 
 	amountInform1 = append(amountInform1, C.int(-amount))
 	amountInform2 = append(amountInform2, C.int(amount))
@@ -256,9 +256,9 @@ func SearchPath(pn int64, amount int64) ([]string, map[string]PaymentInformation
 
 	paymentInformation := make(map[string]PaymentInformation)
 
-	paymentInformation["f4444529d6221122d1712c52623ba119a60609e3"] = paymentInform1
-	paymentInformation["d95da40bbd2001abf1a558c0b1dffd75940b8fd9"] = paymentInform2
-	paymentInformation["73d8e5475278f7593b5293beaa45fb53f34c9ad2"] = paymentInform3
+	paymentInformation["f55ba9376db959fab2af86d565325829b08ea3c4"] = paymentInform1
+	paymentInformation["c60f640c4505d15b972e6fc2a2a7cba09d05d9f7"] = paymentInform2
+	paymentInformation["70603f1189790fcd0fd753a7fef464bdc2c2ad36"] = paymentInform3
 
 	log.Println("===== SearchPath End =====")
 	return p, paymentInformation
@@ -1077,19 +1077,19 @@ func GrpcConnection() {
 	connectionForXServer = tempConnectionForXServer
 
         tempConn := make(map[string]*grpc.ClientConn)
-	tempConn["141.223.121.168:50001"], err = grpc.Dial("141.223.121.168:50001", grpc.WithInsecure())
+	tempConn["141.223.121.167:50001"], err = grpc.Dial("141.223.121.167:50001", grpc.WithInsecure())
 	if err != nil {
 		log.Fatal("conn err : ", err)
 		return
 	}
 
-	tempConn["141.223.121.168:50002"], err = grpc.Dial("141.223.121.168:50002", grpc.WithInsecure())
+	tempConn["141.223.121.167:50002"], err = grpc.Dial("141.223.121.167:50002", grpc.WithInsecure())
 	if err != nil {
                 log.Fatal("conn err : ", err)
 		return
 	}
 
-	tempConn["141.223.121.168:50003"], err = grpc.Dial("141.223.121.168:50003", grpc.WithInsecure())
+	tempConn["141.223.121.167:50003"], err = grpc.Dial("141.223.121.167:50003", grpc.WithInsecure())
 	if err != nil {
                 log.Fatal("conn err : ", err)
 		return

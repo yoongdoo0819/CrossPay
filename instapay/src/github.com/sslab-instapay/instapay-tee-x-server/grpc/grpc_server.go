@@ -151,39 +151,13 @@ func (s *ServerGrpc) CrossPaymentPrepared(ctx context.Context, rs *pbXServer.Cro
 
 	fmt.Println("===== CROSS PAYMENT PREPARED START IN LV2 SERVER =====")
 
-	/*
-	if pn == 111 {
-		fmt.Println("========= SERVER 1 ========")
-		elapsedTime1 := time.Since(StartTime1)
-		fmt.Println("execution time : ", elapsedTime1.Seconds())
-		fmt.Printf("execution time : %s", elapsedTime1)
-
-	} else if pn == 222 {
-		fmt.Println("======== SERVER 2 ========")
-		elapsedTime2 := time.Since(StartTime2)
-		fmt.Println("execution time : ", elapsedTime2.Seconds())
-		fmt.Printf("execution time : %s", elapsedTime2)
-
-	} else if pn == 333 {
-		fmt.Println("====== SERVER 3 =======")
-		elapsedTime3 := time.Since(StartTime3)
-		fmt.Println("execution time : ", elapsedTime3.Seconds())
-		fmt.Printf("execution time : %s", elapsedTime3)
-	}
-	*/
-
-
 	convertedOriginalMsg, convertedSignatureMsg := convertByteToPointer(rs.OriginalMessage, rs.Signature)
 
 	rwMutex.Lock()
 	C.ecall_cross_verify_all_prepared_res_msg_w(convertedOriginalMsg, convertedSignatureMsg)
-
 	rwMutex.Unlock()
-	//fmt.Printf("PN %d ALL PREPARED MSG : %d", pn, is_verified)
 
-	//chain1Server := "chain1Server"
 	//C.ecall_cross_update_preparedServer_list_w(C.uint(pn), &([]C.uchar(chain1Server))[0])
-
 
 	for i:= 1; i<=2; i++ {
 
@@ -233,32 +207,9 @@ func (s *ServerGrpc) CrossPaymentPrepared(ctx context.Context, rs *pbXServer.Cro
 func (s *ServerGrpc) CrossPaymentCommitted(ctx context.Context, rs *pbXServer.CrossPaymentCommitResMessage) (*pbXServer.CrossResult, error) {
 
 	pn := rs.Pn
-/*
-	if pn == 111 {
-		fmt.Println("========= COMMIT SERVER 1 ========")
-		elapsedTime1 := time.Since(StartTime1)
-		fmt.Println("execution time : ", elapsedTime1.Seconds())
-		fmt.Printf("execution time : %s", elapsedTime1)
-
-	} else if pn == 222 {
-		fmt.Println("======== COMMIT SERVER 2 ========")
-		elapsedTime2 := time.Since(StartTime2)
-		fmt.Println("execution time : ", elapsedTime2.Seconds())
-		fmt.Printf("execution time : %s", elapsedTime2)
-
-	} else if pn == 333 {
-		fmt.Println("====== COMMIT SERVER 3 =======")
-		elapsedTime3 := time.Since(StartTime3)
-		fmt.Println("execution time : ", elapsedTime3.Seconds())
-		fmt.Printf("execution time : %s", elapsedTime3)
-
-	}
-*/
-
 	log.Println("===== CROSS PAYMENT COMMIT START IN LV2 SERVER ====== ")
 
 	convertedOriginalMsg, convertedSignatureMsg := convertByteToPointer(rs.OriginalMessage, rs.Signature)
-
 
 	rwMutex.Lock()
 	C.ecall_cross_verify_all_committed_res_msg_w(convertedOriginalMsg, convertedSignatureMsg)
@@ -538,6 +489,10 @@ func WrapperCrossPaymentPrepareRequest(index int, paymentNum int64, chainFrom st
 	}
 	log.Println(r.GetResult())
 
+	if paymentNum >= 30000 {
+		fmt.Println("===================== EXIT ====================== ")
+		return
+	}
 	fmt.Println("payment Num : ", paymentNum)
 	Ch[int(paymentNum)] <- true
 

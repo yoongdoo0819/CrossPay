@@ -224,7 +224,6 @@ unsigned int ecall_cross_verify_all_prepared_res_msg_w(unsigned char *res_msg, u
 {
     unsigned int is_verified;
 
-    printf("########################################### \n");
     ecall_cross_verify_all_prepared_res_msg(global_eid, res_msg, res_sig, &is_verified);
     return is_verified;
 }

@@ -70,6 +70,7 @@ void ecall_create_ag_req_msg(unsigned int payment_num, unsigned int payment_size
     memcpy(req_msg, (unsigned char*)&request, sizeof(Message));
     memcpy(req_sig, req_signature, 65);
 
+    free(seckey);
     return;
 }
 
@@ -97,6 +98,7 @@ void ecall_create_ud_req_msg(unsigned int payment_num, unsigned int payment_size
     memcpy(req_msg, (unsigned char*)&request, sizeof(Message));
     memcpy(req_sig, req_signature, 65);
 
+    free(seckey);
     return;
 }
 
@@ -121,6 +123,7 @@ void ecall_create_confirm_msg(unsigned int payment_num, unsigned char *confirm_m
     memcpy(confirm_msg, (unsigned char*)&confirm, sizeof(Message));
     memcpy(confirm_sig, confirm_signature, 65);
 
+    free(seckey);
     return;
 }
 
@@ -242,6 +245,7 @@ void ecall_cross_create_ag_req_msg(unsigned int payment_num, unsigned int paymen
     memcpy(req_msg, (unsigned char*)&request, sizeof(Cross_Message));
     memcpy(req_sig, req_signature, 65);
 
+    free(seckey);
     return;
 }
 
@@ -269,6 +273,7 @@ void ecall_cross_create_ud_req_msg(unsigned int payment_num, unsigned int paymen
     memcpy(req_msg, (unsigned char*)&request, sizeof(Cross_Message));
     memcpy(req_sig, req_signature, 65);
 
+    free(seckey);
     return;
 }
 
@@ -297,6 +302,7 @@ void ecall_cross_create_confirm_msg(unsigned int payment_num, unsigned int payme
     memcpy(confirm_msg, (unsigned char*)&confirm, sizeof(Cross_Message));
     memcpy(confirm_sig, confirm_signature, 65);
 
+    free(seckey);
     return;
 }
 
@@ -417,6 +423,7 @@ void ecall_cross_create_all_prepared_msg(unsigned int payment_num, unsigned char
     memcpy(res_msg, (unsigned char*)&response, sizeof(Cross_Message));
     memcpy(res_sig, res_signature, 65);
 
+    free(seckey);
     return;
 }
 
@@ -444,6 +451,7 @@ void ecall_cross_create_prepare_msg(unsigned int payment_num, unsigned int payme
     memcpy(req_msg, (unsigned char*)&request, sizeof(Cross_Message));
     memcpy(req_sig, req_signature, 65);
 
+    free(seckey);
     return;
 }
 
@@ -494,6 +502,7 @@ void ecall_cross_create_all_committed_msg(unsigned int payment_num, unsigned cha
     memcpy(res_msg, (unsigned char*)&response, sizeof(Cross_Message));
     memcpy(res_sig, res_signature, 65);
 
+    free(seckey);
     return;
 }
 
@@ -568,6 +577,7 @@ void ecall_cross_create_refund_msg(unsigned int payment_num, unsigned int paymen
     memcpy(refund_msg, (unsigned char*)&refund, sizeof(Cross_Message));
     memcpy(refund_sig, refund_signature, 65);
 
+    free(seckey);
     return;
 }
 

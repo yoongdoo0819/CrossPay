@@ -7,7 +7,7 @@
 #include <cross_payment.h>
 
 unsigned int Payment::acc_payment_num = 1;
-
+unsigned int Cross_Payment::acc_cross_payment_num = 1;
 
 void ecall_accept_request(unsigned char *sender, unsigned char *receiver, unsigned int amount, unsigned int *payment_num)
 {
@@ -201,20 +201,14 @@ void ecall_cross_accept_request(
 
     //Cross_Payment a = Cross_Payment();
 
-    Cross_Payment cross_payment = Cross_Payment(Payment::acc_payment_num, chain1Server, chain1Sender, chain1Receiver, chain1Amount, chain2Server, chain2Sender, chain2Receiver, chain2Amount, chain3Server, chain3Sender, chain3Receiver, chain3Amount);
+    Cross_Payment cross_payment = Cross_Payment(Cross_Payment::acc_cross_payment_num, chain1Server, chain1Sender, chain1Receiver, chain1Amount, chain2Server, chain2Sender, chain2Receiver, chain2Amount, chain3Server, chain3Sender, chain3Receiver, chain3Amount);
 
-    cross_payments.insert(map_cross_payment_value(Payment::acc_payment_num, cross_payment));
-    *payment_num = Payment::acc_payment_num;
-    Payment::acc_payment_num++;
+    cross_payments.insert(map_cross_payment_value(Cross_Payment::acc_cross_payment_num, cross_payment));
+    *payment_num = Cross_Payment::acc_cross_payment_num;
+    printf("[ENCLAVE] >>>>>>>>>>>>>>>>> PN :%d \n", *payment_num);
 
-//    *payment_num = 1;
+    Cross_Payment::acc_cross_payment_num++;
     
-//    cross_payments.insert(map_cross_payment_value(Cross_Payment::acc_cross_payment_num, Cross_Payment(Cross_Payment::acc_cross_payment_num, chain1Server, chain1Sender, chain1Receiver, chain1Amount, chain2Server, chain2Sender, chain2Receiver, chain2Amount)));
-    //*payment_num = Cross_Payment::acc_cross_payment_num;
-    //Cross_Payment::acc_cross_payment_num++;
-//    payments.insert(map_payment_value(Payment::acc_payment_num, Payment(Payment::acc_payment_num, sender, receiver, amount)));
- //   *payment_num = Payment::acc_payment_num;
-  //  Payment::acc_payment_num++;
 }       
 
 void ecall_cross_add_participant(unsigned int payment_num, unsigned char *addr)
