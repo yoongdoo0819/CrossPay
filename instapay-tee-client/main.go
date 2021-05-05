@@ -32,6 +32,8 @@ import (
 	"github.com/sslab-instapay/instapay-tee-client/service"
 	"github.com/sslab-instapay/instapay-tee-client/util"
 	"google.golang.org/grpc"
+	clientGrpc "github.com/sslab-instapay/instapay-tee-client/grpc"
+
 )
 
 func main() {
@@ -43,6 +45,11 @@ func main() {
 	keyFile := flag.String("key_file", "./data/key/k0", "key file")
 	channelFile := flag.String("channel_file", "./data/channel/c0", "channel file")
 
+	previous_sender := flag.String("previous_sender", "", "previous_sender")
+
+	sender := flag.String("sender", "f55ba9376db959fab2af86d565325829b08ea3c4", "sender")
+	receiver := flag.String("receiver", "60f640c4505d15b972e6fc2a2a7cba09d05d9f7", "receiver")
+
 	flag.Parse()
 
 	os.Setenv("port", *portNum)
@@ -50,6 +57,7 @@ func main() {
 	os.Setenv("peer_file_directory", *peerFileDirectory)
 	os.Setenv("key_file", *keyFile)
 	os.Setenv("channel_file", *channelFile)
+
 
 	fmt.Println("~~~~~~~~~~~~~~~~~~~~~~~~~");
 	LoadPeerInformation(os.Getenv("peer_file_directory"))
@@ -75,10 +83,21 @@ func main() {
 
 	go service.ListenContractEvent()
 	go startGrpcServer()
+	if *portNum == "3001" {
+		createPaymentChannelsForAlice(*sender, *receiver)
+	} else if *portNum == "3002" {
+		createPaymentChannelsPrev(*previous_sender, *sender)
+		createPaymentChannelsForBob(*sender, *receiver)
+	} else if *portNum == "3003" {
+		createPaymentChannelsForCarol(*sender, *receiver)
+	}
+
 	startClientWebServer()
 }
 
 func startGrpcServer() {
+
+	clientGrpc.ChanCreate()
 	log.Println("---Start Grpc Server---")
 	grpcPort, err := strconv.Atoi(os.Getenv("grpc_port"))
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", grpcPort))
@@ -267,4 +286,73 @@ func sendEther(hexAddress string) {
 	}
 
 	fmt.Printf("tx sent: %s", signedTx.Hash().Hex())
+}
+
+func createPaymentChannelsPrev(sender string, receiver string) {
+
+	_sender := []C.uchar(sender)
+	_receiver := []C.uchar(receiver)
+	deposit := C.uint(100)
+
+	fmt.Println("start")
+	for i:=1; i<=9000; i+=2 {
+		C.ecall_receive_create_channel_w(C.uint(uint32(i)), &_sender[0], &_receiver[0], deposit)
+	}
+
+	fmt.Println(">> ", sender)
+	fmt.Println(">> ", receiver)
+
+	fmt.Println("Prev Payment Channels Created !")
+}
+
+func createPaymentChannelsForAlice(sender string, receiver string) {
+
+	_sender := []C.uchar(sender)
+	_receiver := []C.uchar(receiver)
+	deposit := C.uint(100)
+
+	fmt.Println("start")
+	for i:=1; i<=9000; i+=2 {
+		C.ecall_receive_create_channel_w(C.uint(uint32(i)), &_sender[0], &_receiver[0], deposit)
+	}
+
+	fmt.Println(">> ", sender)
+	fmt.Println(">> ", receiver)
+
+	fmt.Println("Payment Channels Created !")
+}
+
+
+func createPaymentChannelsForBob(sender string, receiver string) {
+
+	_sender := []C.uchar(sender)
+	_receiver := []C.uchar(receiver)
+	deposit := C.uint(100)
+
+	fmt.Println("start")
+	for i:=2; i<=9000; i+=2 {
+		C.ecall_receive_create_channel_w(C.uint(uint32(i)), &_sender[0], &_receiver[0], deposit)
+	}
+
+	fmt.Println(">> ", sender)
+	fmt.Println(">> ", receiver)
+
+	fmt.Println("Payment Channels Created !")
+}
+
+func createPaymentChannelsForCarol(sender string, receiver string) {
+
+	_sender := []C.uchar(sender)
+	_receiver := []C.uchar(receiver)
+	deposit := C.uint(100)
+
+	fmt.Println("start")
+	for i:=2; i<=9000; i+=2 {
+		C.ecall_receive_create_channel_w(C.uint(uint32(i)), &_sender[0], &_receiver[0], deposit)
+	}
+
+	fmt.Println(">> ", sender)
+	fmt.Println(">> ", receiver)
+
+	fmt.Println("Payment Channels Created !")
 }

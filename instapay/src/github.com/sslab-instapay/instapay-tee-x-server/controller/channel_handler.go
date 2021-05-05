@@ -15,6 +15,7 @@ import (
 	"unsafe"
 	"reflect"
 	"sync"
+//	"os"
 
 	"github.com/gin-gonic/gin"
 //	"github.com/sslab-instapay/instapay-tee-x-server/config"
@@ -147,7 +148,7 @@ func CrossPaymentToServerChannelHandler(ctx *gin.Context) {
 	var signature *C.uchar
 
 	serverGrpc.StartTime = time.Now()
-	rwMutex.Lock()
+//	rwMutex.Lock()
 	PaymentNum = C.ecall_cross_accept_request_w(
 		&chain1Sender[0],
 		&chain1Sender[0],
@@ -161,16 +162,30 @@ func CrossPaymentToServerChannelHandler(ctx *gin.Context) {
 		&chain1Sender[0],
 		&chain1Receiver[0],
 		C.uint(pn))
-	pn++
-	rwMutex.Unlock()
-
 	fmt.Printf(">>>>>>>>>>>>>>>>>>>>>>> PN : %d , pn : %d \n", PaymentNum, pn)
-	fmt.Println(reflect.TypeOf(PaymentNum), reflect.TypeOf(pn))
+/*
+	if int(PaymentNum) != pn {
+		fmt.Println("different pn")
+		os.Exit(3)
+	}
+	pn++
+*/
+//	rwMutex.Unlock()
+
+//	fmt.Println(reflect.TypeOf(PaymentNum), reflect.TypeOf(pn))
 
 	if PaymentNum == 0 || PaymentNum == 192 || PaymentNum >= 30000 {
+		ctx.JSON(http.StatusBadRequest, gin.H{"message":"Cross-Payment" })
 		return
 	}
 
+/*
+	if PaymentNum == 0 || PaymentNum >= 30000 {
+		fmt.Println(">>>>>>>>>>>> exit pn ", PaymentNum)
+		os.Exit(3)
+		return
+	}
+*/
 	//C.ecall_cross_add_participant_w(C.uint(PaymentNum), &([]C.uchar(chain1Server))[0])
 
 	fmt.Println("===== CREATE CROSS ALL PREPARE MSG START =====")
@@ -183,12 +198,12 @@ func CrossPaymentToServerChannelHandler(ctx *gin.Context) {
 		go serverGrpc.WrapperCrossPaymentPrepareRequest(i, int64(PaymentNum), serverGrpc.ChainFrom[i], serverGrpc.ChainTo[i], int64(serverGrpc.ChainVal[i]), originalMessageByte, signatureByte)
 	}
 
-	/*
+
 	var data = <- serverGrpc.ChComplete[int(PaymentNum)]
 	if data == true {
 		ctx.JSON(http.StatusOK, gin.H{"message":"Cross-Payment" })
 	}
-	*/
+
 
 	ctx.JSON(http.StatusOK, gin.H{"message":"Cross-Payment" })
 

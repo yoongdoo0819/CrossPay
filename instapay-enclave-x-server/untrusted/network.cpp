@@ -1,6 +1,10 @@
 #include "app.h"
 #include "enclave_u.h"
 
+#include <mutex>
+//using namespace std;
+std::mutex rwMutex;
+
 /*  OCall functions */
 void ocall_print_string(const char *str)
 {
@@ -168,7 +172,9 @@ unsigned int ecall_cross_accept_request_w(
 {
     unsigned int payment_num;
 
+    rwMutex.lock();
     ecall_cross_accept_request(global_eid, chain1Server, chain1Sender, chain1Receiver, chain1Amount, chain2Server, chain2Sender, chain2Receiver, chain2Amount, chain3Server, chain3Sender, chain3Receiver, chain3Amount, &payment_num);
+    rwMutex.unlock();
 
     return payment_num;
 }

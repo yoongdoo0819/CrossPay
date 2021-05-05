@@ -2,7 +2,9 @@
 #include "enclave_u.h"
 
 #include <string.h>
+#include <mutex>
 
+std::mutex rwMutex;
 
 void ecall_go_pre_update_w(unsigned char *msg, unsigned char *signature, unsigned char **original_msg, unsigned char **output)
 {
@@ -11,6 +13,10 @@ void ecall_go_pre_update_w(unsigned char *msg, unsigned char *signature, unsigne
 
     memset(reply_msg, 0x00, sizeof(message));
     memset(reply_sig, 0x00, 65);
+
+    rwMutex.lock();
+    ecall_go_pre_update_two(global_eid, msg, signature, reply_msg, reply_sig);
+    rwMutex.unlock();
 
     ecall_go_pre_update(global_eid, msg, signature, reply_msg, reply_sig);
 
@@ -27,7 +33,11 @@ void ecall_go_post_update_w(unsigned char *msg, unsigned char *signature, unsign
     memset(reply_msg, 0x00, sizeof(message));
     memset(reply_sig, 0x00, 65);
 
+//    rwMutex.lock();
     ecall_go_post_update(global_eid, msg, signature, reply_msg, reply_sig);
+//    rwMutex.unlock();
+
+//    ecall_go_post_update_two(global_eid, msg, signature, reply_msg, reply_sig);
 
     *original_msg = reply_msg;
     *output = reply_sig;
@@ -36,7 +46,9 @@ void ecall_go_post_update_w(unsigned char *msg, unsigned char *signature, unsign
 
 void ecall_go_idle_w(unsigned char *msg, unsigned char *signature)
 {
+    rwMutex.lock();
     ecall_go_idle(global_eid, msg, signature);    
+    rwMutex.unlock();
 }
 
 
@@ -63,6 +75,7 @@ void ecall_cross_go_pre_update_w(unsigned char *msg, unsigned char *signature, u
 
     *original_msg = reply_msg;
     *output = reply_sig;
+
 }
 
 
@@ -78,6 +91,7 @@ void ecall_cross_go_post_update_w(unsigned char *msg, unsigned char *signature, 
 
     *original_msg = reply_msg;
     *output = reply_sig;
+
 }
 
 

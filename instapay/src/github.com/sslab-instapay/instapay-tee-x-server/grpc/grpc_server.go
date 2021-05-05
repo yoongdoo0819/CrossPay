@@ -153,9 +153,9 @@ func (s *ServerGrpc) CrossPaymentPrepared(ctx context.Context, rs *pbXServer.Cro
 
 	convertedOriginalMsg, convertedSignatureMsg := convertByteToPointer(rs.OriginalMessage, rs.Signature)
 
-	rwMutex.Lock()
+	//rwMutex.Lock()
 	C.ecall_cross_verify_all_prepared_res_msg_w(convertedOriginalMsg, convertedSignatureMsg)
-	rwMutex.Unlock()
+	//rwMutex.Unlock()
 
 	//C.ecall_cross_update_preparedServer_list_w(C.uint(pn), &([]C.uchar(chain1Server))[0])
 
@@ -211,9 +211,9 @@ func (s *ServerGrpc) CrossPaymentCommitted(ctx context.Context, rs *pbXServer.Cr
 
 	convertedOriginalMsg, convertedSignatureMsg := convertByteToPointer(rs.OriginalMessage, rs.Signature)
 
-	rwMutex.Lock()
+	//rwMutex.Lock()
 	C.ecall_cross_verify_all_committed_res_msg_w(convertedOriginalMsg, convertedSignatureMsg)
-	rwMutex.Unlock()
+	//rwMutex.Unlock()
 
 	for i:= 1; i<=2; i++ {
 
@@ -357,7 +357,7 @@ func (s *ServerGrpc) CrossPaymentCommitted(ctx context.Context, rs *pbXServer.Cr
 	fmt.Printf("execution time : %s", elapsedTime)
 	fmt.Println("PN SUCCESS: ", pn)
 
-	//ChComplete[int(pn)] <- true
+	ChComplete[int(pn)] <- true
 	log.Println("===== CROSS PAYMENT COMMIT END IN LV2 SERVER =====")
 	return &pbXServer.CrossResult{Result: true}, nil
 }
@@ -481,19 +481,19 @@ func WrapperCrossPaymentPrepareRequest(index int, paymentNum int64, chainFrom st
 	clientContext, cancel := context.WithTimeout(context.Background(), time.Second*180)
 	defer cancel()
 
-
 	r, err := client.CrossPaymentPrepareRequest(clientContext, &pbServer.CrossPaymentPrepareReqMessage{Pn: paymentNum, From : chainFrom, To : chainTo, Amount: chainVal, OriginalMessage: originalMessageByte, Signature: signatureByte})
 	if err != nil {
 		log.Println(err)
 		return
 	}
 	log.Println(r.GetResult())
-
+/*
 	if paymentNum >= 30000 {
 		fmt.Println("===================== EXIT ====================== ")
 		return
 	}
 	fmt.Println("payment Num : ", paymentNum)
+*/
 	Ch[int(paymentNum)] <- true
 
 }
@@ -524,7 +524,7 @@ func WrapperCrossPaymentCommitRequest(index int, paymentNum int64, chainFrom str
 	}
 	log.Println(r.GetResult())
 
-	fmt.Println("payment Num : ", paymentNum)
+//	fmt.Println("payment Num : ", paymentNum)
 	Ch[int(paymentNum)] <- true
 }
 
@@ -554,8 +554,8 @@ func WrapperCrossPaymentConfirmRequest(index int, paymentNum int64, chainFrom st
 	}
 	log.Println(r.GetResult())
 
-	fmt.Println("payment Num : ", paymentNum)
-	//Ch[int(paymentNum)] <- true
+//	fmt.Println("payment Num : ", paymentNum)
+	Ch[int(paymentNum)] <- true
 }
 
 func GrpcConnection() {
@@ -574,13 +574,13 @@ func GrpcConnection() {
 		log.Fatal("Conn err !")
 		return
 	}
-/*
+
 	tempConn["141.223.121.169:50004"], err = grpc.Dial("141.223.121.169:50004", grpc.WithInsecure())
 	if err != nil {
 		log.Fatal("Conn err !")
 		return
 	}
-*/
+
 	connectionForServer = tempConn
 	fmt.Println("Grpc Connection !!")
 }

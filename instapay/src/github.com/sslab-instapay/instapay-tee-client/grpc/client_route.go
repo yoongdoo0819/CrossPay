@@ -22,6 +22,10 @@ import (
 	"unsafe"
 )
 
+//var Pn int64
+var ChComplete [500000]chan bool
+var chanCreateCheck = 0
+
 var StartTime time.Time
 var C_pre_yes int
 var C_pre_no int
@@ -37,12 +41,31 @@ type ClientGrpc struct {
 }
 
 func (s *ClientGrpc) AgreementRequest(ctx context.Context, in *clientPb.AgreeRequestsMessage) (*clientPb.AgreementResult, error) {
-	log.Println("----REceive Aggreement Request----")
+	//log.Println("----REceive Aggreement Request----")
 	convertedOriginalMsg, convertedSignatureMsg := convertByteToPointer(in.OriginalMessage, in.Signature)
+
+	//fmt.Println("??")
+	//fmt.Println(convertedOriginalMsg, convertedSignatureMsg)
 
 	var originalMsg *C.uchar
 	var signature *C.uchar
+//	rwMutex.Lock()
 	C.ecall_go_pre_update_w(convertedOriginalMsg, convertedSignatureMsg, &originalMsg, &signature)
+//	rwMutex.Unlock()
+/*
+	var uOriginal [44]C.uchar
+        var uSignature [65]C.uchar
+
+	for i := 0; i < 44; i++ {
+		uOriginal[i] = 'a'
+	}
+
+	for i := 0; i < 65; i++ {
+		uSignature[i] = 'b'
+	}
+*/
+//	var originalMsg *C.uchar = (*C.uchar)(unsafe.Pointer(&uOriginal[0]))
+//	var signature *C.uchar = (*C.uchar)(unsafe.Pointer(&uSignature[0]))
 
 	originalMessageStr, signatureStr := convertPointerToByte(originalMsg, signature)
 
@@ -51,12 +74,15 @@ func (s *ClientGrpc) AgreementRequest(ctx context.Context, in *clientPb.AgreeReq
 
 func (s *ClientGrpc) UpdateRequest(ctx context.Context, in *clientPb.UpdateRequestsMessage) (*clientPb.UpdateResult, error) {
 	// 채널 정보를 업데이트 한다던지 잔액을 변경.
-	log.Println("----REceive Update Request----")
+	//log.Println("----REceive Update Request----")
 	convertedOriginalMsg, convertedSignatureMsg := convertByteToPointer(in.OriginalMessage, in.Signature)
 
 	var originalMsg *C.uchar
 	var signature *C.uchar
+
+//	rwMutex.Lock()
 	C.ecall_go_post_update_w(convertedOriginalMsg, convertedSignatureMsg, &originalMsg, &signature)
+//	rwMutex.Unlock()
 
 	originalMessageStr, signatureStr := convertPointerToByte(originalMsg, signature)
 
@@ -64,16 +90,24 @@ func (s *ClientGrpc) UpdateRequest(ctx context.Context, in *clientPb.UpdateReque
 }
 
 func (s *ClientGrpc) ConfirmPayment(ctx context.Context, in *clientPb.ConfirmRequestsMessage) (*clientPb.ConfirmResult, error) {
-	log.Println("----ConfirmPayment Request Receive----")
+	//log.Println("----ConfirmPayment Request Receive----")
 
 	convertedOriginalMsg, convertedSignatureMsg := convertByteToPointer(in.OriginalMessage, in.Signature)
+
+//	rwMutex.Lock()
 	C.ecall_go_idle_w(convertedOriginalMsg, convertedSignatureMsg)
-	log.Println("----ConfirmPayment Request End----")
+//	rwMutex.Unlock()
+
+	//log.Println("----ConfirmPayment Request End----")
 
 	// fmt.Println(C.ecall_get_balance_w(C.uint(1)))
 	// fmt.Println(C.ecall_get_balance_w(C.uint(2)))
 	// fmt.Println(time.Since(controller.ExecutionTime))
 
+//	var pn = in.PaymentNumber
+//	ChComplete[pn] <- true
+
+	//fmt.Println("?")
 	return &clientPb.ConfirmResult{Result: true}, nil
 }
 
@@ -179,9 +213,9 @@ func (s *ClientGrpc) CrossPaymentPrepareClientRequest(ctx context.Context, in *c
 	var originalMsg *C.uchar
 	var signature *C.uchar
 
-	rwMutex.Lock()
+//	rwMutex.Lock()
 	C.ecall_cross_go_pre_update_w(convertedOriginalMsg, convertedSignatureMsg, &originalMsg, &signature)
-	rwMutex.Unlock()
+//	rwMutex.Unlock()
 
 	originalMessageStr, signatureStr := convertPointerToByte(originalMsg, signature)
 
@@ -213,9 +247,9 @@ func (s *ClientGrpc) CrossPaymentCommitClientRequest(ctx context.Context, in *cl
 	var originalMsg *C.uchar
 	var signature *C.uchar
 
-	rwMutex.Lock()
+//	rwMutex.Lock()
 	C.ecall_cross_go_post_update_w(convertedOriginalMsg, convertedSignatureMsg, &originalMsg, &signature)
-	rwMutex.Unlock()
+//	rwMutex.Unlock()
 
 	originalMessageStr, signatureStr := convertPointerToByte(originalMsg, signature)
 
@@ -231,9 +265,9 @@ func (s *ClientGrpc) CrossPaymentConfirmClientRequest(ctx context.Context, in *c
 
 	convertedOriginalMsg, convertedSignatureMsg := convertByteToPointer(in.OriginalMessage, in.Signature)
 
-	rwMutex.Lock()
+//	rwMutex.Lock()
 	C.ecall_cross_go_idle_w(convertedOriginalMsg, convertedSignatureMsg)
-	rwMutex.Unlock()
+//	rwMutex.Unlock()
 
         log.Println("----CROSS PAYMENT CONFIRM END IN CLIENT----")
 
@@ -274,5 +308,21 @@ func (s *ClientGrpc) CrossPaymentRefundClientRequest(ctx context.Context, in *cl
 }
 
 
+func ChanCreate() {
 
+	fmt.Println("ChanCreate! ")
+
+	if chanCreateCheck == 0{
+		var i = 0
+		for i = range ChComplete {
+			//ch[i] = make(chan bool)
+			ChComplete[i] = make(chan bool)
+		}
+		fmt.Printf("%d ChanCreate! \n", i)
+	} else {
+		return
+	}
+
+	chanCreateCheck = 1
+}
 

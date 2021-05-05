@@ -130,7 +130,19 @@ enclave {
             [user_check] unsigned char *original_msg, 
             [user_check] unsigned char *output);
 
+        public void ecall_go_pre_update_two(
+            [user_check] unsigned char *msg,
+            [user_check] unsigned char *signature,
+            [user_check] unsigned char *original_msg, 
+            [user_check] unsigned char *output);
+
         public void ecall_go_post_update(
+            [user_check] unsigned char *msg,
+            [user_check] unsigned char *signature,
+            [user_check] unsigned char *original_msg, 
+            [user_check] unsigned char *output);
+
+        public void ecall_go_post_update_two(
             [user_check] unsigned char *msg,
             [user_check] unsigned char *signature,
             [user_check] unsigned char *original_msg, 
