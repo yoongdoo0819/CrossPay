@@ -50,7 +50,7 @@ void ecall_go_pre_update(unsigned char *msg, unsigned char *signature, unsigned 
         return;
 */
     /* step 2. check that message type is 'AG_REQ' */
-    //verify_message(1, signature, msg, sizeof(Message), NULL);
+    verify_message(1, signature, msg, sizeof(Message), NULL);
 
     if(ag_req->type != AG_REQ)
         return;
@@ -133,7 +133,7 @@ void ecall_go_post_update(unsigned char *msg, unsigned char *signature, unsigned
     if(verify_message(1, signature, msg, sizeof(Message), NULL))
         return;
 */
-    //verify_message(1, signature, msg, sizeof(Message), NULL);
+    verify_message(1, signature, msg, sizeof(Message), NULL);
 
     /* step 2. check that message type is 'UD_REQ' */
 
@@ -248,7 +248,7 @@ void ecall_go_idle(unsigned char *msg, unsigned char *signature)
     if(verify_message(1, signature, msg, sizeof(Message), NULL))
         return;
 */
-    //verify_message(1, signature, msg, sizeof(Message), NULL);
+    verify_message(1, signature, msg, sizeof(Message), NULL);
 
     /* step 2. check that message type is 'UD_REQ' */
 

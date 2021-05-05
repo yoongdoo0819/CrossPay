@@ -9,11 +9,12 @@
 unsigned int Payment::acc_payment_num = 1;
 
 
-void ecall_accept_request(unsigned char *sender, unsigned char *receiver, unsigned int amount, unsigned int *payment_num)
+void ecall_accept_request(unsigned char *sender, unsigned char *receiver, unsigned int amount, unsigned int payment_num)
 {
-    payments.insert(map_payment_value(Payment::acc_payment_num, Payment(Payment::acc_payment_num, sender, receiver, amount)));
-    *payment_num = Payment::acc_payment_num;
-    Payment::acc_payment_num++;
+
+    payments.insert(map_payment_value(payment_num, Payment(payment_num, sender, receiver, amount)));
+    //*payment_num = Payment::acc_payment_num;
+    //Payment::acc_payment_num++;
 }
 
 
@@ -99,6 +100,7 @@ void ecall_create_ud_req_msg(unsigned int payment_num, unsigned int payment_size
     memcpy(req_sig, req_signature, 65);
 
     free(seckey);
+
     return;
 }
 
@@ -124,6 +126,7 @@ void ecall_create_confirm_msg(unsigned int payment_num, unsigned char *confirm_m
     memcpy(confirm_sig, confirm_signature, 65);
 
     free(seckey);
+
     return;
 }
 
@@ -133,14 +136,16 @@ void ecall_verify_ag_res_msg(unsigned char *pubaddr, unsigned char *res_msg, uns
     Message *res = (Message*)res_msg;
 
     /* step 1. verify signature */
-
+/*
     if(verify_message(0, res_sig, res_msg, sizeof(Message), pubaddr)) {
         *is_verified = 0;
         return;
     }
+*/
+    verify_message(0, res_sig, res_msg, sizeof(Message), pubaddr);
 
     /* step 2. check that message type is 'AG_RES' */
-
+    
     if(res->type != AG_RES || res->e != 1) {
         *is_verified = 0;
         return;
@@ -158,11 +163,13 @@ void ecall_verify_ud_res_msg(unsigned char *pubaddr, unsigned char *res_msg, uns
     Message *res = (Message*)res_msg;
 
     /* step 1. verify signature */
-
+/*
     if(verify_message(0, res_sig, res_msg, sizeof(Message), pubaddr)) {
         *is_verified = 0;
         return;
     }
+*/
+    verify_message(0, res_sig, res_msg, sizeof(Message), pubaddr);
 
     /* step 2. check that message type is 'UD_RES' */
 
@@ -224,6 +231,7 @@ void ecall_cross_update_payment_status_to_success(unsigned int payment_num)
 
 void ecall_cross_create_ag_req_msg(unsigned int payment_num, unsigned int payment_size, unsigned int *channel_ids, int *amount, unsigned char *req_msg, unsigned char *req_sig)
 {
+    printf("0 \n");
     unsigned char req_signature[65] = {0, };
     unsigned char *seckey_arr = (unsigned char*)"5a5e2194e0639fd017158793812dd5f5668f5bfc9a146f93f39237a4b4ed7dd5";
     unsigned char *seckey = ::arr_to_bytes(seckey_arr, 64);
@@ -234,17 +242,20 @@ void ecall_cross_create_ag_req_msg(unsigned int payment_num, unsigned int paymen
 
     /* create agreement request message */
 
+    printf("1 \n");
     request.type = CROSS_PREPARE_REQ;
     request.payment_num = payment_num;
     request.payment_size = payment_size;
     memcpy(request.channel_ids, channel_ids, sizeof(unsigned int) * payment_size);
     memcpy(request.payment_amount, amount, sizeof(int) * payment_size);
 
+    printf("2 \n");
     sign_message((unsigned char*)&request, sizeof(Cross_Message), seckey, req_signature);
 
     memcpy(req_msg, (unsigned char*)&request, sizeof(Cross_Message));
     memcpy(req_sig, req_signature, 65);
 
+    printf("CROSS CREATE AG REQ out  \n");
     free(seckey);
     return;
 }
@@ -252,6 +263,7 @@ void ecall_cross_create_ag_req_msg(unsigned int payment_num, unsigned int paymen
 
 void ecall_cross_create_ud_req_msg(unsigned int payment_num, unsigned int payment_size, unsigned int *channel_ids, int *amount, unsigned char *req_msg, unsigned char *req_sig)
 {
+    printf("3 \n");
     unsigned char req_signature[65] = {0, };
     unsigned char *seckey_arr = (unsigned char*)"5a5e2194e0639fd017158793812dd5f5668f5bfc9a146f93f39237a4b4ed7dd5";
     unsigned char *seckey = ::arr_to_bytes(seckey_arr, 64);
@@ -262,24 +274,30 @@ void ecall_cross_create_ud_req_msg(unsigned int payment_num, unsigned int paymen
 
     /* create update request message */
 
+    printf("4 \n");
     request.type = CROSS_COMMIT_REQ;
     request.payment_num = payment_num;
     request.payment_size = payment_size;
     memcpy(request.channel_ids, channel_ids, sizeof(unsigned int) * payment_size);
     memcpy(request.payment_amount, amount, sizeof(int) * payment_size);
 
+    printf("5 \n");
     sign_message((unsigned char*)&request, sizeof(Cross_Message), seckey, req_signature);
 
     memcpy(req_msg, (unsigned char*)&request, sizeof(Cross_Message));
     memcpy(req_sig, req_signature, 65);
 
     free(seckey);
+    printf("6 \n");
+
     return;
 }
 
 
 void ecall_cross_create_confirm_msg(unsigned int payment_num, unsigned int payment_size, unsigned int *channel_ids, int *amount, unsigned char *confirm_msg, unsigned char *confirm_sig)
 {
+
+    printf("7 \n");
     unsigned char confirm_signature[65] = {0, };
     unsigned char *seckey_arr = (unsigned char*)"5a5e2194e0639fd017158793812dd5f5668f5bfc9a146f93f39237a4b4ed7dd5";
     unsigned char *seckey = ::arr_to_bytes(seckey_arr, 64);
@@ -297,12 +315,14 @@ void ecall_cross_create_confirm_msg(unsigned int payment_num, unsigned int payme
     memcpy(confirm.channel_ids, channel_ids, sizeof(unsigned int) * payment_size);
     memcpy(confirm.payment_amount, amount, sizeof(int) * payment_size);
 
+    printf("8 \n");
     sign_message((unsigned char*)&confirm, sizeof(Cross_Message), seckey, confirm_signature);
 
     memcpy(confirm_msg, (unsigned char*)&confirm, sizeof(Cross_Message));
     memcpy(confirm_sig, confirm_signature, 65);
 
     free(seckey);
+    printf("9 \n");
     return;
 }
 
@@ -313,7 +333,7 @@ void ecall_cross_verify_ag_res_msg(unsigned char *pubaddr, unsigned char *res_ms
 
     /* step 1. verify signature */
 
-    printf("??????????????????????????????\n");
+    //printf("??????????????????????????????\n");
     /*
     if(verify_message(0, res_sig, res_msg, sizeof(Cross_Message), pubaddr)) {
         *is_verified = 0;
@@ -322,7 +342,7 @@ void ecall_cross_verify_ag_res_msg(unsigned char *pubaddr, unsigned char *res_ms
     */
 
     /* step 2. check that message type is 'AG_RES' */
-    printf("??????????????????????????????\n");
+    //printf("??????????????????????????????\n");
   /*  
     if(res->type != CROSS_PREPARE_RES || res->e != 1) {
 	ocall_print_string("FAILURE###########################################");
@@ -335,7 +355,7 @@ void ecall_cross_verify_ag_res_msg(unsigned char *pubaddr, unsigned char *res_ms
 	return;
     }
 */
-    ocall_print_string("success##############################################");
+    ocall_print_string("CROSS AG RES VERIFY SUCCESS \n");
 
     /* step 3. mark as verified */
 
@@ -371,6 +391,7 @@ void ecall_cross_verify_ud_res_msg(unsigned char *pubaddr, unsigned char *res_ms
     }
 */
     /* step 3. mark as verified */
+    ocall_print_string("CROSS UD RES VERIFY SUCCESS \n");
 
     *is_verified = 1;
     return;
@@ -401,6 +422,8 @@ void ecall_cross_create_all_prepare_msg(unsigned char *msg, unsigned char *signa
 
 void ecall_cross_create_all_prepared_msg(unsigned int payment_num, unsigned char *res_msg, unsigned char *res_sig)
 {
+
+    printf("10 \n");
     unsigned char res_signature[65] = {0, };
     unsigned char *seckey_arr = (unsigned char*)"5a5e2194e0639fd017158793812dd5f5668f5bfc9a146f93f39237a4b4ed7dd5";
     unsigned char *seckey = ::arr_to_bytes(seckey_arr, 64);
@@ -418,18 +441,23 @@ void ecall_cross_create_all_prepared_msg(unsigned int payment_num, unsigned char
     //memcpy(request.channel_ids, channel_ids, sizeof(unsigned int) * payment_size);
     //memcpy(request.payment_amount, amount, sizeof(int) * payment_size);
 
+
+    printf("11 \n");
     sign_message((unsigned char*)&response, sizeof(Cross_Message), seckey, res_signature);
 
     memcpy(res_msg, (unsigned char*)&response, sizeof(Cross_Message));
     memcpy(res_sig, res_signature, 65);
 
     free(seckey);
+    printf("12 \n");
     return;
 }
 
 
 void ecall_cross_create_prepare_msg(unsigned int payment_num, unsigned int payment_size, unsigned int *channel_ids, int *amount, unsigned char *req_msg, unsigned char *req_sig)
 {
+
+    printf("13 \n");
     unsigned char req_signature[65] = {0, };
     unsigned char *seckey_arr = (unsigned char*)"5a5e2194e0639fd017158793812dd5f5668f5bfc9a146f93f39237a4b4ed7dd5";
     unsigned char *seckey = ::arr_to_bytes(seckey_arr, 64);
@@ -446,12 +474,15 @@ void ecall_cross_create_prepare_msg(unsigned int payment_num, unsigned int payme
     memcpy(request.channel_ids, channel_ids, sizeof(unsigned int) * payment_size);
     memcpy(request.payment_amount, amount, sizeof(int) * payment_size);
 
+
+    printf("14 \n");
     sign_message((unsigned char*)&request, sizeof(Cross_Message), seckey, req_signature);
 
     memcpy(req_msg, (unsigned char*)&request, sizeof(Cross_Message));
     memcpy(req_sig, req_signature, 65);
 
     free(seckey);
+    printf("15 \n");
     return;
 }
 
@@ -480,6 +511,8 @@ void ecall_cross_create_all_commit_msg(unsigned char *msg, unsigned char *signat
 
 void ecall_cross_create_all_committed_msg(unsigned int payment_num, unsigned char *res_msg, unsigned char *res_sig)
 {
+
+    printf("16 \n");
     unsigned char res_signature[65] = {0, };
     unsigned char *seckey_arr = (unsigned char*)"5a5e2194e0639fd017158793812dd5f5668f5bfc9a146f93f39237a4b4ed7dd5";
     unsigned char *seckey = ::arr_to_bytes(seckey_arr, 64);
@@ -497,12 +530,15 @@ void ecall_cross_create_all_committed_msg(unsigned int payment_num, unsigned cha
     //memcpy(request.channel_ids, channel_ids, sizeof(unsigned int) * payment_size);
     //memcpy(request.payment_amount, amount, sizeof(int) * payment_size);
 
+
+    printf("17 \n");
     sign_message((unsigned char*)&response, sizeof(Cross_Message), seckey, res_signature);
 
     memcpy(res_msg, (unsigned char*)&response, sizeof(Cross_Message));
     memcpy(res_sig, res_signature, 65);
 
     free(seckey);
+    printf("18 \n");
     return;
 }
 
