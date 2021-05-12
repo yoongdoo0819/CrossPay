@@ -13,6 +13,7 @@ void ecall_accept_request(unsigned char *sender, unsigned char *receiver, unsign
 {
 
     payments.insert(map_payment_value(payment_num, Payment(payment_num, sender, receiver, amount)));
+//    printf("create payment_num : %d \n", payment_num);
     //*payment_num = Payment::acc_payment_num;
     //Payment::acc_payment_num++;
 }
@@ -50,6 +51,8 @@ void ecall_update_payment_status_to_success(unsigned int payment_num)
 
 void ecall_create_ag_req_msg(unsigned int payment_num, unsigned int payment_size, unsigned int *channel_ids, int *amount, unsigned char *req_msg, unsigned char *req_sig)
 {
+//    printf("%d AG REQ CREATED START !!!!!!!!!!!!!\n", payment_num);
+
     unsigned char req_signature[65] = {0, };
     unsigned char *seckey_arr = (unsigned char*)"5a5e2194e0639fd017158793812dd5f5668f5bfc9a146f93f39237a4b4ed7dd5";
     unsigned char *seckey = ::arr_to_bytes(seckey_arr, 64);
@@ -72,6 +75,11 @@ void ecall_create_ag_req_msg(unsigned int payment_num, unsigned int payment_size
     memcpy(req_sig, req_signature, 65);
 
     free(seckey);
+
+//    printf("%d AG REQ CREATED \n", payment_num);
+/*    if(request.type != AG_REQ)
+	    printf("failure!! \n");
+*/
     return;
 }
 
@@ -100,6 +108,7 @@ void ecall_create_ud_req_msg(unsigned int payment_num, unsigned int payment_size
     memcpy(req_sig, req_signature, 65);
 
     free(seckey);
+//    printf("%d UD REQ CREATED \n", payment_num);
 
     return;
 }
@@ -126,6 +135,7 @@ void ecall_create_confirm_msg(unsigned int payment_num, unsigned char *confirm_m
     memcpy(confirm_sig, confirm_signature, 65);
 
     free(seckey);
+//    printf("%d CF REQ CREATED \n", payment_num);
 
     return;
 }
@@ -148,12 +158,15 @@ void ecall_verify_ag_res_msg(unsigned char *pubaddr, unsigned char *res_msg, uns
     
     if(res->type != AG_RES || res->e != 1) {
         *is_verified = 0;
+	printf("NOT AG RES ############################ \n");
         return;
     }
 
     /* step 3. mark as verified */
 
     *is_verified = 1;
+    //printf("AG RES VERIFIED \n");
+
     return;
 }
 
@@ -174,6 +187,7 @@ void ecall_verify_ud_res_msg(unsigned char *pubaddr, unsigned char *res_msg, uns
     /* step 2. check that message type is 'UD_RES' */
 
     if(res->type != UD_RES) {
+	printf("NOT UD RES ############################ \n");
         *is_verified = 0;
         return;
     }
@@ -181,6 +195,8 @@ void ecall_verify_ud_res_msg(unsigned char *pubaddr, unsigned char *res_msg, uns
     /* step 3. mark as verified */
 
     *is_verified = 1;
+    //printf("UD RES VERIFIED \n");
+
     return;
 }
 

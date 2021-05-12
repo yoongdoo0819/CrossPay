@@ -1,14 +1,130 @@
 #include "app.h"
 #include "enclave_u.h"
 
+#include <mutex>
 
-unsigned int ecall_accept_request_w(unsigned char *sender, unsigned char *receiver, unsigned int amount)
+std::mutex rwMutex;
+
+typedef struct _sgx_errlist_t {
+	    sgx_status_t err;
+	    const char *msg;
+	    const char *sug; /* Suggestion */
+} sgx_errlist_t;
+
+/* Error code returned by sgx_create_enclave */
+static sgx_errlist_t sgx_errlist[] = {
+	    {
+		    SGX_ERROR_UNEXPECTED,
+		    "Unexpected error occurred.",
+		    NULL
+	    },
+	    {
+		    SGX_ERROR_INVALID_PARAMETER,
+		    "Invalid parameter.",
+		    NULL
+	    },
+	    {
+		    SGX_ERROR_OUT_OF_MEMORY,
+		    "Out of memory.",
+		    NULL
+	    },
+	    {
+		    SGX_ERROR_ENCLAVE_LOST,
+		    "Power transition occurred.",
+		    "Please refer to the sample \"PowerTransition\" for details."
+	    },
+	    {
+		    SGX_ERROR_INVALID_ENCLAVE,
+		    "Invalid enclave image.",
+		    NULL
+	    },
+	    {
+		    SGX_ERROR_INVALID_ENCLAVE_ID,
+		    "Invalid enclave identification.",
+		    NULL
+	    },
+	    {
+		    SGX_ERROR_INVALID_SIGNATURE,
+		    "Invalid enclave signature.",
+		    NULL
+	    },
+	    {
+		    SGX_ERROR_OUT_OF_EPC,
+		    "Out of EPC memory.",
+		    NULL
+	    },
+	    {
+		    SGX_ERROR_NO_DEVICE,
+		    "Invalid SGX device.",
+		    "Please make sure SGX module is enabled in the BIOS, and install SGX driver afterwards."
+	    },
+	    {
+		    SGX_ERROR_MEMORY_MAP_CONFLICT,
+		    "Memory map conflicted.",
+		    NULL
+	    },
+	    {
+		    SGX_ERROR_INVALID_METADATA,
+		    "Invalid enclave metadata.",				            
+		    NULL		  	    
+	    },
+	    {
+		    SGX_ERROR_DEVICE_BUSY,
+		    "SGX device was busy.",
+		    NULL
+	    },
+	    {
+		    SGX_ERROR_INVALID_VERSION,
+		    "Enclave version was invalid.",
+		    NULL
+	    },
+	    {
+		    SGX_ERROR_INVALID_ATTRIBUTE,
+		    "Enclave was not authorized.",
+		    NULL
+	    },
+	     {
+		     SGX_ERROR_ENCLAVE_FILE_ACCESS,
+		     "Can't open enclave file.",
+		     NULL
+	     },
+};
+	    
+/*
+void print_error_message(sgx_status_t ret)
 {
-    unsigned int payment_num;
+	size_t idx = 0;
+	size_t ttl = sizeof sgx_errlist/sizeof sgx_errlist[0];
 
-    ecall_accept_request(global_eid, sender, receiver, amount, &payment_num);
+	for (idx = 0; idx < ttl; idx++) {
+		if(ret == sgx_errlist[idx].err) {
+			if(NULL != sgx_errlist[idx].sug)
+				printf("Info: %s\n", sgx_errlist[idx].sug);
+			printf("Error: %s\n", sgx_errlist[idx].msg);
+			break;
+		}
+	}
 
-    return payment_num;
+	if (idx == ttl)
+		printf("Error code is 0x%X. Please refer to the \"Intel SGX SDK Developer Reference\" for more details.\n", ret);
+}
+*/
+
+unsigned int ecall_accept_request_w(unsigned char *sender, unsigned char *receiver, unsigned int amount, unsigned int payment_num)
+{
+    //unsigned int payment_num;
+    unsigned int result = 1;
+    ecall_accept_request(global_eid, sender, receiver, amount, payment_num);
+   
+    sgx_status_t ret = SGX_ERROR_UNEXPECTED;   
+    ret = ecall_accept_request(global_eid, sender, receiver, amount, payment_num);
+     
+    if (ret != SGX_SUCCESS) {
+	    return 1;
+    }
+
+    result = 9999;
+    return result;
 }
 
 
@@ -45,17 +161,26 @@ void ecall_update_payment_status_to_success_w(unsigned int payment_num)
     ecall_update_payment_status_to_success(global_eid, payment_num);
 }
 
-
-void ecall_create_ag_req_msg_w(unsigned int payment_num, unsigned int payment_size, unsigned int *channel_ids, int *amount, unsigned char **original_msg, unsigned char **output)
+unsigned int ecall_create_ag_req_msg_w(unsigned int payment_num, unsigned int payment_size, unsigned int *channel_ids, int *amount, unsigned char **original_msg, unsigned char **output)
 {
     unsigned char *req_msg = new unsigned char[sizeof(message)];
     unsigned char *req_sig = new unsigned char[65];
+    unsigned int result = 1;
 
+//    printf("%d UNTRUSTED PART AG REQ CREATED \n", payment_num);
     memset(req_msg, 0x00, sizeof(message));
     memset(req_sig, 0x00, 65);
 
-    ecall_create_ag_req_msg(global_eid, payment_num, payment_size, channel_ids, amount, req_msg, req_sig);
-
+//    rwMutex.lock();
+    sgx_status_t ret = SGX_ERROR_UNEXPECTED;   	
+    ret = ecall_create_ag_req_msg(global_eid, payment_num, payment_size, channel_ids, amount, req_msg, req_sig);
+//    rwMutex.unlock();
+    
+    if (ret != SGX_SUCCESS) {
+//	    print_error_message(ret);
+	    return 1;
+    }
+    
     *original_msg = req_msg;
     *output = req_sig;
 
@@ -89,36 +214,62 @@ void ecall_create_ag_req_msg_w(unsigned int payment_num, unsigned int payment_si
     //     printf("%d ", m->payment_amount[i]);
     // printf("\n");
     // printf("=================================================\n");
+    //
+
+    result = 9999;
+    return result;
 }
 
 
-void ecall_create_ud_req_msg_w(unsigned int payment_num, unsigned int payment_size, unsigned int *channel_ids, int *amount, unsigned char **original_msg, unsigned char **output)
+unsigned int ecall_create_ud_req_msg_w(unsigned int payment_num, unsigned int payment_size, unsigned int *channel_ids, int *amount, unsigned char **original_msg, unsigned char **output)
 {
     unsigned char *req_msg = new unsigned char[sizeof(message)];
     unsigned char *req_sig = new unsigned char[65];
+    unsigned int result = 1;
 
     memset(req_msg, 0x00, sizeof(message));
     memset(req_sig, 0x00, 65);
 
-    ecall_create_ud_req_msg(global_eid, payment_num, payment_size, channel_ids, amount, req_msg, req_sig);
+    sgx_status_t ret = SGX_ERROR_UNEXPECTED;   	
+    ret = ecall_create_ud_req_msg(global_eid, payment_num, payment_size, channel_ids, amount, req_msg, req_sig); 
+//    rwMutex.unlock();
+    
+    if (ret != SGX_SUCCESS) {
+//	    print_error_message(ret);
+	    return 1;
+    }
 
     *original_msg = req_msg;
     *output = req_sig;
+
+    result = 9999;
+    return result;
 }
 
 
-void ecall_create_confirm_msg_w(unsigned int payment_num, unsigned char **original_msg, unsigned char **output)
+unsigned int ecall_create_confirm_msg_w(unsigned int payment_num, unsigned char **original_msg, unsigned char **output)
 {
     unsigned char *confirm_msg = new unsigned char[sizeof(message)];
     unsigned char *confirm_sig = new unsigned char[65];
-
+    unsigned int result = 1;
     memset(confirm_msg, 0x00, sizeof(message));
     memset(confirm_sig, 0x00, 65);
 
-    ecall_create_confirm_msg(global_eid, payment_num, confirm_msg, confirm_sig);
+    sgx_status_t ret = SGX_ERROR_UNEXPECTED;   	
+    ret = ecall_create_confirm_msg(global_eid, payment_num, confirm_msg, confirm_sig);
+//    rwMutex.unlock();
+    
+    if (ret != SGX_SUCCESS) {
+//	    print_error_message(ret);
+	    return 1;
+    }
+
 
     *original_msg = confirm_msg;
     *output = confirm_sig;
+
+    result = 9999;
+    return result;
 }
 
 
@@ -193,45 +344,62 @@ void ecall_cross_update_payment_status_to_success_w(unsigned int payment_num)
 
 void ecall_cross_create_ag_req_msg_w(unsigned int payment_num, unsigned int payment_size, unsigned int *channel_ids, int *amount, unsigned char **original_msg, unsigned char **output)
 {
-    unsigned char *req_msg = new unsigned char[sizeof(message)];
+    printf("WHY SEGMENT FAULT ??????????????????????? \n");
+    unsigned char *req_msg = new unsigned char[sizeof(cross_message)];
     unsigned char *req_sig = new unsigned char[65];
 
-    memset(req_msg, 0x00, sizeof(message));
+    memset(req_msg, 0x00, sizeof(cross_message));
     memset(req_sig, 0x00, 65);
+
+    printf("WHY SEGMENT FAULT 1 ??????????????????????? \n");
 
     ecall_cross_create_ag_req_msg(global_eid, payment_num, payment_size, channel_ids, amount, req_msg, req_sig);
 
     *original_msg = req_msg;
     *output = req_sig;
+
+    printf("WHY SEGMENT FAULT 2 ??????????????????????? \n");
+
+    //free(req_msg);
+    //free(req_sig);
+
+    printf("WHY SEGMENT FAULT 3 ??????????????????????? \n");
+
 }
 
 
 void ecall_cross_create_ud_req_msg_w(unsigned int payment_num, unsigned int payment_size, unsigned int *channel_ids, int *amount, unsigned char **original_msg, unsigned char **output)
 {
-    unsigned char *req_msg = new unsigned char[sizeof(message)];
+    unsigned char *req_msg = new unsigned char[sizeof(cross_message)];
     unsigned char *req_sig = new unsigned char[65];
 
-    memset(req_msg, 0x00, sizeof(message));
+    memset(req_msg, 0x00, sizeof(cross_message));
     memset(req_sig, 0x00, 65);
 
     ecall_cross_create_ud_req_msg(global_eid, payment_num, payment_size, channel_ids, amount, req_msg, req_sig);
 
     *original_msg = req_msg;
     *output = req_sig;
+
+    //free(req_msg);
+    //free(req_sig);
 }
 
 void ecall_cross_create_confirm_msg_w(unsigned int payment_num, unsigned int payment_size, unsigned int *channel_ids, int *amount, unsigned char **original_msg, unsigned char **output)
 {
-    unsigned char *confirm_msg = new unsigned char[sizeof(message)];
+    unsigned char *confirm_msg = new unsigned char[sizeof(cross_message)];
     unsigned char *confirm_sig = new unsigned char[65];
 
-    memset(confirm_msg, 0x00, sizeof(message));
+    memset(confirm_msg, 0x00, sizeof(cross_message));
     memset(confirm_sig, 0x00, 65);
 
     ecall_cross_create_confirm_msg(global_eid, payment_num, payment_size, channel_ids, amount, confirm_msg, confirm_sig);
 
     *original_msg = confirm_msg;
     *output = confirm_sig;
+
+    //free(confirm_msg);
+    //free(confirm_sig);
 }
 
 
@@ -266,24 +434,27 @@ unsigned int ecall_cross_create_all_prepare_msg_w(unsigned char *msg, unsigned c
 
 void ecall_cross_create_prepare_msg_w(unsigned int payment_num, unsigned int payment_size, unsigned int *channel_ids, int *amount, unsigned char **original_msg, unsigned char **output)
 {
-    unsigned char *req_msg = new unsigned char[sizeof(message)];
+    unsigned char *req_msg = new unsigned char[sizeof(cross_message)];
     unsigned char *req_sig = new unsigned char[65];
 
-    memset(req_msg, 0x00, sizeof(message));
+    memset(req_msg, 0x00, sizeof(cross_message));
     memset(req_sig, 0x00, 65);
 
     ecall_cross_create_prepare_msg(global_eid, payment_num, payment_size, channel_ids, amount, req_msg, req_sig);
 
     *original_msg = req_msg;
     *output = req_sig;
+
+    //free(req_msg);
+    //free(req_sig);
 }
 
 void ecall_cross_create_all_prepared_msg_w(unsigned int payment_num, unsigned char **original_msg, unsigned char **output)
 {
-    unsigned char *res_msg = new unsigned char[sizeof(message)];
+    unsigned char *res_msg = new unsigned char[sizeof(cross_message)];
     unsigned char *res_sig = new unsigned char[65];
 
-    memset(res_msg, 0x00, sizeof(message));
+    memset(res_msg, 0x00, sizeof(cross_message));
     memset(res_sig, 0x00, 65);
 
     ecall_cross_create_all_prepared_msg(global_eid, payment_num, res_msg, res_sig);
@@ -291,6 +462,8 @@ void ecall_cross_create_all_prepared_msg_w(unsigned int payment_num, unsigned ch
     *original_msg = res_msg;
     *output = res_sig;
 
+    //free(res_msg);
+    //free(res_sig);
 }
 
 unsigned int ecall_cross_create_all_commit_msg_w(unsigned char *msg, unsigned char *signature)
@@ -303,16 +476,19 @@ unsigned int ecall_cross_create_all_commit_msg_w(unsigned char *msg, unsigned ch
 
 void ecall_cross_create_all_committed_msg_w(unsigned int payment_num, unsigned char **original_msg, unsigned char **output)
 {
-    unsigned char *res_msg = new unsigned char[sizeof(message)];
+    unsigned char *res_msg = new unsigned char[sizeof(cross_message)];
     unsigned char *res_sig = new unsigned char[65];
 
-    memset(res_msg, 0x00, sizeof(message));
+    memset(res_msg, 0x00, sizeof(cross_message));
     memset(res_sig, 0x00, 65);
 
     ecall_cross_create_all_committed_msg(global_eid, payment_num, res_msg, res_sig);
 
     *original_msg = res_msg;
     *output = res_sig;
+
+    //free(res_msg);
+    //free(res_sig);
 }
 
 unsigned int ecall_cross_create_all_confirm_msg_w(unsigned char *msg, unsigned char *signature)
@@ -344,6 +520,9 @@ void ecall_cross_create_refund_msg_w(unsigned int payment_num, unsigned int paym
 
     *original_msg = refund_msg;
     *output = refund_sig;
+
+    //free(refund_msg);
+    //free(refund_sig);
 }
 
 /*

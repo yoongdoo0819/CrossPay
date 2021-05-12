@@ -13,7 +13,7 @@ enclave {
             [in, size=40] unsigned char *sender,
             [in, size=40] unsigned char *receiver,
             unsigned int amount,
-            [user_check] unsigned int *payment_num);
+            unsigned int payment_num);
         
         public void ecall_add_participant(
             unsigned int payment_num,

@@ -18,9 +18,16 @@
 //using namespace std;
 std::mutex rwMutex;
 
-
-void ecall_go_pre_update(unsigned char *msg, unsigned char *signature, unsigned char *original_msg, unsigned char *output)
+/*
+void ecall_accept_payment(unsigned int payment_num)
 {
+    payments.insert(map_payment_value(payment_num, Payment(payment_num)));
+    printf("created payment num : %d \n", payment_num);
+}
+*/
+void ecall_go_pre_update(unsigned char *msg, unsigned char *signature, unsigned char *original_msg, unsigned char *output, unsigned int *result)
+{
+//    printf("PRE UPDATE START \n");
     unsigned char reply_signature[65] = {0, };
     unsigned char *my_addr;
 
@@ -52,8 +59,12 @@ void ecall_go_pre_update(unsigned char *msg, unsigned char *signature, unsigned 
     /* step 2. check that message type is 'AG_REQ' */
     verify_message(1, signature, msg, sizeof(Message), NULL);
 
-    if(ag_req->type != AG_REQ)
+    if(ag_req->type != AG_REQ) {
+	printf("NOT AG REQ \n");
+	printf("%d \n", ag_req->type);
+	*result = 1;
         return;
+    }
 
     /* step 3. generate payment instance */
 
@@ -73,11 +84,14 @@ void ecall_go_pre_update(unsigned char *msg, unsigned char *signature, unsigned 
     //payments.insert(map_payment_value(payment_num, Payment(payment_num)));
 
     for(int i = 0; i < payment_size; i++) {
-        payments.find(payment_num)->second.add_element(channel_ids[i], payment_amount[i]);
+        //payments.find(payment_num)->second.add_element(channel_ids[i], payment_amount[i]);
         channels.find(channel_ids[i])->second.transition_to_pre_update();
 
-        if(payment_amount[i] < 0)
-            channels.find(channel_ids[i])->second.m_locked_balance += payment_amount[i] * -1;
+        if(payment_amount[i] < 0) {
+            channels.find(channel_ids[i])->second.m_locked_balance += payment_amount[i] * -1;	 
+	}
+
+//	printf("%d channel is pre updated \n", channel_ids[i]);
     }
 
 //    rwMutex.unlock();
@@ -94,28 +108,45 @@ void ecall_go_pre_update(unsigned char *msg, unsigned char *signature, unsigned 
     reply.e = 1;
     seckey = accounts.find(pubkey)->second.get_seckey();
 
-//    printf("SIGN START \n");
+    //printf("SIGN START \n");
     sign_message((unsigned char*)&reply, sizeof(Message), (unsigned char*)seckey.data(), reply_signature);
-//    printf("SIGN END \n");
+    //printf("SIGN END \n");
 
     memcpy(original_msg, (unsigned char*)&reply, sizeof(Message));
     memcpy(output, reply_signature, 65);
 
     //free(pubkey);
     //free(seckey);
+
+//    printf("PRE UPDATED \n");
+    *result = 9999;
     return;
 }
 
-void ecall_go_pre_update_two(unsigned char *msg, unsigned char *signature, unsigned char *original_msg, unsigned char *output)
+void ecall_go_pre_update_two(unsigned int payment_num)
 {
-    Message *ag_req = (Message*)msg;
-    unsigned int payment_num = ag_req->payment_num;
+    //unsigned int payment_num;
+    //Message *ag_req = (Message*)msg;
+
+    //payment_num = ag_req->payment_num;
 
     payments.insert(map_payment_value(payment_num, Payment(payment_num)));
-}
+//    printf("created payment num : %d \n", payment_num);
 
-void ecall_go_post_update(unsigned char *msg, unsigned char *signature, unsigned char *original_msg, unsigned char *output)
+/*
+    for(int i = 0; i < payment_size; i++) {
+        payments.find(payment_num)->second.add_element(channel_ids[i], payment_amount[i]);
+        channels.find(channel_ids[i])->second.transition_to_pre_update();
+
+        if(payment_amount[i] < 0)
+            channels.find(channel_ids[i])->second.m_locked_balance += payment_amount[i] * -1;
+    }
+*/
+}
+void ecall_go_post_update(unsigned char *msg, unsigned char *signature, unsigned char *original_msg, unsigned char *output, unsigned int *result)
 {
+//    printf("POST UPDATE START \n");
+
     unsigned char reply_signature[65] = {0, };
     unsigned char *my_addr;
 
@@ -137,8 +168,12 @@ void ecall_go_post_update(unsigned char *msg, unsigned char *signature, unsigned
 
     /* step 2. check that message type is 'UD_REQ' */
 
-    if(ud_req->type != UD_REQ)
+    if(ud_req->type != UD_REQ) {
+	printf("NOT UD REQ \n");
+	printf("%d \n", ud_req->type);
+	*result = 1;
         return;
+    }
 
     /* step 3. update channel state */
 
@@ -147,13 +182,16 @@ void ecall_go_post_update(unsigned char *msg, unsigned char *signature, unsigned
     channel_ids = ud_req->channel_ids;
     payment_amount = ud_req->payment_amount;
 
-    /*
+//    printf("pn : %d POST UPDATE START \n", payment_num);
+//    printf("ps : %d \n", payment_size);
+/*   
     printf("channel ids: ");
     for(int i = 0; i < payment_size; i++)
         printf("[%d] ", channel_ids[i]);
     printf("\n");    
-    */
+*/    
 
+//    printf("#################################### \n");
     unsigned int value;
 /*
     if(payments.find(payment_num) == payments.end()) {
@@ -163,7 +201,10 @@ void ecall_go_post_update(unsigned char *msg, unsigned char *signature, unsigned
     }
 */
     //rwMutex.lock();
+    
     for(int i = 0; i < payment_size; i++) {
+//	printf("payment size : %d POST UPDATE PAYMENT SIZE \n", payment_size);
+
         value = (payment_amount[i] < 0) ? payment_amount[i] * -1 : payment_amount[i];
 
         if(0 < payment_amount[i])
@@ -174,7 +215,9 @@ void ecall_go_post_update(unsigned char *msg, unsigned char *signature, unsigned
         }
 
         channels.find(channel_ids[i])->second.transition_to_post_update();
+//	printf("channel %d is post updated \n", channel_ids[i]);
     }
+
     //rwMutex.unlock();
 
     /* step 4. generate reply message */
@@ -186,8 +229,8 @@ void ecall_go_post_update(unsigned char *msg, unsigned char *signature, unsigned
 
     reply.type = UD_RES;
     reply.payment_num = payment_num;
-    seckey = accounts.find(pubkey)->second.get_seckey();
 
+    seckey = accounts.find(pubkey)->second.get_seckey();
     sign_message((unsigned char*)&reply, sizeof(Message), (unsigned char*)seckey.data(), reply_signature);
 
     memcpy(original_msg, (unsigned char*)&reply, sizeof(Message));
@@ -195,49 +238,67 @@ void ecall_go_post_update(unsigned char *msg, unsigned char *signature, unsigned
 
     //free(pubkey);
     //free(seckey);
+//    printf("%d POST UPDATED \n", payment_num);
+    *result = 9999;
     return;    
 }
 
 void ecall_go_post_update_two(unsigned char *msg, unsigned char *signature, unsigned char *original_msg, unsigned char *output)
 {
-    //rwMutex.unlock();
-
-    /* step 4. generate reply message */
-    unsigned char reply_signature[65] = {0, };
-    unsigned char *my_addr;
-
+	/*
     unsigned int payment_num, payment_size;
     unsigned int *channel_ids;
     int *payment_amount; 
-    Message reply;
-    Message *ud_req = (Message*)msg;
+    Message *req = (Message*)msg;
 
-    payment_num = ud_req->payment_num;
-    payment_size = ud_req->payment_size;
-    channel_ids = ud_req->channel_ids;
-    payment_amount = ud_req->payment_amount;
+    payment_num = req->payment_num;
+    payment_size = req->payment_size;
+    channel_ids = req->channel_ids;
+    payment_amount = req->payment_amount;
 
-    my_addr = channels.find(channel_ids[0])->second.m_my_addr;
+    unsigned int value;
+    if(req->type == CONFIRM) {
+	    std::vector<Related> c = payments.find(payment_num)->second.m_related_channels;
+	    for(int i = 0; i < c.size(); i++)
+	  	    channels.find(c.at(i).channel_id)->second.transition_to_idle();
 
-    std::vector<unsigned char> pubkey(my_addr, my_addr + 20);
-    std::vector<unsigned char> seckey;
+	    printf("CONFIRM \n");
+	    return;
+    }
 
-    reply.type = UD_RES;
-    reply.payment_num = payment_num;
-    seckey = accounts.find(pubkey)->second.get_seckey();
+    for(int i = 0; i < payment_size; i++) {
+        value = (payment_amount[i] < 0) ? payment_amount[i] * -1 : payment_amount[i];
 
-    sign_message((unsigned char*)&reply, sizeof(Message), (unsigned char*)seckey.data(), reply_signature);
+        if(0 < payment_amount[i])
+            channels.find(channel_ids[i])->second.paid(value);
+        else {
+            channels.find(channel_ids[i])->second.m_locked_balance += payment_amount[i];
+            channels.find(channel_ids[i])->second.pay(value);
+        }
 
-    memcpy(original_msg, (unsigned char*)&reply, sizeof(Message));
-    memcpy(output, reply_signature, 65);
+	if(req->type == AG_REQ)
+		channels.find(channel_ids[i])->second.transition_to_post_update();
+	else if(req->type == UD_REQ)		
+		channels.find(channel_ids[i])->second.transition_to_post_update();
+    }
 
-    //free(pubkey);
-    //free(seckey);
+    printf("AG OR UD \n");
+    */
+    unsigned int payment_num;
+    Message *ag_req = (Message*)msg;
+
+    payment_num = ag_req->payment_num;
+
+    payments.insert(map_payment_value(payment_num, Payment(payment_num)));
+    printf("created payment num : %d \n", payment_num);
+
     return;    
 }
 
-void ecall_go_idle(unsigned char *msg, unsigned char *signature)
+void ecall_go_idle(unsigned char *msg, unsigned char *signature, unsigned int *result)
 {
+    //printf("IDLE UPDATE START \n");
+
     unsigned char reply_signature[65] = {0, };
     unsigned int payment_num;
 
@@ -252,8 +313,12 @@ void ecall_go_idle(unsigned char *msg, unsigned char *signature)
 
     /* step 2. check that message type is 'UD_REQ' */
 
-    if(confirm->type != CONFIRM)
+    if(confirm->type != CONFIRM) {
+	printf("NOT CONFIRM REQ \n");
+	printf("%d \n", confirm->type);
+	*result = 1;
         return;
+    }
 
     /* step 3. complete payment */
 
@@ -261,11 +326,31 @@ void ecall_go_idle(unsigned char *msg, unsigned char *signature)
 
     std::vector<Related> c = payments.find(payment_num)->second.m_related_channels;
     //rwMutex.lock();
-    for(int i = 0; i < c.size(); i++)
+    for(int i = 0; i < c.size(); i++) {
         channels.find(c.at(i).channel_id)->second.transition_to_idle();
+//	printf("%d channel is dile updated \n", c.at(i).channel_id);
+    }
     //rwMutex.unlock();
 
+    //printf("IDLE UPDATED \n");
+    *result = 9999;
     return;
+}
+
+void ecall_go_idle_two(unsigned char *msg, unsigned char *signature)
+{
+	/*
+    unsigned int payment_num;
+
+    Message *confirm = (Message*)msg;
+
+    payment_num = confirm->payment_num;
+
+    std::vector<Related> c = payments.find(payment_num)->second.m_related_channels;
+    //rwMutex.lock();
+    for(int i = 0; i < c.size(); i++)
+        channels.find(c.at(i).channel_id)->second.transition_to_idle();
+	*/
 }
 
 

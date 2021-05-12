@@ -6,6 +6,15 @@ package grpc
 
 #include "app.h"
 */
+/*
+#include <stdio.h>
+
+void CExample(char *p) {     // 슬라이스를 void * 타입으로 받음
+	printf("zz \n");
+	printf("%c\n", p[0]); // H
+	printf("%s\n", p);    // Hello, world!
+}
+*/
 import "C"
 
 import (
@@ -47,10 +56,29 @@ func (s *ClientGrpc) AgreementRequest(ctx context.Context, in *clientPb.AgreeReq
 	//fmt.Println("??")
 	//fmt.Println(convertedOriginalMsg, convertedSignatureMsg)
 
+	rwMutex.Lock()
+	C.ecall_go_pre_update_two_w(C.uint(in.PaymentNumber))
+	rwMutex.Unlock()
+
 	var originalMsg *C.uchar
 	var signature *C.uchar
 //	rwMutex.Lock()
-	C.ecall_go_pre_update_w(convertedOriginalMsg, convertedSignatureMsg, &originalMsg, &signature)
+
+	for ; ; {
+		result := C.ecall_go_pre_update_w(convertedOriginalMsg, convertedSignatureMsg, &originalMsg, &signature)
+		if result == 1 {
+			fmt.Println("AG result failure!")
+			return &clientPb.AgreementResult{Result: false}, nil
+		} else if result == 9999  {
+			break
+		}
+
+		//fmt.Println("AG ################################## ")
+		defer C.free(unsafe.Pointer(originalMsg))
+		defer C.free(unsafe.Pointer(signature))
+
+	}
+
 //	rwMutex.Unlock()
 /*
 	var uOriginal [44]C.uchar
@@ -73,15 +101,30 @@ func (s *ClientGrpc) AgreementRequest(ctx context.Context, in *clientPb.AgreeReq
 }
 
 func (s *ClientGrpc) UpdateRequest(ctx context.Context, in *clientPb.UpdateRequestsMessage) (*clientPb.UpdateResult, error) {
+
+//	return &clientPb.UpdateResult{Result: true}, nil
+
 	// 채널 정보를 업데이트 한다던지 잔액을 변경.
-	//log.Println("----REceive Update Request----")
+	//log.Println("----Receive Update Request----")
 	convertedOriginalMsg, convertedSignatureMsg := convertByteToPointer(in.OriginalMessage, in.Signature)
 
 	var originalMsg *C.uchar
 	var signature *C.uchar
 
 //	rwMutex.Lock()
-	C.ecall_go_post_update_w(convertedOriginalMsg, convertedSignatureMsg, &originalMsg, &signature)
+	for ; ; {
+		result := C.ecall_go_post_update_w(convertedOriginalMsg, convertedSignatureMsg, &originalMsg, &signature)
+		if result == 1 {
+			fmt.Println("UD result failure!")
+			return &clientPb.UpdateResult{Result: false}, nil
+		} else if result == 9999  {
+			break
+		}
+		//fmt.Println("UD ################################## ")
+
+		defer C.free(unsafe.Pointer(originalMsg))
+		defer C.free(unsafe.Pointer(signature))
+	}
 //	rwMutex.Unlock()
 
 	originalMessageStr, signatureStr := convertPointerToByte(originalMsg, signature)
@@ -95,10 +138,23 @@ func (s *ClientGrpc) ConfirmPayment(ctx context.Context, in *clientPb.ConfirmReq
 	convertedOriginalMsg, convertedSignatureMsg := convertByteToPointer(in.OriginalMessage, in.Signature)
 
 //	rwMutex.Lock()
-	C.ecall_go_idle_w(convertedOriginalMsg, convertedSignatureMsg)
+	for ; ; {
+		result := C.ecall_go_idle_w(convertedOriginalMsg, convertedSignatureMsg)
+
+		if result == 1 {
+			fmt.Println("CONFIRM result failure!")
+			return &clientPb.ConfirmResult{Result: false}, nil
+		} else if result == 9999  {
+			break
+		}
+
+		//fmt.Println("CONFIRM ################################## ")
+
+	}
+
 //	rwMutex.Unlock()
 
-	//log.Println("----ConfirmPayment Request End----")
+//	log.Println("----ConfirmPayment Request End----")
 
 	// fmt.Println(C.ecall_get_balance_w(C.uint(1)))
 	// fmt.Println(C.ecall_get_balance_w(C.uint(2)))

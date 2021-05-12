@@ -6,6 +6,16 @@ package grpc
 
 #include "app.h"
 */
+/*
+#include <stdio.h>
+
+void CExample(void *p) {     // 슬라이스를 void * 타입으로 받음
+	char *a = (char *)p; // char * 타입으로 변환
+	printf("zz \n");
+	printf("%c\n", a[0]); // H
+	printf("%s\n", a);    // Hello, world!
+}
+*/
 import "C"
 
 import (
@@ -103,10 +113,6 @@ func _SendAgreementRequest(i interface{}) {
 
 
 	pn := i.(AG).pn
-/*
-	ch[pn] <- true
-	return
-*/
 	address := i.(AG).address
 	rwMutex.Lock()
 	paymentInformation := i.(AG).paymentInformation[address]
@@ -147,6 +153,7 @@ func _SendAgreementRequest(i interface{}) {
 */
 
 	client := pbClient.NewClientClient(connectionForClient[clientAddr[address]])
+
 	if client == nil {
 		log.Fatal("client conn err")
 	}
@@ -170,8 +177,26 @@ func _SendAgreementRequest(i interface{}) {
 
 	var signature *C.uchar// = (*C.uchar)(unsafe.Pointer(&uSignature[0]))
 
+
 //	fmt.Println("===== CREATE AG REQ MSG START IN ENCLAVE =====")
-	C.ecall_create_ag_req_msg_w(C.uint(pn), C.uint(len(channelSlice)), &channelSlice[0], &amountSlice[0], &originalMessage, &signature)
+//	rwMutex.Lock()
+
+//	var result
+	for ; ; {
+
+		result := C.ecall_create_ag_req_msg_w(C.uint(pn), C.uint(len(channelSlice)), &channelSlice[0], &amountSlice[0], &originalMessage, &signature) 
+		if result == 9999 {
+			break
+	//	originalMessageByte, _ := convertPointerToByte(originalMessage, signature)
+	//	fmt.Println(originalMessageByte)
+		}
+
+		C.free(unsafe.Pointer(originalMessage))
+		C.free(unsafe.Pointer(signature))
+		//fmt.Println("AG ############################ ")
+
+	}
+//	rwMutex.Unlock()
 
 //	fmt.Println("===== CREATE AG REQ MSG END IN ENCLAVE =====")
 /*
@@ -179,18 +204,31 @@ func _SendAgreementRequest(i interface{}) {
 	return
 */
 	originalMessageByte, signatureByte := convertPointerToByte(originalMessage, signature)
-	//fmt.Println(originalMessageByte, signatureByte)
 
+//	return
+//	fmt.Println(originalMessageByte)
+/*	if originalMessageByte[0] == 0 {
+		fmt.Println("failure...", pn)
+		fmt.Println("result : ", result)
+		fmt.Println(originalMessageByte)
+
+		return
+	}
+*/
 	r, err := client.AgreementRequest(context.Background(), &pbClient.AgreeRequestsMessage{PaymentNumber: int64(pn), OriginalMessage: originalMessageByte, Signature: signatureByte})
 	if err != nil {
 		log.Println("client AgreementRequest err : ", err)
+	}
+
+	if r.Result == false {
+		fmt.Println("AG false")
+		return
 	}
 
 	//log.Println("r.Result : ", r.Result)
 	if r.Result {
 
 		agreementOriginalMessage, agreementSignature := convertByteToPointer(r.OriginalMessage, r.Signature)
-		//fmt.Println(agreementOriginalMessage, agreementSignature)
 		C.ecall_verify_ag_res_msg_w(&([]C.uchar(address)[0]), agreementOriginalMessage, agreementSignature)
 
 	}
@@ -209,6 +247,7 @@ func _SendAgreementRequest(i interface{}) {
 func _SendUpdateRequest(i interface{}) {
 
 	pn := i.(AG).pn
+
 	address := i.(AG).address
 	rwMutex.Lock()
 	paymentInformation := i.(AG).paymentInformation[address]
@@ -241,7 +280,24 @@ func _SendUpdateRequest(i interface{}) {
 	var originalMessage *C.uchar
 	var signature *C.uchar
 
-	C.ecall_create_ud_req_msg_w(C.uint(pn), C.uint(len(channelSlice)), &channelSlice[0], &amountSlice[0], &originalMessage, &signature)
+	//rwMutex.Lock()
+
+	for ; ; {
+
+		result := C.ecall_create_ud_req_msg_w(C.uint(pn), C.uint(len(channelSlice)), &channelSlice[0], &amountSlice[0], &originalMessage, &signature)
+		if result == 9999 {
+			break
+	//	originalMessageByte, _ := convertPointerToByte(originalMessage, signature)
+	//	fmt.Println(originalMessageByte)
+		}
+
+		C.free(unsafe.Pointer(originalMessage))
+		C.free(unsafe.Pointer(signature))
+		//fmt.Println(" UD ############################### ")
+
+	}
+
+	//rwMutex.Unlock()
 
 	originalMessageByte, signatureByte := convertPointerToByte(originalMessage, signature)
 
@@ -254,6 +310,11 @@ func _SendUpdateRequest(i interface{}) {
 	r, err := client.UpdateRequest(context.Background(), &rqm)
 	if err != nil {
 		log.Fatal(err)
+	}
+
+	if r.Result == false {
+		fmt.Println("AG false")
+		return
 	}
 
 	if r.Result {
@@ -302,7 +363,20 @@ func _SendConfirmPayment(i interface{}) {
 
 	var originalMessage *C.uchar
 	var signature *C.uchar
-	C.ecall_create_confirm_msg_w(C.uint(int32(pn)), &originalMessage, &signature)
+
+	for ; ; {
+		result := C.ecall_create_confirm_msg_w(C.uint(int32(pn)), &originalMessage, &signature)
+		if result == 9999 {
+			break
+	//	originalMessageByte, _ := convertPointerToByte(originalMessage, signature)
+	//	fmt.Println(originalMessageByte)
+		}
+
+		C.free(unsafe.Pointer(originalMessage))
+		C.free(unsafe.Pointer(signature))
+		//fmt.Println("CF #################################### ")
+
+	}
 
 	originalMessageByte, signatureByte := convertPointerToByte(originalMessage, signature)
 
@@ -493,10 +567,11 @@ func WrapperAgreementRequest(pn int64, p []string, paymentInformation map[string
 
 	//ChComplete[pn-1] <- true
 
+	//return true
 
 	var AG = AG{}
 	AG.paymentInformation = make(map[string]PaymentInformation)
-	for _, address := range p {
+	for _, address := range p[0:2] {
 		AG.pn = pn
 		AG.address = address
 //		fmt.Println(address)
@@ -522,24 +597,24 @@ func WrapperAgreementRequest(pn int64, p []string, paymentInformation map[string
 	}
 */
 
-	for i:= 1; i<=3; i++ {
+	for i:= 1; i<=2; i++ {
 		var data = <- ch[pn]
-
+		//fmt.Printf("%d AG response %d \n", pn, i)
 		if data == true {
 			chprepared[pn]++
 		}
 
-		if chprepared[pn] == 3 {
+		if chprepared[pn] == 2 {
 			break
 		}
 	}
 
+	//fmt.Println("ALL AG")
+	//return true
 /*	elapsedTime := time.Since(StartTime)
 	fmt.Println("execution time : ", elapsedTime.Seconds())
 	fmt.Printf("execution time : %s", elapsedTime)
-*/
-	//return true
-/*
+
 	elapsedTime := time.Since(StartTime)
 	fmt.Println("****************************************************************")
 	fmt.Println("execution time : ", elapsedTime.Seconds())
@@ -556,7 +631,6 @@ func WrapperAgreementRequest(pn int64, p []string, paymentInformation map[string
 }
 
 func WrapperUpdateRequest(pn int64, p []string, paymentInformation map[string]PaymentInformation) bool {
-
 
 	var AG = AG{}
 	AG.paymentInformation = make(map[string]PaymentInformation)
@@ -585,17 +659,20 @@ func WrapperUpdateRequest(pn int64, p []string, paymentInformation map[string]Pa
 	for C.ecall_check_unanimity_w(C.uint(pn), C.int(1)) != 1 {
 	}
 */
-	for i:= 1; i<=3; i++ {
+	for i:= 1; i<=2; i++ {
 		var data = <- ch[pn]
+		//fmt.Printf("%d UD response %d \n", pn, i)
 
 		if data == true {
 			chprepared[pn]++
 		}
 
-		if chprepared[pn] == 6 {
+		if chprepared[pn] == 4 {
 			break
 		}
 	}
+
+	//fmt.Println("ALL UD")
 
 	//fmt.Println("[ALARM] ALL USERS UPDATED")
 
@@ -731,20 +808,27 @@ func (s *ServerGrpc) PaymentRequest(ctx context.Context, rq *pbServer.PaymentReq
 	receiver := []C.uchar(to)
 
 	rwMutex.Lock()
-	/*PaymentNum :=*/ C.ecall_accept_request_w(&sender[0], &receiver[0], C.uint(amount), C.uint(PaymentNum))
+	result := C.ecall_accept_request_w(&sender[0], &receiver[0], C.uint(amount), C.uint(PaymentNum))
 	tempPn := PaymentNum
 	pnToChannelId[int64(tempPn)] = channelId
-	//fmt.Printf("pn %d is executed in %d channelId \n", tempPn, channelId)
+//	fmt.Printf("pn %d is executed in %d channelId \n", tempPn, channelId)
 	PaymentNum++
 	firstTempChId := channelId
 	secondTempChId := channelId+1
+
 	channelId+=2
 
-	if channelId >= 9001 {
+	if channelId >= 512 {
 		channelId = 1
 	}
 
 	rwMutex.Unlock()
+
+	if result == 9999 {
+		//return &pbServer.Result{Result: true}, nil
+	} else if result != 9999 {
+		return &pbServer.Result{Result: false}, nil
+	}
 
 	p, paymentInformation := SearchPath(int64(tempPn), amount, firstTempChId, secondTempChId)
 
@@ -810,7 +894,7 @@ func StartGrpcServer() {
 
 func convertByteToPointer(originalMsg []byte, signature []byte) (*C.uchar, *C.uchar) {
 
-//	log.Println("----- convertByteToPointer Server Start -----")
+	//log.Println("----- convertByteToPointer Server Start -----")
 	var uOriginal [44]C.uchar
 	var uSignature [65]C.uchar
 
@@ -836,12 +920,14 @@ func convertPointerToByte(originalMsg *C.uchar, signature *C.uchar) ([]byte, []b
 
 //	log.Println("----- convertPointerToByte Server Start -----")
 
+	//fmt.Println(originalMsg)
 	replyMsgHdr := reflect.SliceHeader{
 		Data: uintptr(unsafe.Pointer(originalMsg)),
 		Len:  int(44),
 		Cap:  int(44),
 	}
 	replyMsgS := *(*[]C.uchar)(unsafe.Pointer(&replyMsgHdr))
+	//fmt.Println(replyMsgS)
 
 	replySigHdr := reflect.SliceHeader{
 		Data: uintptr(unsafe.Pointer(signature)),
@@ -1580,13 +1666,13 @@ func GrpcConnection() {
 		return
 	}
 
-	tempConn["141.223.121.167:50002"], err = grpc.Dial("141.223.121.167:50002", grpc.WithInsecure())
+	tempConn["141.223.121.168:50002"], err = grpc.Dial("141.223.121.168:50002", grpc.WithInsecure())
 	if err != nil {
                 log.Fatal("conn err : ", err)
 		return
 	}
 
-	tempConn["141.223.121.167:50003"], err = grpc.Dial("141.223.121.167:50003", grpc.WithInsecure())
+	tempConn["141.223.121.169:50002"], err = grpc.Dial("141.223.121.169:50002", grpc.WithInsecure())
 	if err != nil {
                 log.Fatal("conn err : ", err)
 		return
@@ -1623,16 +1709,19 @@ func GetClientInfo() {
 
 	info, _ := repository.GetClientInfo("f55ba9376db959fab2af86d565325829b08ea3c4")
 	Addr := (*info).IP + ":" + strconv.Itoa((*info).Port)
+	fmt.Println("Addr >>", Addr)
 
 	clientAddr["f55ba9376db959fab2af86d565325829b08ea3c4"] = Addr
 
 	info, err = repository.GetClientInfo("c60f640c4505d15b972e6fc2a2a7cba09d05d9f7")
 	Addr = (*info).IP + ":" + strconv.Itoa((*info).Port)
+	Addr = "141.223.121.169:50002"
 
 	clientAddr["c60f640c4505d15b972e6fc2a2a7cba09d05d9f7"] = Addr
 
 	info, err = repository.GetClientInfo("70603f1189790fcd0fd753a7fef464bdc2c2ad36")
 	Addr = (*info).IP + ":" + strconv.Itoa((*info).Port)
+	Addr = "141.223.121.169:50002"
 
 	clientAddr["70603f1189790fcd0fd753a7fef464bdc2c2ad36"] = Addr
 /*
@@ -1656,7 +1745,7 @@ func checkChannelIds(pn int64) {
 
 //	fmt.Println("waiting start...", pnToChannelId[pn])
 	<-usingChannelIds[pnToChannelId[pn]]
-	fmt.Printf("%d waiting end for %d... \n", pnToChannelId[pn], pn)
+//	fmt.Printf("channelId %d waiting end for %d... \n", pnToChannelId[pn], pn)
 }
 
 func inputChannelIds(pn int64) {//, paymentInfo PaymentInformation) {
@@ -1664,7 +1753,7 @@ func inputChannelIds(pn int64) {//, paymentInfo PaymentInformation) {
 //	fmt.Println("inputing start...", pnToChannelId[pn])
 	//paymentInfo := paymentInformation["f55ba9376db959fab2af86d565325829b08ea3c4"]
 	usingChannelIds[pnToChannelId[pn]/*paymentInfo.ChannelInform[0]*/] <- true
-	fmt.Printf("%d inputing end for %d... \n", pnToChannelId[pn], pn)
+//	fmt.Printf("channelId %d inputing end for %d... \n", pnToChannelId[pn], pn)
 }
 
 /*

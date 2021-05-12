@@ -44,8 +44,9 @@ typedef struct _message {
 } message;
 
 int initialize_enclave(void);
+void print_error_message(sgx_status_t ret);
 
-unsigned int ecall_accept_request_w(unsigned char *sender, unsigned char *receiver, unsigned int amount);
+unsigned int ecall_accept_request_w(unsigned char *sender, unsigned char *receiver, unsigned int amount, unsigned int payment_num);
 void ecall_add_participant_w(unsigned int payment_num, unsigned char *addr);
 void ecall_update_sentagr_list_w(unsigned int payment_num, unsigned char *addr);
 void ecall_update_sentupt_list_w(unsigned int payment_num, unsigned char *addr);
@@ -63,7 +64,7 @@ void ecall_update_payment_status_to_success_w(unsigned int payment_num);
  *          amount:         channel_ids에 포함된 id들과 매칭되는 각 payment amount
  *                          만약, 채널 A에 3을 지불해야 하면 -3이 되며, 지불받으면 +3이 됨
  */
-void ecall_create_ag_req_msg_w(unsigned int payment_num, unsigned int payment_size, unsigned int *channel_ids, int *amount, unsigned char **original_msg, unsigned char **output);
+unsigned int ecall_create_ag_req_msg_w(unsigned int payment_num, unsigned int payment_size, unsigned int *channel_ids, int *amount, unsigned char **original_msg, unsigned char **output);
 
 /** 서버의 update request 메시지와 서명을 생성
  *
@@ -76,7 +77,7 @@ void ecall_create_ag_req_msg_w(unsigned int payment_num, unsigned int payment_si
  *          amount:         channel_ids에 포함된 id들과 매칭되는 각 payment amount
  *                          만약, 채널 A에 3을 지불해야 하면 -3이 되며, 지불받으면 +3이 됨
  */
-void ecall_create_ud_req_msg_w(unsigned int payment_num, unsigned int payment_size, unsigned int *channel_ids, int *amount, unsigned char **original_msg, unsigned char **output);
+unsigned int ecall_create_ud_req_msg_w(unsigned int payment_num, unsigned int payment_size, unsigned int *channel_ids, int *amount, unsigned char **original_msg, unsigned char **output);
 
 /** 서버의 payment confirm 메시지와 서명을 생성
  *
@@ -84,7 +85,7 @@ void ecall_create_ud_req_msg_w(unsigned int payment_num, unsigned int payment_si
  *          output:         생성된 메시지의 signature 주소
  * In:      payment_num:    서버가 생성한 payment instance 번호
  */
-void ecall_create_confirm_msg_w(unsigned int payment_num, unsigned char **original_msg, unsigned char **output);
+unsigned int ecall_create_confirm_msg_w(unsigned int payment_num, unsigned char **original_msg, unsigned char **output);
 
 /** 클라이언트가 보낸 agreement response의 메시지 서명을 검증
  *
@@ -106,6 +107,31 @@ unsigned int ecall_verify_ud_res_msg_w(unsigned char *pubaddr, unsigned char *re
 
 
 /* instapay 3.0 */
+
+typedef struct cross_message {
+	/********* common *********/
+	unsigned int type;
+
+	/*** cross-payment ***/
+	unsigned int server;
+
+	/***** direct payment *****/
+	unsigned int channel_id;
+	int amount;
+	unsigned int counter;
+
+	/*** multi-hop payment ****/
+	unsigned int payment_num;
+	unsigned int payment_size;
+	unsigned int channel_ids[2];
+	int payment_amount[2];
+	unsigned int e;
+
+	/*** cross-payment ***/
+	//cross_payment_server server;
+	
+} cross_message;
+
 void ecall_cross_accept_request_w(unsigned char *sender, unsigned char *receiver, unsigned int amount, unsigned int payment_num);
 void ecall_cross_add_participant_w(unsigned int payment_num, unsigned char *addr);
 void ecall_cross_update_sentagr_list_w(unsigned int payment_num, unsigned char *addr);

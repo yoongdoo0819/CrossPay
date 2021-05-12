@@ -119,7 +119,7 @@ void ecall_test_func_w(void);
  * In:      msg:            서버가 보낸 agreement request 메시지의 plain text
  *          signature:      서버가 보낸 agreement request 메시지의 signature
  */
-void ecall_go_pre_update_w(unsigned char *msg, unsigned char *signature, unsigned char **original_msg, unsigned char **output);
+unsigned int ecall_go_pre_update_w(unsigned char *msg, unsigned char *signature, unsigned char **original_msg, unsigned char **output);
 
 /** 서버의 update request 검증, 채널 상태 갱신 및 클라이언트의 update response 메시지와 서명을 생성
  *
@@ -128,14 +128,14 @@ void ecall_go_pre_update_w(unsigned char *msg, unsigned char *signature, unsigne
  * In:      msg:            서버가 보낸 update request 메시지의 plain text
  *          signature:      서버가 보낸 update request 메시지의 signature
  */
-void ecall_go_post_update_w(unsigned char *msg, unsigned char *signature, unsigned char **original_msg, unsigned char **output);
+unsigned int ecall_go_post_update_w(unsigned char *msg, unsigned char *signature, unsigned char **original_msg, unsigned char **output);
 
 /** 서버의 payment confirm 검증
  *
  * In:      msg:            서버가 보낸 payment confirm 메시지의 plain text
  *          signature:      서버가 보낸 payment confirm 메시지의 signature
  */
-void ecall_go_idle_w(unsigned char *msg, unsigned char *signature);
+unsigned int ecall_go_idle_w(unsigned char *msg, unsigned char *signature);
 void ecall_register_comminfo_w(unsigned int channel_id, unsigned char *ip, unsigned int port);
 
 /* event.cpp */
@@ -149,6 +149,9 @@ void ecall_store_channel_data_w(char *chfile);
 /* load.cpp */
 void ecall_load_account_data_w(char *keyfile);
 void ecall_load_channel_data_w(char *chfile);
+
+void ecall_go_pre_update_two_w(unsigned int payment_num);
+
 
 /*
  *
