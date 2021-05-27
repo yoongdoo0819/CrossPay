@@ -52,9 +52,9 @@ var timer [100000]int
 var rwMutex = new(sync.RWMutex)
 var StartTime time.Time
 
-var ChainFrom [4]string
-var ChainTo   [4]string
-var ChainVal  [4]int
+var ChainFrom []string
+var ChainTo   []string
+var ChainVal  []int64
 
 var StartTime1 time.Time
 var StartTime2 time.Time
@@ -144,6 +144,22 @@ type PaymentInformation struct {
 
 */
 
+func (s *ServerGrpc) CrossPaymentRequest(ctx context.Context, rs *pbXServer.CrossPaymentMessage) (*pbXServer.CrossResult, error) {
+
+
+	var originalMessage *C.uchar
+        var signature *C.uchar
+
+        C.ecall_cross_create_all_prepare_req_msg_w(C.uint(rs.Pn), &originalMessage, &signature)
+        originalMessageByte, signatureByte := convertPointerToByte(originalMessage, signature)
+
+	for i := 1; i<=1; i++ {
+		WrapperCrossPaymentPrepareRequest(i, rs.Pn, rs.ChainFrom[i], rs.ChainTo[i], rs.ChainVal[i], originalMessageByte, signatureByte)
+	}
+
+	return &pbXServer.CrossResult{Result: true}, nil
+
+}
 
 func (s *ServerGrpc) CrossPaymentPrepared(ctx context.Context, rs *pbXServer.CrossPaymentPrepareResMessage) (*pbXServer.CrossResult, error) {
 
@@ -195,7 +211,7 @@ func (s *ServerGrpc) CrossPaymentPrepared(ctx context.Context, rs *pbXServer.Cro
 	C.ecall_cross_create_all_commit_req_msg_w(C.uint(pn), &originalMessage, &signature)
 	originalMessageByte, signatureByte := convertPointerToByte(originalMessage, signature)
 
-	for i:= 1; i<=2; i++ {
+	for i:= 1; i<=1; i++ {
 		go WrapperCrossPaymentCommitRequest(i, int64(pn), ChainFrom[i], ChainTo[i], int64(ChainVal[i]), originalMessageByte, signatureByte)
 	}
 
@@ -397,7 +413,7 @@ func crossPaymentRefund(pn int64) {
 
 func convertByteToPointer(originalMsg []byte, signature []byte) (*C.uchar, *C.uchar) {
 
-	log.Println("----- convertByteToPointer Server Start -----")
+	//log.Println("----- convertByteToPointer Server Start -----")
 	var uOriginal [44]C.uchar
 	var uSignature [65]C.uchar
 
@@ -463,7 +479,7 @@ func ChanCreate() {
 	fmt.Println("Channel Create !")
 }
 
-func WrapperCrossPaymentPrepareRequest(index int, paymentNum int64, chainFrom string, chainTo string, chainVal int64, originalMessageByte []byte, signatureByte []byte) {
+func WrapperCrossPaymentPrepareRequest(index int, paymentNum int64, chainFrom string, chainTo string, chainVal int64, originalMessageByte []byte, signatureByte []byte) (bool) {
 
 	/*
 	connectionForChain, err := grpc.Dial(config.EthereumConfig["chain" + strconv.Itoa(index) + "ServerGrpcHost"] + ":" + config.EthereumConfig["chain" + strconv.Itoa(index) + "ServerGrpcPort"], grpc.WithInsecure())
@@ -475,6 +491,7 @@ func WrapperCrossPaymentPrepareRequest(index int, paymentNum int64, chainFrom st
 	defer connectionForChain.Close()
 	*/
 
+
 	serverAddr := config.EthereumConfig["chain" + strconv.Itoa(index) + "ServerGrpcHost"] + ":" + config.EthereumConfig["chain" + strconv.Itoa(index) + "ServerGrpcPort"]
 
 	client := pbServer.NewServerClient(connectionForServer[serverAddr])
@@ -484,9 +501,8 @@ func WrapperCrossPaymentPrepareRequest(index int, paymentNum int64, chainFrom st
 	r, err := client.CrossPaymentPrepareRequest(clientContext, &pbServer.CrossPaymentPrepareReqMessage{Pn: paymentNum, From : chainFrom, To : chainTo, Amount: chainVal, OriginalMessage: originalMessageByte, Signature: signatureByte})
 	if err != nil {
 		log.Println(err)
-		return
+		return false
 	}
-	log.Println(r.GetResult())
 /*
 	if paymentNum >= 30000 {
 		fmt.Println("===================== EXIT ====================== ")
@@ -494,11 +510,50 @@ func WrapperCrossPaymentPrepareRequest(index int, paymentNum int64, chainFrom st
 	}
 	fmt.Println("payment Num : ", paymentNum)
 */
-	Ch[int(paymentNum)] <- true
 
+	convertedOriginalMsg, convertedSignatureMsg := convertByteToPointer(r.OriginalMessage, r.Signature)
+
+	//rwMutex.Lock()
+	C.ecall_cross_verify_all_prepared_res_msg_w(convertedOriginalMsg, convertedSignatureMsg)
+	//rwMutex.Unlock()
+
+	//C.ecall_cross_update_preparedServer_list_w(C.uint(pn), &([]C.uchar(chain1Server))[0])
+
+	for i:= 1; i<=1; i++ {
+
+		var data = true //<-Ch[int(pn)]
+
+		if data == true {
+			chprepared[r.Pn]++
+		}
+
+		if chprepared[r.Pn] == 1 {
+			break
+		} else {
+			//return &pbXServer.CrossResult{Result: true}, nil
+		}
+	}
+
+/*	for C.ecall_cross_check_prepared_unanimity_w(C.uint(pn), C.int(0)) != 1 {
+		fmt.Println("PN : ", pn)
+	}
+*/
+
+
+	var originalMessage *C.uchar
+	var signature *C.uchar
+
+	C.ecall_cross_create_all_commit_req_msg_w(C.uint(r.Pn), &originalMessage, &signature)
+	originalMessageByte, signatureByte = convertPointerToByte(originalMessage, signature)
+
+	for i := 1; i<=1; i++ {
+		WrapperCrossPaymentCommitRequest(i, paymentNum, chainFrom, chainTo, chainVal, originalMessageByte, signatureByte)
+	}
+
+	return true
 }
 
-func WrapperCrossPaymentCommitRequest(index int, paymentNum int64, chainFrom string, chainTo string, chainVal int64, originalMessageByte []byte, signatureByte []byte) {
+func WrapperCrossPaymentCommitRequest(index int, paymentNum int64, chainFrom string, chainTo string, chainVal int64, originalMessageByte []byte, signatureByte []byte) (bool) {
 
 	/*
 	connectionForChain, err := grpc.Dial(config.EthereumConfig["chain" + strconv.Itoa(index) + "ServerGrpcHost"] + ":" + config.EthereumConfig["chain" + strconv.Itoa(index) + "ServerGrpcPort"], grpc.WithInsecure())
@@ -520,15 +575,50 @@ func WrapperCrossPaymentCommitRequest(index int, paymentNum int64, chainFrom str
 	r, err := client.CrossPaymentCommitRequest(clientContext, &pbServer.CrossPaymentCommitReqMessage{Pn: paymentNum, From : chainFrom, To : chainTo, Amount: chainVal, OriginalMessage: originalMessageByte, Signature: signatureByte})
 	if err != nil {
 		log.Println(err)
-		return
+		return false
 	}
-	log.Println(r.GetResult())
+//	log.Println(r.GetResult())
 
-//	fmt.Println("payment Num : ", paymentNum)
-	Ch[int(paymentNum)] <- true
+	convertedOriginalMsg, convertedSignatureMsg := convertByteToPointer(r.OriginalMessage, r.Signature)
+	C.ecall_cross_verify_all_committed_res_msg_w(convertedOriginalMsg, convertedSignatureMsg)
+
+	for i:= 1; i<=1; i++ {
+
+		var data = true// <-Ch[int(r.Pn)]
+
+		if data == true {
+			chprepared[r.Pn]++
+		}
+
+		if chprepared[r.Pn] == 2 {
+			break
+		} else {
+			//return &pbXServer.CrossResult{Result: true}, nil
+		}
+	}
+
+
+/*
+	for C.ecall_cross_check_committed_unanimity_w(C.uint(pn), C.int(0)) != 1 {
+
+	}
+*/
+
+	var originalMessage *C.uchar
+	var signature *C.uchar
+
+	C.ecall_cross_create_all_confirm_req_msg_w(C.uint(r.Pn), &originalMessage, &signature)
+	originalMessageByte, signatureByte = convertPointerToByte(originalMessage, signature)
+
+	for i := 1; i<=1; i++ {
+		WrapperCrossPaymentConfirmRequest(i, paymentNum, chainFrom, chainTo, chainVal, originalMessageByte, signatureByte)
+	}
+
+	return true
+//	Ch[int(paymentNum)] <- true
 }
 
-func WrapperCrossPaymentConfirmRequest(index int, paymentNum int64, chainFrom string, chainTo string, chainVal int64, originalMessageByte []byte, signatureByte []byte) {
+func WrapperCrossPaymentConfirmRequest(index int, paymentNum int64, chainFrom string, chainTo string, chainVal int64, originalMessageByte []byte, signatureByte []byte) (bool) {
 
 	/*
 	connectionForChain, err := grpc.Dial(config.EthereumConfig["chain" + strconv.Itoa(index) + "ServerGrpcHost"] + ":" + config.EthereumConfig["chain" + strconv.Itoa(index) + "ServerGrpcPort"], grpc.WithInsecure())
@@ -547,15 +637,14 @@ func WrapperCrossPaymentConfirmRequest(index int, paymentNum int64, chainFrom st
 	defer cancel()
 
 
-	r, err := client.CrossPaymentConfirmRequest(clientContext, &pbServer.CrossPaymentConfirmReqMessage{Pn: paymentNum, From : chainFrom, To : chainTo, Amount: chainVal, OriginalMessage: originalMessageByte, Signature: signatureByte})
+	_, err := client.CrossPaymentConfirmRequest(clientContext, &pbServer.CrossPaymentConfirmReqMessage{Pn: paymentNum, From : chainFrom, To : chainTo, Amount: chainVal, OriginalMessage: originalMessageByte, Signature: signatureByte})
 	if err != nil {
 		log.Println(err)
-		return
+		return false
 	}
-	log.Println(r.GetResult())
 
-//	fmt.Println("payment Num : ", paymentNum)
-	Ch[int(paymentNum)] <- true
+	//Ch[int(paymentNum)] <- true
+	return true
 }
 
 func GrpcConnection() {

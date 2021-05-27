@@ -74,12 +74,14 @@ int verify_message(unsigned int from, unsigned char *signature, unsigned char *o
     unsigned char sender[20];
     
     memcpy(sender, msg32 + 12, 20);
-
+/*
     printf("IN verify_message (sender): ");
     for(int i = 0; i < 20; i++)
         printf("%02x", sender[i]);
     printf("\n");
-    
+*/    
+    secp256k1_context_destroy(secp256k1_ctx);
+
     if(from == 0) {
         pubaddr = ::arr_to_bytes(pubaddr, 40);
         if(memcmp(sender, pubaddr, 20) == 0)
@@ -88,10 +90,11 @@ int verify_message(unsigned int from, unsigned char *signature, unsigned char *o
     }
     else if(from == 1) {
         unsigned char *server_pubaddr = ::arr_to_bytes(SERVER_PUBADDR, 40);
-	printf("server_pubaddr :");
+/*	printf("server_pubaddr :");
 	for(int i=0; i<20; i++)
 		printf("%02x", server_pubaddr[i]);
 	printf("\n");
+*/
         if(memcmp(sender, server_pubaddr, 20) == 0)
             return 0;
         return 1;

@@ -20,9 +20,9 @@ const _ = grpc.SupportPackageIsVersion7
 type ServerClient interface {
 	PaymentRequest(ctx context.Context, in *PaymentRequestMessage, opts ...grpc.CallOption) (*Result, error)
 	CommunicationInfoRequest(ctx context.Context, in *Address, opts ...grpc.CallOption) (*CommunicationInfo, error)
-	CrossPaymentPrepareRequest(ctx context.Context, in *CrossPaymentPrepareReqMessage, opts ...grpc.CallOption) (*Result, error)
-	CrossPaymentCommitRequest(ctx context.Context, in *CrossPaymentCommitReqMessage, opts ...grpc.CallOption) (*Result, error)
-	CrossPaymentConfirmRequest(ctx context.Context, in *CrossPaymentConfirmReqMessage, opts ...grpc.CallOption) (*Result, error)
+	CrossPaymentPrepareRequest(ctx context.Context, in *CrossPaymentPrepareReqMessage, opts ...grpc.CallOption) (*CrossPaymentPrepareResult, error)
+	CrossPaymentCommitRequest(ctx context.Context, in *CrossPaymentCommitReqMessage, opts ...grpc.CallOption) (*CrossPaymentCommitResult, error)
+	CrossPaymentConfirmRequest(ctx context.Context, in *CrossPaymentConfirmReqMessage, opts ...grpc.CallOption) (*CrossPaymentConfirmResult, error)
 	CrossPaymentRefundRequest(ctx context.Context, in *CrossPaymentRefundReqMessage, opts ...grpc.CallOption) (*Result, error)
 }
 
@@ -52,8 +52,8 @@ func (c *serverClient) CommunicationInfoRequest(ctx context.Context, in *Address
 	return out, nil
 }
 
-func (c *serverClient) CrossPaymentPrepareRequest(ctx context.Context, in *CrossPaymentPrepareReqMessage, opts ...grpc.CallOption) (*Result, error) {
-	out := new(Result)
+func (c *serverClient) CrossPaymentPrepareRequest(ctx context.Context, in *CrossPaymentPrepareReqMessage, opts ...grpc.CallOption) (*CrossPaymentPrepareResult, error) {
+	out := new(CrossPaymentPrepareResult)
 	err := c.cc.Invoke(ctx, "/Server/crossPaymentPrepareRequest", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -61,8 +61,8 @@ func (c *serverClient) CrossPaymentPrepareRequest(ctx context.Context, in *Cross
 	return out, nil
 }
 
-func (c *serverClient) CrossPaymentCommitRequest(ctx context.Context, in *CrossPaymentCommitReqMessage, opts ...grpc.CallOption) (*Result, error) {
-	out := new(Result)
+func (c *serverClient) CrossPaymentCommitRequest(ctx context.Context, in *CrossPaymentCommitReqMessage, opts ...grpc.CallOption) (*CrossPaymentCommitResult, error) {
+	out := new(CrossPaymentCommitResult)
 	err := c.cc.Invoke(ctx, "/Server/crossPaymentCommitRequest", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -70,8 +70,8 @@ func (c *serverClient) CrossPaymentCommitRequest(ctx context.Context, in *CrossP
 	return out, nil
 }
 
-func (c *serverClient) CrossPaymentConfirmRequest(ctx context.Context, in *CrossPaymentConfirmReqMessage, opts ...grpc.CallOption) (*Result, error) {
-	out := new(Result)
+func (c *serverClient) CrossPaymentConfirmRequest(ctx context.Context, in *CrossPaymentConfirmReqMessage, opts ...grpc.CallOption) (*CrossPaymentConfirmResult, error) {
+	out := new(CrossPaymentConfirmResult)
 	err := c.cc.Invoke(ctx, "/Server/crossPaymentConfirmRequest", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -94,9 +94,9 @@ func (c *serverClient) CrossPaymentRefundRequest(ctx context.Context, in *CrossP
 type ServerServer interface {
 	PaymentRequest(context.Context, *PaymentRequestMessage) (*Result, error)
 	CommunicationInfoRequest(context.Context, *Address) (*CommunicationInfo, error)
-	CrossPaymentPrepareRequest(context.Context, *CrossPaymentPrepareReqMessage) (*Result, error)
-	CrossPaymentCommitRequest(context.Context, *CrossPaymentCommitReqMessage) (*Result, error)
-	CrossPaymentConfirmRequest(context.Context, *CrossPaymentConfirmReqMessage) (*Result, error)
+	CrossPaymentPrepareRequest(context.Context, *CrossPaymentPrepareReqMessage) (*CrossPaymentPrepareResult, error)
+	CrossPaymentCommitRequest(context.Context, *CrossPaymentCommitReqMessage) (*CrossPaymentCommitResult, error)
+	CrossPaymentConfirmRequest(context.Context, *CrossPaymentConfirmReqMessage) (*CrossPaymentConfirmResult, error)
 	CrossPaymentRefundRequest(context.Context, *CrossPaymentRefundReqMessage) (*Result, error)
 	mustEmbedUnimplementedServerServer()
 }
@@ -111,13 +111,13 @@ func (UnimplementedServerServer) PaymentRequest(context.Context, *PaymentRequest
 func (UnimplementedServerServer) CommunicationInfoRequest(context.Context, *Address) (*CommunicationInfo, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CommunicationInfoRequest not implemented")
 }
-func (UnimplementedServerServer) CrossPaymentPrepareRequest(context.Context, *CrossPaymentPrepareReqMessage) (*Result, error) {
+func (UnimplementedServerServer) CrossPaymentPrepareRequest(context.Context, *CrossPaymentPrepareReqMessage) (*CrossPaymentPrepareResult, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CrossPaymentPrepareRequest not implemented")
 }
-func (UnimplementedServerServer) CrossPaymentCommitRequest(context.Context, *CrossPaymentCommitReqMessage) (*Result, error) {
+func (UnimplementedServerServer) CrossPaymentCommitRequest(context.Context, *CrossPaymentCommitReqMessage) (*CrossPaymentCommitResult, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CrossPaymentCommitRequest not implemented")
 }
-func (UnimplementedServerServer) CrossPaymentConfirmRequest(context.Context, *CrossPaymentConfirmReqMessage) (*Result, error) {
+func (UnimplementedServerServer) CrossPaymentConfirmRequest(context.Context, *CrossPaymentConfirmReqMessage) (*CrossPaymentConfirmResult, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CrossPaymentConfirmRequest not implemented")
 }
 func (UnimplementedServerServer) CrossPaymentRefundRequest(context.Context, *CrossPaymentRefundReqMessage) (*Result, error) {

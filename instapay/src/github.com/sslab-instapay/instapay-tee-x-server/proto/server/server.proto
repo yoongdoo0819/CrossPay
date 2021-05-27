@@ -4,9 +4,9 @@ service Server {
     rpc paymentRequest(paymentRequestMessage) returns (Result) {}
     rpc communicationInfoRequest(address) returns (CommunicationInfo) {}
     
-    rpc crossPaymentPrepareRequest(crossPaymentPrepareReqMessage) returns (Result) {}
-    rpc crossPaymentCommitRequest(crossPaymentCommitReqMessage) returns (Result) {}
-    rpc crossPaymentConfirmRequest(crossPaymentConfirmReqMessage) returns (Result) {}
+    rpc crossPaymentPrepareRequest(crossPaymentPrepareReqMessage) returns (crossPaymentPrepareResult) {}
+    rpc crossPaymentCommitRequest(crossPaymentCommitReqMessage) returns (crossPaymentCommitResult) {}
+    rpc crossPaymentConfirmRequest(crossPaymentConfirmReqMessage) returns (crossPaymentConfirmResult) {}
     rpc crossPaymentRefundRequest(crossPaymentRefundReqMessage) returns (Result) {}
 
 }
@@ -64,4 +64,25 @@ message crossPaymentRefundReqMessage {
     int64 amount = 4;
     bytes originalMessage = 5;
     bytes signature = 6;
+}
+
+message crossPaymentPrepareResult {
+    int64 pn = 1;
+    bool result = 2;
+    bytes originalMessage = 3;
+    bytes signature = 4;
+}
+
+message crossPaymentCommitResult {
+    int64 pn = 1;
+    bool result = 2;
+    bytes originalMessage = 3;
+    bytes signature = 4;
+}
+
+message crossPaymentConfirmResult {
+    int64 pn = 1;
+    bool result = 2;
+    bytes originalMessage = 3;
+    bytes signature = 4;
 }

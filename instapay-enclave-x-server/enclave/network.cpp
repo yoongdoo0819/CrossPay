@@ -7,7 +7,7 @@
 #include <cross_payment.h>
 #include <mutex>
 
-std::mutex rwMutex;
+//std::mutex rwMutex;
 
 
 unsigned int Payment::acc_payment_num = 1;
@@ -208,13 +208,13 @@ void ecall_cross_accept_request(
     Cross_Payment cross_payment = Cross_Payment(Cross_Payment::acc_cross_payment_num, chain1Server, chain1Sender, chain1Receiver, chain1Amount, chain2Server, chain2Sender, chain2Receiver, chain2Amount, chain3Server, chain3Sender, chain3Receiver, chain3Amount);
 
 
-    rwMutex.lock();
+    //rwMutex.lock();
     cross_payments.insert(map_cross_payment_value(Cross_Payment::acc_cross_payment_num, cross_payment));
     *payment_num = Cross_Payment::acc_cross_payment_num;
-    printf("[ENCLAVE] >>>>>>>>>>>>>>>>> PN :%d \n", *payment_num);
+//    printf("[ENCLAVE] >>>>>>>>>>>>>>>>> PN :%d \n", *payment_num);
 
     Cross_Payment::acc_cross_payment_num++;
-    rwMutex.unlock();
+    //rwMutex.unlock();
     
 }       
 
@@ -237,8 +237,8 @@ void ecall_cross_update_committedServer_list(unsigned int payment_num, unsigned 
 void ecall_cross_check_prepared_unanimity(unsigned int payment_num, int which_list, unsigned int *is_unanimous)
 {
 
-    if (cross_payments.find(payment_num)->second.m_chain1Server_prepared == 1
-	&& cross_payments.find(payment_num)->second.m_chain2Server_prepared == 1) {
+    if (cross_payments.find(payment_num)->second.m_chain1Server_prepared == 1) {
+//	&& cross_payments.find(payment_num)->second.m_chain2Server_prepared == 1) {
 //	&& cross_payments.find(payment_num)->second.m_chain3Server_prepared == 1) {
 
 	    cross_payments.find(payment_num)->second.m_cross_status = PREPARED;
@@ -255,8 +255,8 @@ void ecall_cross_check_prepared_unanimity(unsigned int payment_num, int which_li
 
 void ecall_cross_check_committed_unanimity(unsigned int payment_num, int which_list, unsigned int *is_unanimous)
 {
-    if (cross_payments.find(payment_num)->second.m_chain1Server_committed == 1
-	&& cross_payments.find(payment_num)->second.m_chain2Server_committed == 1) {
+    if (cross_payments.find(payment_num)->second.m_chain1Server_committed == 1) {
+//	&& cross_payments.find(payment_num)->second.m_chain2Server_committed == 1) {
 //	&& cross_payments.find(payment_num)->second.m_chain3Server_committed == 1) {
 
 	    cross_payments.find(payment_num)->second.m_cross_status = COMMITTED;
@@ -303,7 +303,7 @@ void ecall_cross_create_all_prepare_req_msg(unsigned int payment_num, unsigned c
 void ecall_cross_verify_all_prepared_res_msg(unsigned char *res_msg, unsigned char *res_sig, unsigned int *is_verified)
 {
     Cross_Message *res = (Cross_Message*)res_msg;
-    ocall_print_string((const char*)"verification of all prepared msg");
+//    ocall_print_string((const char*)"verification of all prepared msg");
 
     /* step 1. verify signature */
 /*
@@ -313,6 +313,8 @@ void ecall_cross_verify_all_prepared_res_msg(unsigned char *res_msg, unsigned ch
         return;
     }
 */
+    verify_message(1, res_sig, res_msg, sizeof(Cross_Message), NULL);
+
     /* step 2. check that message type is 'AG_RES' */
 
     if(res->type != CROSS_ALL_PREPARED) {// || res->e != 1) {
@@ -320,13 +322,13 @@ void ecall_cross_verify_all_prepared_res_msg(unsigned char *res_msg, unsigned ch
 	printf("prepared msg type failure");
         return;
     }
-
+/*
     printf("payment num : %d \n", res->payment_num);
     printf("server : %d \n", res->server);
     printf("type : %d \n", res->type);
-
+*/
     if(res->server == CHAIN1_SERVER) {
-	    printf("prepared server chain1 : %d \n", res->server);
+	    //printf("prepared server chain1 : %d \n", res->server);
 	    cross_payments.find(res->payment_num)->second.m_chain1Server_prepared = 1;
     }
     else if(res->server == CHAIN2_SERVER) {	    
@@ -382,13 +384,16 @@ void ecall_cross_verify_all_committed_res_msg(unsigned char *res_msg, unsigned c
     Cross_Message *res = (Cross_Message*)res_msg;
 
     /* step 1. verify signature */
-/*
-    if(verify_message(1, res_sig, res_msg, sizeof(Message), NULL)) {
+
+    /*
+    if(verify_message(1, res_sig, res_msg, sizeof(Cross_Message), NULL)) {
         *is_verified = 0;
 	ocall_print_string("verify failure");
         return;
     }
-*/
+    */
+    verify_message(1, res_sig, res_msg, sizeof(Cross_Message), NULL);
+
     /* step 2. check that message type is 'AG_RES' */
 
     if(res->type != CROSS_ALL_COMMITTED) {// || res->e != 1) {

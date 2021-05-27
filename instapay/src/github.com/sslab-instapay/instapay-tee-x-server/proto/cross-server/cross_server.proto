@@ -3,12 +3,46 @@ syntax = "proto3";
 //option go_package = "github.com/sslab-instapay/instapay-tee-x-server/proto/cross-server";
 
 service Cross_Server {
+    rpc crossPaymentRequest(crossPaymentMessage) returns (crossResult) {}
     rpc crossPaymentPrepared(crossPaymentPrepareResMessage) returns (crossResult) {}
     rpc crossPaymentCommitted(crossPaymentCommitResMessage) returns (crossResult) {}
 //    rpc crossCommunicationInfoRequest(address) returns (CommunicationInfo) {}
 }
-
-
+/*
+message crossPaymentPrepareReqMessage {
+     int64 pn = 1;
+     string from = 2;
+     string to = 3;
+     int64 amount = 4;
+     bytes originalMessage = 5;
+     bytes signature = 6;
+}
+ 
+message crossPaymentCommitReqMessage {
+     int64 pn = 1;
+     string from = 2;
+     string to = 3;
+     int64 amount = 4;
+     bytes originalMessage = 5;
+     bytes signature = 6;
+ }
+ 
+ message crossPaymentConfirmReqMessage {
+     int64 pn = 1;
+     string from = 2;
+     string to = 3;
+     int64 amount = 4;
+     bytes originalMessage = 5;
+     bytes signature = 6;
+}
+*/
+message crossPaymentMessage {
+    int64 pn = 1;
+    repeated string chainTo = 2;
+    repeated string chainFrom = 3;
+    repeated int64 chainVal = 4;
+    bool result = 5;
+}
 
 message crossPaymentPrepareResMessage {
     int64 pn = 1;

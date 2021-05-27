@@ -128,14 +128,16 @@ unsigned int ecall_go_pre_update_w(unsigned char *msg, unsigned char *signature,
  * In:      msg:            서버가 보낸 update request 메시지의 plain text
  *          signature:      서버가 보낸 update request 메시지의 signature
  */
-unsigned int ecall_go_post_update_w(unsigned char *msg, unsigned char *signature, unsigned char **original_msg, unsigned char **output);
+unsigned int ecall_go_post_update_w(unsigned char *msg, unsigned char *signature, unsigned char *senderMSG, unsigned char *senderSig, unsigned char *middleManMSG, unsigned char *middleManSig, unsigned char *receiverMSG, unsigned char *receiverSig, unsigned char *crossServerMSG, unsigned char *crossServerSig,  unsigned char **original_msg, unsigned char **output);
 
 /** 서버의 payment confirm 검증
  *
  * In:      msg:            서버가 보낸 payment confirm 메시지의 plain text
  *          signature:      서버가 보낸 payment confirm 메시지의 signature
  */
-unsigned int ecall_go_idle_w(unsigned char *msg, unsigned char *signature);
+//unsigned int ecall_go_idle_w(unsigned char *msg, unsigned char *signature);
+unsigned int ecall_go_idle_w(unsigned char *msg, unsigned char *signature, unsigned char *senderMSG, unsigned char *senderSig, unsigned char *middleManMSG, unsigned char *middleManSig, unsigned char *receiverMSG, unsigned char *receiverSig, unsigned char *crossServerMSG, unsigned char *crossServerSig);
+
 void ecall_register_comminfo_w(unsigned int channel_id, unsigned char *ip, unsigned int port);
 
 /* event.cpp */

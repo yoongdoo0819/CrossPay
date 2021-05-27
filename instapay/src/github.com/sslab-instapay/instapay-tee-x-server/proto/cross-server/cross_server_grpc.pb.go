@@ -18,6 +18,7 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type Cross_ServerClient interface {
+	CrossPaymentRequest(ctx context.Context, in *CrossPaymentMessage, opts ...grpc.CallOption) (*CrossResult, error)
 	CrossPaymentPrepared(ctx context.Context, in *CrossPaymentPrepareResMessage, opts ...grpc.CallOption) (*CrossResult, error)
 	CrossPaymentCommitted(ctx context.Context, in *CrossPaymentCommitResMessage, opts ...grpc.CallOption) (*CrossResult, error)
 }
@@ -28,6 +29,15 @@ type cross_ServerClient struct {
 
 func NewCross_ServerClient(cc grpc.ClientConnInterface) Cross_ServerClient {
 	return &cross_ServerClient{cc}
+}
+
+func (c *cross_ServerClient) CrossPaymentRequest(ctx context.Context, in *CrossPaymentMessage, opts ...grpc.CallOption) (*CrossResult, error) {
+	out := new(CrossResult)
+	err := c.cc.Invoke(ctx, "/Cross_Server/crossPaymentRequest", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
 }
 
 func (c *cross_ServerClient) CrossPaymentPrepared(ctx context.Context, in *CrossPaymentPrepareResMessage, opts ...grpc.CallOption) (*CrossResult, error) {
@@ -52,6 +62,7 @@ func (c *cross_ServerClient) CrossPaymentCommitted(ctx context.Context, in *Cros
 // All implementations must embed UnimplementedCross_ServerServer
 // for forward compatibility
 type Cross_ServerServer interface {
+	CrossPaymentRequest(context.Context, *CrossPaymentMessage) (*CrossResult, error)
 	CrossPaymentPrepared(context.Context, *CrossPaymentPrepareResMessage) (*CrossResult, error)
 	CrossPaymentCommitted(context.Context, *CrossPaymentCommitResMessage) (*CrossResult, error)
 	mustEmbedUnimplementedCross_ServerServer()
@@ -61,6 +72,9 @@ type Cross_ServerServer interface {
 type UnimplementedCross_ServerServer struct {
 }
 
+func (UnimplementedCross_ServerServer) CrossPaymentRequest(context.Context, *CrossPaymentMessage) (*CrossResult, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CrossPaymentRequest not implemented")
+}
 func (UnimplementedCross_ServerServer) CrossPaymentPrepared(context.Context, *CrossPaymentPrepareResMessage) (*CrossResult, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CrossPaymentPrepared not implemented")
 }
@@ -78,6 +92,24 @@ type UnsafeCross_ServerServer interface {
 
 func RegisterCross_ServerServer(s grpc.ServiceRegistrar, srv Cross_ServerServer) {
 	s.RegisterService(&Cross_Server_ServiceDesc, srv)
+}
+
+func _Cross_Server_CrossPaymentRequest_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CrossPaymentMessage)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(Cross_ServerServer).CrossPaymentRequest(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/Cross_Server/crossPaymentRequest",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(Cross_ServerServer).CrossPaymentRequest(ctx, req.(*CrossPaymentMessage))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
 func _Cross_Server_CrossPaymentPrepared_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -123,6 +155,10 @@ var Cross_Server_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "Cross_Server",
 	HandlerType: (*Cross_ServerServer)(nil),
 	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "crossPaymentRequest",
+			Handler:    _Cross_Server_CrossPaymentRequest_Handler,
+		},
 		{
 			MethodName: "crossPaymentPrepared",
 			Handler:    _Cross_Server_CrossPaymentPrepared_Handler,
