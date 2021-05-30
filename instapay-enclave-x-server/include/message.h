@@ -48,6 +48,15 @@ typedef struct message {
     unsigned int e;
 } Message;
 
+typedef struct message_res {
+	/********* common *********/
+	message_type type;
+
+	int amount;
+	unsigned int payment_num;
+	unsigned int e;
+} MessageRes;
+
 void sign_message(unsigned char *original_msg, unsigned int msg_size, unsigned char *seckey, unsigned char *signature);
 int verify_message(unsigned int from, unsigned char *signature, unsigned char *original_msg, unsigned int msg_size, unsigned char *pubaddr);
 

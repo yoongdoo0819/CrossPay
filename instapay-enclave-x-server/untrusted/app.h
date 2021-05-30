@@ -26,6 +26,67 @@ extern sgx_enclave_id_t global_eid;    /* global enclave id */
 extern "C" {
 #endif
 
+enum cross_message_type {
+    
+    CROSS_ALL_PREPARE_REQ = 1,
+    CROSS_PREPARE_REQ     = 2,
+    CROSS_PREPARE_RES     = 3,
+    CROSS_ALL_PREPARED    = 4,
+
+    CROSS_ALL_COMMIT_REQ  = 5,
+    CROSS_COMMIT_REQ      = 6,
+    CROSS_COMMIT_RES      = 7,
+    CROSS_ALL_COMMITTED   = 8,
+
+    CROSS_ALL_CONFIRM_REQ = 9,
+    CROSS_CONFIRM_REQ     = 10,
+
+    CROSS_ALL_REFUND_REQ  = 11,
+    CROSS_REFUND_REQ      = 12,
+};
+
+enum cross_payment_server {
+	CHAIN1_SERVER = 13,
+	CHAIN2_SERVER = 14,
+	CHAIN3_SERVER = 15,
+};
+
+typedef struct participant {
+
+   	unsigned char party[41];
+       	unsigned int payment_size;
+   	unsigned int channel_ids[2];
+   	int payment_amount[2];
+} Participant;
+
+typedef struct _cross_message {
+    /********* common *********/
+    cross_message_type type;
+
+    /*** cross-payment ***/
+    cross_payment_server server;
+
+    /***** direct payment *****/
+    unsigned int channel_id;
+    int amount;
+    //unsigned int counter;
+
+    /*** multi-hop payment ****/
+    
+    unsigned int payment_num;
+        /*
+    unsigned int payment_size;
+    unsigned int channel_ids[2];
+    int payment_amount[2];
+    */
+    Participant participant[3];
+    unsigned int e;
+
+    /*** cross-payment ***/
+    //cross_payment_server server;
+
+} cross_message;
+
 typedef struct _message {
     /********* common *********/
     unsigned int type;
@@ -135,10 +196,22 @@ unsigned int ecall_cross_check_committed_unanimity_w(unsigned int payment_num, i
 void ecall_cross_create_all_prepare_req_msg_w(unsigned int payment_num,/* unsigned int payment_size, unsigned int *channel_ids, int *amount,*/ unsigned char **req_msg, unsigned char **req_sig);
 unsigned int ecall_cross_verify_all_prepared_res_msg_w(unsigned char *res_msg, unsigned char *res_sig);
 
+unsigned int ecall_cross_create_all_prepare_req_msg_temp_w(unsigned int payment_num, unsigned char *sender, unsigned char *middleMan, unsigned char *receiver, unsigned int sender_payment_size, unsigned int *sender_channel_ids, unsigned int middleMan_payment_size, unsigned int *middleMan_channel_ids, unsigned int receiver_payment_size, unsigned int *receiver_channel_ids, int *sender_amount, int *middleMan_amount, int *receiver_amount, unsigned char **original_msg, unsigned char **output);
+
+unsigned int ecall_cross_verify_all_prepared_res_msg_temp_w(unsigned char *res_msg, unsigned char *res_sig);
+
 void ecall_cross_create_all_commit_req_msg_w(unsigned int payment_num, unsigned char **req_msg, unsigned char **req_sig);
+
+unsigned int ecall_cross_create_all_commit_req_msg_temp_w(unsigned int payment_num, unsigned char *sender, unsigned char *middleMan, unsigned char *receiver, unsigned int sender_payment_size, unsigned int *sender_channel_ids, unsigned int middleMan_payment_size, unsigned int *middleMan_channel_ids, unsigned int receiver_payment_size, unsigned int *receiver_channel_ids, int *sender_amount, int *middleMan_amount, int *receiver_amount, unsigned char **original_msg, unsigned char **output);
+
 unsigned int ecall_cross_verify_all_committed_res_msg_w(unsigned char *res_msg, unsigned char *res_sig);
 
+unsigned int ecall_cross_verify_all_committed_res_msg_temp_w(unsigned char *res_msg, unsigned char *res_sig);
+
 void ecall_cross_create_all_confirm_req_msg_w(unsigned int payment_num, unsigned char **req_msg, unsigned char **req_sig);
+
+unsigned int ecall_cross_create_all_confirm_req_msg_temp_w(unsigned int payment_num, unsigned char *sender, unsigned char *middleMan, unsigned char *receiver, unsigned int sender_payment_size, unsigned int *sender_channel_ids, unsigned int middleMan_payment_size, unsigned int *middleMan_channel_ids, unsigned int receiver_payment_size, unsigned int *receiver_channel_ids, int *sender_amount, int *middleMan_amount, int *receiver_amount, unsigned char **original_msg, unsigned char **output);
+
 
 void ecall_cross_create_all_refund_req_msg_w(unsigned int payment_num, unsigned char **original_msg, unsigned char **output);
 

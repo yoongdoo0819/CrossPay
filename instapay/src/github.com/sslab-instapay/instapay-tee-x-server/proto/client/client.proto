@@ -17,14 +17,14 @@ message AgreeRequestsMessage {
 message UpdateRequestsMessage{
     int64 paymentNumber = 1;
     ChannelPayments channelPayments = 2;
-    bytes originalMessage = 3;
-    bytes signature = 4;
+    repeated bytes originalMessage = 3;
+    repeated bytes signature = 4;
 }
 
 message ConfirmRequestsMessage{
     int64 paymentNumber = 1;
-    bytes originalMessage = 2;
-    bytes signature = 3;
+    repeated bytes originalMessage = 2;
+    repeated bytes signature = 3;
 }
 
 message ChannelPayment{

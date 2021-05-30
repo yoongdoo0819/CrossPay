@@ -111,21 +111,21 @@ func CrossPaymentToServerChannelHandler(ctx *gin.Context) {
 	if err != nil {
 		log.Println(err)
 	}
-
+/*
 	chain2From := ctx.PostForm("chain2_sender")
 	chain2To := ctx.PostForm("chain2_receiver")
 	chain2Val, err := strconv.Atoi(ctx.PostForm("chain2_sender_val"))
 	if err != nil {
 		log.Println(err)
 	}
-/*
+
 	chain3From := ctx.PostForm("chain3_sender")
 	chain3To := ctx.PostForm("chain3_receiver")
 	chain3Val, err := strconv.Atoi(ctx.PostForm("chain3_sender_val"))
 	if err != nil {
 		log.Println(err)
 	}
-*/
+
 	serverGrpc.ChainFrom = append(serverGrpc.ChainFrom, chain1From)
 	serverGrpc.ChainTo = append(serverGrpc.ChainTo, chain1To)
 	serverGrpc.ChainVal = append(serverGrpc.ChainVal, int64(chain1Val))
@@ -133,6 +133,7 @@ func CrossPaymentToServerChannelHandler(ctx *gin.Context) {
 	serverGrpc.ChainFrom = append(serverGrpc.ChainFrom, chain2From)
 	serverGrpc.ChainTo = append(serverGrpc.ChainTo, chain2To)
 	serverGrpc.ChainVal = append(serverGrpc.ChainVal, int64(chain2Val))
+*/
 /*
 	serverGrpc.ChainFrom = append(serverGrpc.ChainFrom, chain3From)
 	serverGrpc.ChainTo = append(serverGrpc.ChainTo, chain3To)
@@ -144,10 +145,10 @@ func CrossPaymentToServerChannelHandler(ctx *gin.Context) {
 	//chain2Sender := []C.uchar(chain2From)
 	//chain2Receiver := []C.uchar(chain2To)
 	var PaymentNum C.uint
-	var originalMessage *C.uchar
-	var signature *C.uchar
+	//var originalMessage *C.uchar
+	//var signature *C.uchar
 
-	serverGrpc.StartTime = time.Now()
+//	serverGrpc.StartTime = time.Now()
 //	rwMutex.Lock()
 	PaymentNum = C.ecall_cross_accept_request_w(
 		&chain1Sender[0],
@@ -162,6 +163,7 @@ func CrossPaymentToServerChannelHandler(ctx *gin.Context) {
 		&chain1Sender[0],
 		&chain1Receiver[0],
 		C.uint(pn))
+	pn++
 /*
 	if int(PaymentNum) != pn {
 		fmt.Println("different pn")
@@ -184,7 +186,7 @@ func CrossPaymentToServerChannelHandler(ctx *gin.Context) {
 	//C.ecall_cross_add_participant_w(C.uint(PaymentNum), &([]C.uchar(chain1Server))[0])
 
 //	fmt.Println("===== CREATE CROSS ALL PREPARE MSG START =====")
-	C.ecall_cross_create_all_prepare_req_msg_w(C.uint(PaymentNum), &originalMessage, &signature)
+//	C.ecall_cross_create_all_prepare_req_msg_w(C.uint(PaymentNum), &originalMessage, &signature)
 //	fmt.Println("===== CREATE CROSS ALL PREPARE MSG END =====")
 
 	//originalMessageByte, signatureByte := convertPointerToByte(originalMessage, signature)
@@ -204,7 +206,7 @@ func CrossPaymentToServerChannelHandler(ctx *gin.Context) {
 	C.ecall_cross_create_all_refund_req_msg_w(C.uint(pn), &originalMessage, &signature)
 	originalMessageByte, signatureByte := convertPointerToByte(originalMessage, signature)
 */
-	_, err = client1.CrossPaymentRequest(client1Context, &xServerPb.CrossPaymentMessage{Pn: int64(pn), ChainTo: serverGrpc.ChainTo, ChainFrom: serverGrpc.ChainFrom, ChainVal: serverGrpc.ChainVal})
+	_, err = client1.CrossPaymentRequest(client1Context, &xServerPb.CrossPaymentMessage{Pn: int64(PaymentNum), ChainTo: serverGrpc.ChainTo, ChainFrom: serverGrpc.ChainFrom, ChainVal: serverGrpc.ChainVal})
 	if err != nil {
 		log.Println(err)
 		return

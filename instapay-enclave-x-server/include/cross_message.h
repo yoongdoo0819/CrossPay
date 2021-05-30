@@ -46,6 +46,14 @@ enum cross_payment_server {
 	CHAIN3_SERVER = 15,
 };
 
+typedef struct participant {
+
+   	unsigned char party[41];
+       	unsigned int payment_size;
+   	unsigned int channel_ids[2];
+   	int payment_amount[2];
+} Participant;
+
 typedef struct cross_message {
     /********* common *********/
     cross_message_type type;
@@ -56,14 +64,17 @@ typedef struct cross_message {
     /***** direct payment *****/
     unsigned int channel_id;
     int amount;
-    unsigned int counter;
+    //unsigned int counter;
 
     /*** multi-hop payment ****/
     
     unsigned int payment_num;
+    /*
     unsigned int payment_size;
     unsigned int channel_ids[2];
     int payment_amount[2];
+    */
+    Participant participant[3];
     unsigned int e;
 
     /*** cross-payment ***/
