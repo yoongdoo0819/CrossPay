@@ -393,11 +393,11 @@ void ecall_cross_verify_all_prepared_res_msg(unsigned char *res_msg, unsigned ch
 
 void ecall_cross_verify_all_prepared_res_msg_temp(unsigned char *res_msg, unsigned char *res_sig, unsigned int *is_verified)
 {
-    MessageRes *res = (MessageRes*)res_msg;
-
+//    printf("size : %d \n", sizeof(MessageRes));
     verify_message(1, res_sig, res_msg, sizeof(MessageRes), NULL);
 
     /* step 2. check that message type is 'AG_RES' */
+    MessageRes *res = (MessageRes*)res_msg;
 
     if(res->type != AG_RES) {// || res->e != 1) {
         *is_verified = 0;

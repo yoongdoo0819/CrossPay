@@ -105,6 +105,7 @@ typedef struct _message {
 } message;
 
 int initialize_enclave(void);
+void print_error_message(sgx_status_t ret);
 
 void ocall_print_string(const char *str);
 

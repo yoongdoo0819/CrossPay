@@ -3,7 +3,7 @@
   <ISVSVN>0</ISVSVN>
   <StackMaxSize>0x800000</StackMaxSize>  <!-- 0x500000 -->
   <HeapMaxSize>0x1000000</HeapMaxSize>  <!-- 0x800000 -->
-  <TCSNum>10</TCSNum>
+  <TCSNum>30</TCSNum>
   <TCSPolicy>1</TCSPolicy>
   <!-- Recommend changing 'DisableDebug' to 1 to make the enclave undebuggable for enclave release -->
   <DisableDebug>0</DisableDebug>

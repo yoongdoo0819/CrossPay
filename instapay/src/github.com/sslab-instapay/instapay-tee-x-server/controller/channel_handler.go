@@ -111,6 +111,7 @@ func CrossPaymentToServerChannelHandler(ctx *gin.Context) {
 	if err != nil {
 		log.Println(err)
 	}
+
 /*
 	chain2From := ctx.PostForm("chain2_sender")
 	chain2To := ctx.PostForm("chain2_receiver")
@@ -164,6 +165,7 @@ func CrossPaymentToServerChannelHandler(ctx *gin.Context) {
 		&chain1Receiver[0],
 		C.uint(pn))
 	pn++
+
 /*
 	if int(PaymentNum) != pn {
 		fmt.Println("different pn")
@@ -206,6 +208,8 @@ func CrossPaymentToServerChannelHandler(ctx *gin.Context) {
 	C.ecall_cross_create_all_refund_req_msg_w(C.uint(pn), &originalMessage, &signature)
 	originalMessageByte, signatureByte := convertPointerToByte(originalMessage, signature)
 */
+//	ctx.JSON(http.StatusOK, gin.H{"message":"Cross-Payment" })
+
 	_, err = client1.CrossPaymentRequest(client1Context, &xServerPb.CrossPaymentMessage{Pn: int64(PaymentNum), ChainTo: serverGrpc.ChainTo, ChainFrom: serverGrpc.ChainFrom, ChainVal: serverGrpc.ChainVal})
 	if err != nil {
 		log.Println(err)
