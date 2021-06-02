@@ -31,6 +31,15 @@ enum message_type {
     CONFIRM = 7,
 };
 
+typedef struct participant {
+
+    unsigned char party[41];
+    unsigned int payment_size;
+    unsigned int channel_ids[2];
+    int payment_amount[2];
+
+} Participant;
+
 typedef struct message {
     /********* common *********/
     message_type type;
@@ -42,9 +51,12 @@ typedef struct message {
 
     /*** multi-hop payment ****/
     unsigned int payment_num;
+    /*
     unsigned int payment_size;
     unsigned int channel_ids[2];
     int payment_amount[2];
+    */
+    Participant participant[3];
     unsigned int e;
 } Message;
 

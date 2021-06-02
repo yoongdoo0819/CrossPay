@@ -13,7 +13,7 @@ extern "C" {
 #include <secp256k1.h>
 #include <secp256k1_recovery.h>
 #include <sha3.h>
-
+#include <message.h>
 #if defined(__cplusplus)
 }
 #endif
@@ -24,12 +24,12 @@ enum cross_message_type {
 
     CROSS_ALL_PREPARE_REQ = 1,
     CROSS_PREPARE_REQ     = 2,
-    CROSS_PREPARE_RES     = 3,
+//    CROSS_PREPARE_RES     = 3,
     CROSS_ALL_PREPARED    = 4,
 
     CROSS_ALL_COMMIT_REQ  = 5,
     CROSS_COMMIT_REQ      = 6,
-    CROSS_COMMIT_RES      = 7,
+//    CROSS_COMMIT_RES      = 7,
     CROSS_ALL_COMMITTED   = 8,
 
     CROSS_ALL_CONFIRM_REQ = 9,
@@ -43,9 +43,14 @@ enum cross_payment_server {
     CHAIN1_SERVER = 13,
     CHAIN2_SERVER = 14,
 };
-
-
-
+/*
+typedef struct participant {
+	unsigned char party[41];
+	unsigned int payment_size;
+	unsigned int channel_ids[2];
+	int payment_amount[2];
+} Participant;
+*/
 typedef struct cross_message {
     /********* common *********/
     cross_message_type type;
@@ -56,13 +61,17 @@ typedef struct cross_message {
     /***** direct payment *****/
     unsigned int channel_id;
     int amount;
-    unsigned int counter;
+    //unsigned int counter;
 
     /*** multi-hop payment ****/
+    
     unsigned int payment_num;
+    /*
     unsigned int payment_size;
     unsigned int channel_ids[2];
     int payment_amount[2];
+    */
+    Participant participant[3];
     unsigned int e;
 
     /*** cross-payment ***/

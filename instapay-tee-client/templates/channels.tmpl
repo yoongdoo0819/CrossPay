@@ -36,7 +36,6 @@
                     <th>Status</th>
                     <th>Detail</th>
                     <th>Close</th>
-		    <th>Path</th>
                     <th>YES</th>
                     <th>NO</th>
 		    <!--
@@ -64,20 +63,19 @@
                             <td>{{ $channel.MyAddress }}</td>
                             <td>{{ $channel.OtherAddress }}</td>
                             <td>{{ $channel.Status }}</td>
+                            <td>{{ $channel.CrossStatus }}</td>
                             <td><button type="button" id="detail_modal" class="btn btn-light" data-toggle="modal" data-target=#modal{{$i}}>detail</button></td>
                             <input type="hidden" id="ch_id" name="ch_id" value={{ $channel.ChannelId }}>
                             <td><button type="button" class="btn btn-light" onclick="crossClose({{$channel.ChannelId}})">close</button></td>
 <td><button type="button" id="detail_modal" class="btn btn-light" data-toggle="modal" onclick="crossAddress()">PATH</button></td>
 
-<!--status := {{ $channel.Status }}-->
 {{ if eq $channel.Status "IDLE" }}
 <td><button type="button" id="detail_modal" class="btn btn-light" data-toggle="modal" onclick="c_pre_yes()">C_PRE_YES</button></td>
-<td><button type="button" id="detail_modal" class="btn btn-light" data-toggle="modal" onclick="c_pre_no()">C_PRE_NO</button></td>
+<td><button type="button" id="detail_modal" class="btn btn-light" data-toggle="modal" onclick="c_pre_no()">C_PRE__NO</button></td>
 {{ else if eq $channel.Status "C_PRE" }}
 <td><button type="button" id="detail_modal" class="btn btn-light" data-toggle="modal" onclick="c_post_yes()">C_POST_YES</button></td>
 <td><button type="button" id="detail_modal" class="btn btn-light" data-toggle="modal" onclick="c_post_no()">C_POST_NO</button></td>
 {{ end }}
-
                     </tr>
                     <div class="modal" id="modal{{$i}}">
                         <div class="modal-dialog">
@@ -135,7 +133,7 @@ function crossClose(chId) {
        "chId": chId
     },
     success: function(result) {
-       swal({title: result, icon: "warning", button: "close"});
+       swal({title: "CAN NOT CLOSE", icon: "warning", button: "close"});
     },
     error: function(request, error) {
        alert(request.status+"\n"+request.responseText+"\n"+"error"+error);

@@ -10,10 +10,13 @@ enum channel_status {
     PRE_UPDATE	= 2,
     POST_UPDATE	= 3,
     CLOSED      = 4,
+};
 
+enum cross_channel_status {
     /*** cross-payment ***/
-    C_PRE       = 5,
-    C_POST      = 6,
+    C_IDLE      = 5,
+    C_PRE       = 6,
+    C_POST      = 7,
 };
 
 
@@ -30,6 +33,7 @@ typedef struct _channel
     unsigned char m_other_addr[20];
 
     /*** cross-payment ***/
+    unsigned int m_cross_status;
     unsigned int m_reserved_balance;
 
 
@@ -54,6 +58,7 @@ class Channel {
             m_other_addr = ::arr_to_bytes(t_other_addr, 40);
 
             m_status = (m_id == -1) ? PENDING:IDLE;
+	    m_cross_status = C_IDLE;
 
             if(m_is_in == true) {
                 m_my_deposit = 0;
@@ -83,6 +88,8 @@ class Channel {
 	/*** cross-payment ***/
         void transition_to_cross_pre_update(void);
         void transition_to_cross_post_update(void);
+        void transition_to_cross_idle(void);
+
 	/*** cross-payment ***/
 
         unsigned int get_balance(void);
@@ -103,6 +110,7 @@ class Channel {
         unsigned int m_counter;
 
 	/*** cross-payment ***/
+	cross_channel_status m_cross_status;
 	unsigned int m_reserved_balance;
 };
 

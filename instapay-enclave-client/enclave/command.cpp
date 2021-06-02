@@ -652,6 +652,7 @@ void ecall_get_open_channels(unsigned char *open_channels)
     std::map<unsigned int, Channel>::iterator iter;
 
     unsigned int cursor = 0;
+    printf("channel size : %d \n", sizeof(channel));
 
     for (iter = channels.begin(); iter != channels.end(); ++iter) {
         data.m_id = iter->second.m_id;
@@ -664,6 +665,7 @@ void ecall_get_open_channels(unsigned char *open_channels)
         data.m_locked_balance = iter->second.m_locked_balance;
 
 	/*** cross-payment ***/
+	data.m_cross_status = iter->second.m_cross_status;
 	data.m_reserved_balance = iter->second.m_reserved_balance;
 
         memcpy(data.m_other_addr, iter->second.m_other_addr, 20);
@@ -722,7 +724,7 @@ void ecall_get_num_public_addrs(unsigned int *num_public_addrs)
     // accounts.insert(map_account_value(p2, Account(s2)));
     /********************************************************/
 
-    printf("accounts size : %d \n", accounts.size());
+    //printf("accounts size : %d \n", accounts.size());
     *num_public_addrs = accounts.size();
 }
 
@@ -735,7 +737,7 @@ void ecall_get_public_addrs(unsigned char *public_addrs)
 
     unsigned int cursor = 0;
 
-    printf("GET PUBLIC ADDRS \n\n");
+    //printf("GET PUBLIC ADDRS \n\n");
     // for (iter = accounts.begin(); iter != accounts.end(); ++iter) {
     //     pubaddr = iter->second.get_pubkey();
     //     memcpy(data.addr, pubaddr.data(), 20);
@@ -745,15 +747,16 @@ void ecall_get_public_addrs(unsigned char *public_addrs)
 
     for (iter = accounts.begin(); iter != accounts.end(); ++iter) {
         pubaddr = iter->first;
+
         memcpy(data.addr, pubaddr.data(), 20);
         memcpy(public_addrs + cursor, (unsigned char*)&data, sizeof(address));
         cursor += sizeof(address);
     }
-
+/*
     printf("public_addrs : ");
-    for(int i=0; i<20; i++)
+    for(int i=0; i<20; i++) 
 	    printf("%02x", public_addrs[i]);
-
+*/
 }
 
 
@@ -844,6 +847,9 @@ void ecall_test_func(void)
     printf("\n");
 
     verify_message(0, signature, (unsigned char*)"TEST", 7, pubaddr);
+
+    free(seckey);
+    free(pubaddr);
 
     printf(" ######################### TEST ########################### \n");
 }

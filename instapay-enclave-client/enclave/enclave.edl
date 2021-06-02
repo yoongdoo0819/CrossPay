@@ -135,14 +135,29 @@ enclave {
 
         public void ecall_go_pre_update_two(
             unsigned int payment_num);
-       
+
+        public void ecall_go_post_update(
+	    [user_check] unsigned char *msg, 
+	    [user_check] unsigned char *signature, 
+	    [user_check] unsigned char *senderMSG, 
+            [user_check] unsigned char *senderSig, 
+            [user_check] unsigned char *middleManMSG, 
+            [user_check] unsigned char *middleManSig, 
+            [user_check] unsigned char *receiverMSG, 
+            [user_check] unsigned char *receiverSig,
+ 	    [user_check] unsigned char *crossServerMSG, 
+ 	    [user_check] unsigned char *crossServerSig,
+            [user_check] unsigned char *original_msg, 
+            [user_check] unsigned char *output, 
+            [user_check] unsigned int *result);
+/*
         public void ecall_go_post_update(
             [user_check] unsigned char *msg,
             [user_check] unsigned char *signature,
             [user_check] unsigned char *original_msg, 
             [user_check] unsigned char *output,
 	    [user_check] unsigned int *result);
-
+*/
         public void ecall_go_post_update_two(
             [user_check] unsigned char *msg,
             [user_check] unsigned char *signature,
@@ -152,6 +167,14 @@ enclave {
         public void ecall_go_idle(
             [user_check] unsigned char *msg,
             [user_check] unsigned char *signature,
+	    [user_check] unsigned char *senderMSG, 
+	    [user_check] unsigned char *senderSig, 
+	    [user_check] unsigned char *middleManMSG, 
+	    [user_check] unsigned char *middleManSig, 
+	    [user_check] unsigned char *receiverMSG, 
+ 	    [user_check] unsigned char *receiverSig,
+	    [user_check] unsigned char *crossServerMSG, 
+ 	    [user_check] unsigned char *crossServerSig,
 	    [user_check] unsigned int *result);
 
         public void ecall_go_idle_two(
@@ -188,18 +211,49 @@ enclave {
             [user_check] unsigned char *msg,
             [user_check] unsigned char *signature,
             [user_check] unsigned char *original_msg, 
-            [user_check] unsigned char *output);
+            [user_check] unsigned char *output,
+	    [user_check] unsigned int *result);
 
+        public void ecall_cross_go_post_update(
+	    [user_check] unsigned char *msg, 
+	    [user_check] unsigned char *signature, 
+	    [user_check] unsigned char *senderMSG, 
+            [user_check] unsigned char *senderSig, 
+            [user_check] unsigned char *middleManMSG, 
+            [user_check] unsigned char *middleManSig, 
+            [user_check] unsigned char *receiverMSG, 
+            [user_check] unsigned char *receiverSig,
+ 	    [user_check] unsigned char *crossServerMSG, 
+ 	    [user_check] unsigned char *crossServerSig,
+            [user_check] unsigned char *original_msg, 
+            [user_check] unsigned char *output, 
+            [user_check] unsigned int *result);
+
+	public void ecall_cross_go_idle(
+            [user_check] unsigned char *msg,
+            [user_check] unsigned char *signature,
+	    [user_check] unsigned char *senderMSG, 
+	    [user_check] unsigned char *senderSig, 
+	    [user_check] unsigned char *middleManMSG, 
+	    [user_check] unsigned char *middleManSig, 
+	    [user_check] unsigned char *receiverMSG, 
+ 	    [user_check] unsigned char *receiverSig,
+	    [user_check] unsigned char *crossServerMSG, 
+ 	    [user_check] unsigned char *crossServerSig,
+	    [user_check] unsigned int *result);
+
+/*
         public void ecall_cross_go_post_update(
             [user_check] unsigned char *msg,
             [user_check] unsigned char *signature,
             [user_check] unsigned char *original_msg, 
             [user_check] unsigned char *output);
-
+*/
+/*
         public void ecall_cross_go_idle(
             [user_check] unsigned char *msg,
             [user_check] unsigned char *signature);
-
+*/
         public void ecall_cross_refund(
             [user_check] unsigned char *msg,
             [user_check] unsigned char *signature);

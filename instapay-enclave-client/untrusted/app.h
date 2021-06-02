@@ -60,6 +60,15 @@ enum message_type {
     CONFIRM = 7,    
 };
 
+typedef struct participant {
+
+    unsigned char party[41];
+    unsigned int payment_size;
+    unsigned int channel_ids[2];
+    int payment_amount[2];
+
+} Participant;
+
 typedef struct _message {
     /********* common *********/
     unsigned int type;
@@ -71,11 +80,23 @@ typedef struct _message {
 
     /*** multi-hop payment ****/
     unsigned int payment_num;
+    /*
     unsigned int payment_size;
     unsigned int channel_ids[2];
     int payment_amount[2];
+    */
+    Participant participant[3];
     unsigned int e;
 } message;
+
+typedef struct message_res {
+    /********* common *********/
+    message_type type;
+
+    int amount;
+    unsigned int payment_num;
+        unsigned int e;
+} MessageRes;
 
 
 int initialize_enclave(void);
@@ -125,14 +146,19 @@ unsigned int ecall_go_pre_update_w(unsigned char *msg, unsigned char *signature,
  * In:      msg:            서버가 보낸 update request 메시지의 plain text
  *          signature:      서버가 보낸 update request 메시지의 signature
  */
+/*
 unsigned int ecall_go_post_update_w(unsigned char *msg, unsigned char *signature, unsigned char **original_msg, unsigned char **output);
+*/
+unsigned int ecall_go_post_update_w(unsigned char *msg, unsigned char *signature, unsigned char *senderMSG, unsigned char *senderSig, unsigned char *middleManMSG, unsigned char *middleManSig, unsigned char *receiverMSG, unsigned char *receiverSig, unsigned char *crossServerMSG, unsigned char *crossServerSig,  unsigned char **original_msg, unsigned char **output);
 
 /** 서버의 payment confirm 검증
  *
  * In:      msg:            서버가 보낸 payment confirm 메시지의 plain text
  *          signature:      서버가 보낸 payment confirm 메시지의 signature
  */
-unsigned int ecall_go_idle_w(unsigned char *msg, unsigned char *signature);
+//unsigned int ecall_go_idle_w(unsigned char *msg, unsigned char *signature);
+unsigned int ecall_go_idle_w(unsigned char *msg, unsigned char *signature, unsigned char *senderMSG, unsigned char *senderSig, unsigned char *middleManMSG, unsigned char *middleManSig, unsigned char *receiverMSG, unsigned char *receiverSig, unsigned char *crossServerMSG, unsigned char *crossServerSig);
+
 void ecall_register_comminfo_w(unsigned int channel_id, unsigned char *ip, unsigned int port);
 
 /* event.cpp */
@@ -156,9 +182,12 @@ void ecall_go_pre_update_two_w(unsigned int payment_num);
  * InstaPay 3.0
  */
 
-void ecall_cross_go_pre_update_w(unsigned char *msg, unsigned char *signature, unsigned char **original_msg, unsigned char **output);
-void ecall_cross_go_post_update_w(unsigned char *msg, unsigned char *signature, unsigned char **original_msg, unsigned char **output);
-void ecall_cross_go_idle_w(unsigned char *msg, unsigned char *signature);
+unsigned int ecall_cross_go_pre_update_w(unsigned char *msg, unsigned char *signature, unsigned char **original_msg, unsigned char **output);
+
+unsigned int ecall_cross_go_post_update_w(unsigned char *msg, unsigned char *signature, unsigned char *senderMSG, unsigned char *senderSig, unsigned char *middleManMSG, unsigned char *middleManSig, unsigned char *receiverMSG, unsigned char *receiverSig, unsigned char *crossServerMSG, unsigned char *crossServerSig,  unsigned char **original_msg, unsigned char **output);
+
+unsigned int ecall_cross_go_idle_w(unsigned char *msg, unsigned char *signature, unsigned char *senderMSG, unsigned char *senderSig, unsigned char *middleManMSG, unsigned char *middleManSig, unsigned char *receiverMSG, unsigned char *receiverSig, unsigned char *crossServerMSG, unsigned char *crossServerSig);
+
 void ecall_cross_refund_w(unsigned char *msg, unsigned char *signature);
 
 

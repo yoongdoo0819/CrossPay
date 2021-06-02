@@ -26,6 +26,15 @@ extern sgx_enclave_id_t global_eid;    /* global enclave id */
 extern "C" {
 #endif
 
+typedef struct participant {
+
+    unsigned char party[41];
+    unsigned int payment_size;
+    unsigned int channel_ids[2];
+    int payment_amount[2];
+
+} Participant;
+
 typedef struct _message {
     /********* common *********/
     unsigned int type;
@@ -37,9 +46,12 @@ typedef struct _message {
 
     /*** multi-hop payment ****/
     unsigned int payment_num;
+    /*
     unsigned int payment_size;
     unsigned int channel_ids[2];
     int payment_amount[2];
+    */
+    Participant participant[3];
     unsigned int e;
 } message;
 
@@ -66,6 +78,9 @@ void ecall_update_payment_status_to_success_w(unsigned int payment_num);
  */
 unsigned int ecall_create_ag_req_msg_w(unsigned int payment_num, unsigned int payment_size, unsigned int *channel_ids, int *amount, unsigned char **original_msg, unsigned char **output);
 
+unsigned int ecall_create_ag_req_msg_temp_w(unsigned int payment_num, unsigned char *sender, unsigned char *middleMan, unsigned char *receiver, unsigned int sender_payment_size, unsigned int *sender_channel_ids, unsigned int middleMan_payment_size, unsigned int *middleMan_channel_ids, unsigned int receiver_payment_size, unsigned int *receiver_channel_ids, int *sender_amount, int *middleMan_amount, int *receiver_amount, unsigned char **original_msg, unsigned char **output);
+
+
 /** 서버의 update request 메시지와 서명을 생성
  *
  * Out:     original_msg:   생성된 메시지의 plain text 주소
@@ -79,6 +94,9 @@ unsigned int ecall_create_ag_req_msg_w(unsigned int payment_num, unsigned int pa
  */
 unsigned int ecall_create_ud_req_msg_w(unsigned int payment_num, unsigned int payment_size, unsigned int *channel_ids, int *amount, unsigned char **original_msg, unsigned char **output);
 
+unsigned int ecall_create_ud_req_msg_temp_w(unsigned int payment_num, unsigned char *sender, unsigned char *middleMan, unsigned char *receiver, unsigned int sender_payment_size, unsigned int *sender_channel_ids, unsigned int middleMan_payment_size, unsigned int *middleMan_channel_ids, unsigned int receiver_payment_size, unsigned int *receiver_channel_ids, int *sender_amount, int *middleMan_amount, int *receiver_amount, unsigned char **original_msg, unsigned char **output);
+
+
 /** 서버의 payment confirm 메시지와 서명을 생성
  *
  * Out:     original_msg:   생성된 메시지의 plain text 주소
@@ -86,6 +104,9 @@ unsigned int ecall_create_ud_req_msg_w(unsigned int payment_num, unsigned int pa
  * In:      payment_num:    서버가 생성한 payment instance 번호
  */
 unsigned int ecall_create_confirm_msg_w(unsigned int payment_num, unsigned char **original_msg, unsigned char **output);
+
+unsigned int ecall_create_confirm_msg_temp_w(unsigned int payment_num, unsigned char *sender, unsigned char *middleMan, unsigned char *receiver, unsigned int sender_payment_size, unsigned int *sender_channel_ids, unsigned int middleMan_payment_size, unsigned int *middleMan_channel_ids, unsigned int receiver_payment_size, unsigned int *receiver_channel_ids, int *sender_amount, int *middleMan_amount, int *receiver_amount, unsigned char **original_msg, unsigned char **output);
+
 
 /** 클라이언트가 보낸 agreement response의 메시지 서명을 검증
  *

@@ -1,6 +1,9 @@
+//#define _CRT_SECURE_NO_WARNINGS
 #include <string.h>
 #include <stdint.h>
 #include <cstring>
+//#include <stdio.h>
+#include <cstdio>
 
 #include "sgx_trts.h"
 #include "enclave.h"
@@ -15,7 +18,7 @@
 #include <cross_message.h>
 #include <mutex>
 
-//using namespace std;
+using namespace std;
 std::mutex rwMutex;
 
 /*
@@ -36,7 +39,7 @@ void ecall_go_pre_update(unsigned char *msg, unsigned char *signature, unsigned 
     int *payment_amount; 
 
     Message *ag_req = (Message*)msg;
-    Message reply;
+    MessageRes reply;
 
     memset((unsigned char*)&reply, 0x00, sizeof(Message));
 
@@ -53,11 +56,15 @@ void ecall_go_pre_update(unsigned char *msg, unsigned char *signature, unsigned 
 */    
 
     /* step 1. verify signature */
-/*    if(verify_message(1, signature, msg, sizeof(Message), NULL))
+    /*
+    if(verify_message(1, signature, msg, sizeof(Message), NULL))
         return;
-*/
+    */
     /* step 2. check that message type is 'AG_REQ' */
+   
     verify_message(1, signature, msg, sizeof(Message), NULL);
+    
+//    printf("type : %d \n", ag_req->type);
 
     if(ag_req->type != AG_REQ) {
 	printf("NOT AG REQ \n");
@@ -69,10 +76,74 @@ void ecall_go_pre_update(unsigned char *msg, unsigned char *signature, unsigned 
     /* step 3. generate payment instance */
 
     payment_num = ag_req->payment_num;
+    /*
     payment_size = ag_req->payment_size;
     channel_ids = ag_req->channel_ids;
     payment_amount = ag_req->payment_amount;
+    */
+   
+    unsigned char *pubAddr;
+    unsigned int num_public_addrs;
 
+    ecall_get_num_public_addrs(&num_public_addrs);
+    pubAddr = (unsigned char*)malloc(sizeof(address) * num_public_addrs);
+
+    ecall_get_public_addrs(pubAddr);
+
+    unsigned char* strpubaddr[41] = {0, };
+
+    int len;
+    len = snprintf((char *)strpubaddr, 41, "%02x", pubAddr[0]);
+    for(int i=1; i<20; i++) {
+	    len += snprintf((char *)strpubaddr+len, 41, "%02x", pubAddr[i]);
+//	    printf("str>>>> : %s \n", strpubaddr);
+	    //if(!strcmp((char*)pubAddr[i], "f5"))
+	//	    printf("OK \n");
+//	    sprintf_s(strpubaddr, "%02x", pubAddr[i]);
+//	    swprintf(strpubaddr, "%02x", (wchar_t)pubAddr[i]);
+    }
+    free(pubAddr);
+
+/*    for(int i=0; i<40; i+=2) {
+	    strpubaddr[i] = (unsigned char)pubAddr[i];
+    }
+*/
+    
+//    printf("str>>>> : %s \n", strpubaddr);
+
+//    printf("%d \n", ag_req->payment_num);
+//    printf("%d \n", ag_req->type); 
+
+//    printf("%d \n", (ag_req->participant[0]).payment_size);
+//    printf("%s \n", (ag_req->participant[0]).party);
+//    printf("%d \n", (ag_req->participant[0]).payment_size);
+//    printf("%d \n", (ag_req->participant[0]).channel_ids[0]);
+/*
+    printf("%s \n", ag_req->participant[1].party);
+    printf("%d \n", ag_req->participant[1].payment_size);
+    printf("%d \n", ag_req->participant[1].channel_ids[0]);
+    printf("%d \n", ag_req->participant[1].channel_ids[1]);
+
+    printf("%s \n", ag_req->participant[2].party);
+    printf("%d \n", ag_req->participant[2].payment_size);
+    printf("%d \n", ag_req->participant[2].channel_ids[0]);
+    */
+    unsigned char *tempMyAddr; 
+
+    for(int i=0; i<3; i++) {
+   	    tempMyAddr = ag_req->participant[i].party;
+//	    printf("%d temp addr : %s \n", i+1, tempMyAddr);
+
+	    if(!strcmp((char*)tempMyAddr, (char*)strpubaddr)) {
+//		    printf("OK!! \n");
+
+		    payment_size = ag_req->participant[i].payment_size;
+		    channel_ids = ag_req->participant[i].channel_ids;
+		    payment_amount = ag_req->participant[i].payment_amount;
+
+		    break;
+	    }	    
+    }
 /*    
     printf("channel ids: ");
     for(int i = 0; i < payment_size; i++)
@@ -84,11 +155,14 @@ void ecall_go_pre_update(unsigned char *msg, unsigned char *signature, unsigned 
     //payments.insert(map_payment_value(payment_num, Payment(payment_num)));
 
     for(int i = 0; i < payment_size; i++) {
-        //payments.find(payment_num)->second.add_element(channel_ids[i], payment_amount[i]);
+        //ayments.find(payment_num)->second.add_element(channel_ids[i], payment_amount[i]);
         channels.find(channel_ids[i])->second.transition_to_pre_update();
 
         if(payment_amount[i] < 0) {
-            channels.find(channel_ids[i])->second.m_locked_balance += payment_amount[i] * -1;	 
+            channels.find(channel_ids[i])->second.m_locked_balance += payment_amount[i] * -1;	
+	    reply.amount = payment_amount[i] * -1; 
+	} else {
+		reply.amount = payment_amount[i];
 	}
 
 //	printf("%d channel is pre updated \n", channel_ids[i]);
@@ -108,11 +182,11 @@ void ecall_go_pre_update(unsigned char *msg, unsigned char *signature, unsigned 
     reply.e = 1;
     seckey = accounts.find(pubkey)->second.get_seckey();
 
-    //printf("SIGN START \n");
-    sign_message((unsigned char*)&reply, sizeof(Message), (unsigned char*)seckey.data(), reply_signature);
-    //printf("SIGN END \n");
+//    printf("SIGN START \n");
+    sign_message((unsigned char*)&reply, sizeof(MessageRes), (unsigned char*)seckey.data(), reply_signature);
+//    printf("SIGN END \n");
 
-    memcpy(original_msg, (unsigned char*)&reply, sizeof(Message));
+    memcpy(original_msg, (unsigned char*)&reply, sizeof(MessageRes));
     memcpy(output, reply_signature, 65);
 
     //free(pubkey);
@@ -143,7 +217,7 @@ void ecall_go_pre_update_two(unsigned int payment_num)
     }
 */
 }
-void ecall_go_post_update(unsigned char *msg, unsigned char *signature, unsigned char *original_msg, unsigned char *output, unsigned int *result)
+void ecall_go_post_update(unsigned char *msg, unsigned char *signature, unsigned char *senderMSG, unsigned char *senderSig, unsigned char *middleManMSG, unsigned char *middleManSig, unsigned char *receiverMSG, unsigned char *receiverSig, unsigned char *crossServerMSG, unsigned char* crossServerSig, unsigned char *original_msg, unsigned char *output, unsigned int *result)
 {
 //    printf("POST UPDATE START \n");
 
@@ -155,18 +229,46 @@ void ecall_go_post_update(unsigned char *msg, unsigned char *signature, unsigned
     int *payment_amount; 
 
     Message *ud_req = (Message*)msg;
-    Message reply;
+    MessageRes reply;
 
-    memset((unsigned char*)&reply, 0x00, sizeof(Message));
+    memset((unsigned char*)&reply, 0x00, sizeof(MessageRes));
 
     /* step 1. verify signature */
 /*
     if(verify_message(1, signature, msg, sizeof(Message), NULL))
         return;
 */
+
+    verify_message(1, senderSig, senderMSG, sizeof(MessageRes), NULL);
+    verify_message(1, middleManSig, middleManMSG, sizeof(MessageRes), NULL);
+    verify_message(1, receiverSig, receiverMSG, sizeof(MessageRes), NULL);
+
+    if(crossServerMSG != NULL) {
+	    verify_message(1, crossServerSig, crossServerMSG, sizeof(Cross_Message), NULL);
+	    Cross_Message *cross_message = (Cross_Message*) crossServerMSG;
+
+	    if(cross_message->type != CROSS_ALL_COMMIT_REQ) {
+	    	    printf("NOT CROSS ALL COMMIT REQ \n");
+	    	    printf("%d \n", cross_message->type);
+	    	    *result = 1;
+	    	    return;
+	    }
+    } 
+
+    MessageRes *senderMsg = (MessageRes*)senderMSG;
+    MessageRes *middleManMsg = (MessageRes*)middleManMSG;
+    MessageRes *receiverMsg = (MessageRes*)receiverMSG;
+//    printf("%d %d %d \n", senderMsg->amount, middleManMsg->amount, receiverMsg->amount);
+
+    if(senderMsg->amount == middleManMsg->amount && 
+		    middleManMsg->amount == receiverMsg->amount) { /*printf("same amount !! \n");*/ }
+    else { return; }
+
     verify_message(1, signature, msg, sizeof(Message), NULL);
 
     /* step 2. check that message type is 'UD_REQ' */
+
+//    printf("type : %d \n", ud_req->type);
 
     if(ud_req->type != UD_REQ) {
 	printf("NOT UD REQ \n");
@@ -178,9 +280,73 @@ void ecall_go_post_update(unsigned char *msg, unsigned char *signature, unsigned
     /* step 3. update channel state */
 
     payment_num = ud_req->payment_num;
+    /*
     payment_size = ud_req->payment_size;
     channel_ids = ud_req->channel_ids;
     payment_amount = ud_req->payment_amount;
+    */
+ 
+    unsigned char *pubAddr;
+    unsigned int num_public_addrs;
+
+    ecall_get_num_public_addrs(&num_public_addrs);
+    pubAddr = (unsigned char*)malloc(sizeof(address) * num_public_addrs);
+
+    ecall_get_public_addrs(pubAddr);
+
+    unsigned char* strpubaddr[41] = {0, };
+
+    int len;
+    len = snprintf((char *)strpubaddr, 41, "%02x", pubAddr[0]);
+    for(int i=1; i<20; i++) {
+	    len += snprintf((char *)strpubaddr+len, 41, "%02x", pubAddr[i]);
+//	    printf("str>>>> : %s \n", strpubaddr);
+	    //if(!strcmp((char*)pubAddr[i], "f5"))
+	//	    printf("OK \n");
+//	    sprintf_s(strpubaddr, "%02x", pubAddr[i]);
+//	    swprintf(strpubaddr, "%02x", (wchar_t)pubAddr[i]);
+    }
+    free(pubAddr);
+
+/*    for(int i=0; i<40; i+=2) {
+	    strpubaddr[i] = (unsigned char)pubAddr[i];
+    }
+*/
+    /*
+    printf("str>>>> : %s \n", strpubaddr);
+
+    printf("%d \n", ud_req->payment_num);
+    printf("%d \n", ud_req->type); 
+
+    printf("%s \n", (ud_req->participant[0]).party);
+    printf("%d \n", (ud_req->participant[0]).payment_size);
+    printf("%d \n", (ud_req->participant[0]).channel_ids[0]);
+
+    printf("%s \n", ud_req->participant[1].party);
+    printf("%d \n", ud_req->participant[1].payment_size);
+    printf("%d \n", ud_req->participant[1].channel_ids[0]);
+    printf("%d \n", ud_req->participant[1].channel_ids[1]);
+
+    printf("%s \n", ud_req->participant[2].party);
+    printf("%d \n", ud_req->participant[2].payment_size);
+    printf("%d \n", ud_req->participant[2].channel_ids[0]);
+    */
+    unsigned char *tempMyAddr; 
+
+    for(int i=0; i<3; i++) {
+   	    tempMyAddr = ud_req->participant[i].party;
+//	    printf("%d temp addr : %s \n", i+1, tempMyAddr);
+
+	    if(!strcmp((char*)tempMyAddr, (char*)strpubaddr)) {
+//		    printf("OK!! \n");
+
+		    payment_size = ud_req->participant[i].payment_size;
+		    channel_ids = ud_req->participant[i].channel_ids;
+		    payment_amount = ud_req->participant[i].payment_amount;
+
+		    break;
+	    }	    
+    }
 
 //    printf("pn : %d POST UPDATE START \n", payment_num);
 //    printf("ps : %d \n", payment_size);
@@ -195,6 +361,7 @@ void ecall_go_post_update(unsigned char *msg, unsigned char *signature, unsigned
     unsigned int value;
 /*
     if(payments.find(payment_num) == payments.end()) {
+	printf("payment.insert \n");
         payments.insert(map_payment_value(payment_num, Payment(payment_num)));
         for(int i = 0; i < payment_size; i++)
             payments.find(payment_num)->second.add_element(channel_ids[i], payment_amount[i]);
@@ -207,11 +374,17 @@ void ecall_go_post_update(unsigned char *msg, unsigned char *signature, unsigned
 
         value = (payment_amount[i] < 0) ? payment_amount[i] * -1 : payment_amount[i];
 
-        if(0 < payment_amount[i])
+        if(0 < payment_amount[i]) {
             channels.find(channel_ids[i])->second.paid(value);
+	    reply.amount = value;
+//	    printf("reply.amount %d \n", value);
+	}
         else {
             channels.find(channel_ids[i])->second.m_locked_balance += payment_amount[i];
             channels.find(channel_ids[i])->second.pay(value);
+
+	    reply.amount = value;
+//	    printf("reply.amount %d \n", value);
         }
 
         channels.find(channel_ids[i])->second.transition_to_post_update();
@@ -229,11 +402,12 @@ void ecall_go_post_update(unsigned char *msg, unsigned char *signature, unsigned
 
     reply.type = UD_RES;
     reply.payment_num = payment_num;
+    reply.e = 1;
 
     seckey = accounts.find(pubkey)->second.get_seckey();
-    sign_message((unsigned char*)&reply, sizeof(Message), (unsigned char*)seckey.data(), reply_signature);
+    sign_message((unsigned char*)&reply, sizeof(MessageRes), (unsigned char*)seckey.data(), reply_signature);
 
-    memcpy(original_msg, (unsigned char*)&reply, sizeof(Message));
+    memcpy(original_msg, (unsigned char*)&reply, sizeof(MessageRes));
     memcpy(output, reply_signature, 65);
 
     //free(pubkey);
@@ -295,12 +469,15 @@ void ecall_go_post_update_two(unsigned char *msg, unsigned char *signature, unsi
     return;    
 }
 
-void ecall_go_idle(unsigned char *msg, unsigned char *signature, unsigned int *result)
+void ecall_go_idle(unsigned char *msg, unsigned char *signature, unsigned char *senderMSG, unsigned char *senderSig, unsigned char *middleManMSG, unsigned char *middleManSig, unsigned char *receiverMSG, unsigned char *receiverSig, unsigned char *crossServerMSG, unsigned char *crossServerSig, unsigned int *result)
 {
-    //printf("IDLE UPDATE START \n");
+//    printf("IDLE UPDATE START \n");
 
     unsigned char reply_signature[65] = {0, };
-    unsigned int payment_num;
+
+    unsigned char *my_addr;
+    unsigned int payment_num, payment_size;
+    unsigned int *channel_ids;
 
     Message *confirm = (Message*)msg;
 
@@ -309,6 +486,32 @@ void ecall_go_idle(unsigned char *msg, unsigned char *signature, unsigned int *r
     if(verify_message(1, signature, msg, sizeof(Message), NULL))
         return;
 */
+
+    verify_message(1, senderSig, senderMSG, sizeof(MessageRes), NULL);
+    verify_message(1, middleManSig, middleManMSG, sizeof(MessageRes), NULL);
+    verify_message(1, receiverSig, receiverMSG, sizeof(MessageRes), NULL);
+
+    Message *senderMsg = (Message*)senderMSG;
+    Message *middleManMsg = (Message*)middleManMSG;
+    Message *receiverMsg = (Message*)receiverMSG;
+
+    if(crossServerMSG != NULL) {
+	    verify_message(1, crossServerSig, crossServerMSG, sizeof(Cross_Message), NULL);
+	    Cross_Message *cross_message = (Cross_Message*) crossServerMSG;
+
+	    if(cross_message->type != CROSS_ALL_CONFIRM_REQ) {
+	    	    printf("NOT CROSS ALL CONFIRM REQ \n");
+	    	    printf("%d \n", cross_message->type);
+	    	    *result = 1;
+	    	    return;
+	    }
+    } 
+
+
+    if(senderMsg->amount == middleManMsg->amount && 
+		    middleManMsg->amount == receiverMsg->amount) { /*printf("same amount !! \n");*/ }
+    else { return; }
+
     verify_message(1, signature, msg, sizeof(Message), NULL);
 
     /* step 2. check that message type is 'UD_REQ' */
@@ -320,21 +523,131 @@ void ecall_go_idle(unsigned char *msg, unsigned char *signature, unsigned int *r
         return;
     }
 
-    /* step 3. complete payment */
+    payment_num = confirm->payment_num;
+    /*
+    payment_size = ud_req->payment_size;
+    channel_ids = ud_req->channel_ids;
+    payment_amount = ud_req->payment_amount;
+    */
+ 
+    unsigned char *pubAddr;
+    unsigned int num_public_addrs;
 
+    ecall_get_num_public_addrs(&num_public_addrs);
+    pubAddr = (unsigned char*)malloc(sizeof(address) * num_public_addrs);
+
+    ecall_get_public_addrs(pubAddr);
+
+    unsigned char* strpubaddr[41] = {0, };
+
+    int len;
+    len = snprintf((char *)strpubaddr, 41, "%02x", pubAddr[0]);
+    for(int i=1; i<20; i++) {
+	    len += snprintf((char *)strpubaddr+len, 41, "%02x", pubAddr[i]);
+//	    printf("str>>>> : %s \n", strpubaddr);
+	    //if(!strcmp((char*)pubAddr[i], "f5"))
+	//	    printf("OK \n");
+//	    sprintf_s(strpubaddr, "%02x", pubAddr[i]);
+//	    swprintf(strpubaddr, "%02x", (wchar_t)pubAddr[i]);
+    }
+    free(pubAddr);
+
+/*    for(int i=0; i<40; i+=2) {
+	    strpubaddr[i] = (unsigned char)pubAddr[i];
+    }
+*/
+
+    /*    
+    printf("str>>>> : %s \n", strpubaddr);
+
+    printf("%d \n", confirm->payment_num);
+    printf("%d \n", confirm->type); 
+
+    printf("%s \n", (confirm->participant[0]).party);
+    printf("%d \n", (confirm->participant[0]).payment_size);
+    printf("%d \n", (confirm->participant[0]).channel_ids[0]);
+
+    printf("%s \n", confirm->participant[1].party);
+    printf("%d \n", confirm->participant[1].payment_size);
+    printf("%d \n", confirm->participant[1].channel_ids[0]);
+    printf("%d \n", confirm->participant[1].channel_ids[1]);
+
+    printf("%s \n", confirm->participant[2].party);
+    printf("%d \n", confirm->participant[2].payment_size);
+    printf("%d \n", confirm->participant[2].channel_ids[0]);
+    */
+
+    unsigned char *tempMyAddr; 
+
+    for(int i=0; i<3; i++) {
+   	    tempMyAddr = confirm->participant[i].party;
+//	    printf("%d temp addr : %s \n", i+1, tempMyAddr);
+
+	    if(!strcmp((char*)tempMyAddr, (char*)strpubaddr)) {
+//		    printf("OK!! \n");
+
+		    payment_size = confirm->participant[i].payment_size;
+		    channel_ids = confirm->participant[i].channel_ids;		    
+		    //payment_amount = confirm->participant[i].payment_amount;
+		    break;
+	    }	    
+    }
+
+//    printf("pn : %d POST UPDATE START \n", payment_num);
+//    printf("ps : %d \n", payment_size);
+/*   
+    printf("channel ids: ");
+    for(int i = 0; i < payment_size; i++)
+        printf("[%d] ", channel_ids[i]);
+    printf("\n");    
+*/    
+
+/*
+    if(payments.find(payment_num) == payments.end()) {
+	printf("payment.insert \n");
+        payments.insert(map_payment_value(payment_num, Payment(payment_num)));
+        for(int i = 0; i < payment_size; i++)
+            payments.find(payment_num)->second.add_element(channel_ids[i], payment_amount[i]);
+    }
+*/
+    //rwMutex.lock();
+    
+    for(int i = 0; i < payment_size; i++) {
+//	printf("payment size : %d POST UPDATE PAYMENT SIZE \n", payment_size);
+/*
+        value = (payment_amount[i] < 0) ? payment_amount[i] * -1 : payment_amount[i];
+
+        if(0 < payment_amount[i])
+            channels.find(channel_ids[i])->second.paid(value);
+        else {
+            channels.find(channel_ids[i])->second.m_locked_balance += payment_amount[i];
+            channels.find(channel_ids[i])->second.pay(value);
+        }
+*/
+        channels.find(channel_ids[i])->second.transition_to_idle();
+//	printf("channel %d is idle updated \n", channel_ids[i]);
+    }
+
+    *result = 9999;
+    return;
+
+    /* step 3. complete payment */
+/*
     payment_num = confirm->payment_num;
 
     std::vector<Related> c = payments.find(payment_num)->second.m_related_channels;
     //rwMutex.lock();
     for(int i = 0; i < c.size(); i++) {
         channels.find(c.at(i).channel_id)->second.transition_to_idle();
-//	printf("%d channel is dile updated \n", c.at(i).channel_id);
+	printf("%d channel is idle updated \n", c.at(i).channel_id);
     }
     //rwMutex.unlock();
 
-    //printf("IDLE UPDATED \n");
+    printf("IDLE UPDATED \n");
     *result = 9999;
     return;
+*/
+
 }
 
 void ecall_go_idle_two(unsigned char *msg, unsigned char *signature)
@@ -368,8 +681,180 @@ void ecall_register_comminfo(unsigned int channel_id, unsigned char *ip, unsigne
  * InstaPay 3.0
  */
 
-void ecall_cross_go_pre_update(unsigned char *msg, unsigned char *signature, unsigned char *original_msg, unsigned char *output)
+void ecall_cross_go_pre_update(unsigned char *msg, unsigned char *signature, unsigned char *original_msg, unsigned char *output, unsigned int *result)
 {
+//    printf("PRE UPDATE START \n");
+    unsigned char reply_signature[65] = {0, };
+    unsigned char *my_addr;
+
+    unsigned int payment_num, payment_size;
+    unsigned int *channel_ids;
+    int *payment_amount; 
+
+    Cross_Message *prepare_req = (Cross_Message*)msg;
+    MessageRes reply;
+
+    memset((unsigned char*)&reply, 0x00, sizeof(MessageRes));
+
+/*    
+    printf("[FROM SERVER] msg: ");
+    for(int i = 0; i < 44; i++)
+        printf("%02x", msg[i]);
+    printf("\n");
+
+    printf("[FROM SERVER] sig: ");
+    for(int i = 0; i < 65; i++)
+        printf("%02x", signature[i]);
+    printf("\n");
+*/    
+
+    /* step 1. verify signature */
+    /*
+    if(verify_message(1, signature, msg, sizeof(Message), NULL))
+        return;
+    */
+    /* step 2. check that message type is 'AG_REQ' */
+   
+    verify_message(1, signature, msg, sizeof(Cross_Message), NULL);
+    
+//    printf("type : %d \n", ag_req->type);
+
+    if(prepare_req->type != CROSS_PREPARE_REQ) {
+	printf("NOT CROSS_PREPARE_REQ \n");
+	printf("%d \n", prepare_req->type);
+	*result = 1;
+        return;
+    }
+
+    /* step 3. generate payment instance */
+
+    payment_num = prepare_req->payment_num;
+    /*
+    payment_size = ag_req->payment_size;
+    channel_ids = ag_req->channel_ids;
+    payment_amount = ag_req->payment_amount;
+    */
+   
+    unsigned char *pubAddr;
+    unsigned int num_public_addrs;
+
+    ecall_get_num_public_addrs(&num_public_addrs);
+    pubAddr = (unsigned char*)malloc(sizeof(address) * num_public_addrs);
+
+    ecall_get_public_addrs(pubAddr);
+
+    unsigned char* strpubaddr[41] = {0, };
+
+    int len;
+    len = snprintf((char *)strpubaddr, 41, "%02x", pubAddr[0]);
+    for(int i=1; i<20; i++) {
+	    len += snprintf((char *)strpubaddr+len, 41, "%02x", pubAddr[i]);
+//	    printf("str>>>> : %s \n", strpubaddr);
+	    //if(!strcmp((char*)pubAddr[i], "f5"))
+	//	    printf("OK \n");
+//	    sprintf_s(strpubaddr, "%02x", pubAddr[i]);
+//	    swprintf(strpubaddr, "%02x", (wchar_t)pubAddr[i]);
+    }
+    free(pubAddr);
+
+/*    for(int i=0; i<40; i+=2) {
+	    strpubaddr[i] = (unsigned char)pubAddr[i];
+    }
+*/
+    
+//    printf("str>>>> : %s \n", strpubaddr);
+
+//    printf("%d \n", ag_req->payment_num);
+//    printf("%d \n", ag_req->type); 
+
+//    printf("%d \n", (ag_req->participant[0]).payment_size);
+//    printf("%s \n", (ag_req->participant[0]).party);
+//    printf("%d \n", (ag_req->participant[0]).payment_size);
+//    printf("%d \n", (ag_req->participant[0]).channel_ids[0]);
+/*
+    printf("%s \n", ag_req->participant[1].party);
+    printf("%d \n", ag_req->participant[1].payment_size);
+    printf("%d \n", ag_req->participant[1].channel_ids[0]);
+    printf("%d \n", ag_req->participant[1].channel_ids[1]);
+
+    printf("%s \n", ag_req->participant[2].party);
+    printf("%d \n", ag_req->participant[2].payment_size);
+    printf("%d \n", ag_req->participant[2].channel_ids[0]);
+    */
+    unsigned char *tempMyAddr; 
+
+    for(int i=0; i<3; i++) {
+   	    tempMyAddr = prepare_req->participant[i].party;
+//	    printf("%d temp addr : %s \n", i+1, tempMyAddr);
+
+	    if(!strcmp((char*)tempMyAddr, (char*)strpubaddr)) {
+//		    printf("OK!! \n");
+
+		    payment_size = prepare_req->participant[i].payment_size;
+		    channel_ids = prepare_req->participant[i].channel_ids;
+		    payment_amount = prepare_req->participant[i].payment_amount;
+
+		    break;
+	    }	    
+    }
+/*    
+    printf("channel ids: ");
+    for(int i = 0; i < payment_size; i++)
+        printf("[%d] ", channel_ids[i]);
+    printf("\n");
+*/    
+
+//    rwMutex.lock();
+    //payments.insert(map_payment_value(payment_num, Payment(payment_num)));
+    
+    for(int i = 0; i < payment_size; i++) {
+        //ayments.find(payment_num)->second.add_element(channel_ids[i], payment_amount[i]);
+        //channels.find(channel_ids[i])->second.transition_to_pre_update();
+        channels.find(channel_ids[i])->second.transition_to_cross_pre_update();
+
+        if(payment_amount[i] < 0) {
+            channels.find(channel_ids[i])->second.m_reserved_balance += payment_amount[i] * -1;
+            //channels.find(channel_ids[i])->second.m_locked_balance += payment_amount[i] * -1;	
+	    channels.find(channel_ids[i])->second.m_balance -= payment_amount[i] * -1;
+
+	    reply.amount = payment_amount[i] * -1; 
+	} else {
+		reply.amount = payment_amount[i];
+	}
+
+//	printf("%d channel is pre updated \n", channel_ids[i]);
+    }
+
+//    rwMutex.unlock();
+
+    /* step 4. generate reply message */
+
+    my_addr = channels.find(channel_ids[0])->second.m_my_addr;
+
+    std::vector<unsigned char> pubkey(my_addr, my_addr + 20);
+    std::vector<unsigned char> seckey;
+
+    reply.type = CROSS_PREPARE_RES;
+    reply.payment_num = payment_num;
+    reply.e = 1;
+    seckey = accounts.find(pubkey)->second.get_seckey();
+
+//    printf("SIGN START \n");
+    sign_message((unsigned char*)&reply, sizeof(MessageRes), (unsigned char*)seckey.data(), reply_signature);
+//    printf("SIGN END \n");
+
+    memcpy(original_msg, (unsigned char*)&reply, sizeof(MessageRes));
+    memcpy(output, reply_signature, 65);
+
+    //free(pubkey);
+    //free(seckey);
+
+//    printf("PRE UPDATED \n");
+    *result = 9999;
+    return;
+
+
+/*
     unsigned char reply_signature[65] = {0, };
     unsigned char *my_addr;
 
@@ -383,23 +868,19 @@ void ecall_cross_go_pre_update(unsigned char *msg, unsigned char *signature, uns
     memset((unsigned char*)&reply, 0x00, sizeof(Cross_Message));
 
     printf("[FROM SERVER] msg: ");
-/*    for(int i = 0; i < 44; i++)
+    for(int i = 0; i < 44; i++)
         printf("%02x", msg[i]);
-	*/
+
     printf("\n");
 
     printf("[FROM SERVER] sig: ");
-/*    for(int i = 0; i < 65; i++)
+    for(int i = 0; i < 65; i++)
         printf("%02x", signature[i]);
-*/  printf("\n");
+  printf("\n");
 
-    /* step 1. verify signature */
-    /*
-    if(verify_message(1, signature, msg, sizeof(Cross_Message), NULL))
-        return;
-*/
+//    if(verify_message(1, signature, msg, sizeof(Cross_Message), NULL))
+//        return;
 
-    /* step 2. check that message type is 'AG_REQ' */
 
     if(ag_req->type != CROSS_PREPARE_REQ)
     {
@@ -409,7 +890,6 @@ void ecall_cross_go_pre_update(unsigned char *msg, unsigned char *signature, uns
 
     printf("PREPARE MSG SUCCESS \n");
 
-    /* step 3. generate payment instance */
 
     payment_num = ag_req->payment_num;
     payment_size = ag_req->payment_size;
@@ -436,7 +916,6 @@ void ecall_cross_go_pre_update(unsigned char *msg, unsigned char *signature, uns
     	printf("channel %d pre_update reserved_bal : %d \n", i, channels.find(channel_ids[i])->second.m_reserved_balance);
     }
 
-    /* step 4. generate reply message */
 
     printf("PREPARE START - GENERATE REPLY MESSAGE \n");
     my_addr = channels.find(channel_ids[0])->second.m_my_addr;
@@ -468,11 +947,209 @@ void ecall_cross_go_pre_update(unsigned char *msg, unsigned char *signature, uns
 
     printf("PREPARE END - GENERATE REPLY MESSAGE \n");
     return;
+    */
 }
 
-
-void ecall_cross_go_post_update(unsigned char *msg, unsigned char *signature, unsigned char *original_msg, unsigned char *output)
+void ecall_cross_go_post_update(unsigned char *msg, unsigned char *signature, unsigned char *senderMSG, unsigned char *senderSig, unsigned char *middleManMSG, unsigned char *middleManSig, unsigned char *receiverMSG, unsigned char *receiverSig, unsigned char *crossServerMSG, unsigned char* crossServerSig, unsigned char *original_msg, unsigned char *output, unsigned int *result)
 {
+ //    printf("POST UPDATE START \n");
+
+    unsigned char reply_signature[65] = {0, };
+    unsigned char *my_addr;
+
+    unsigned int payment_num, payment_size;
+    unsigned int *channel_ids;
+    int *payment_amount; 
+
+    Cross_Message *ud_req = (Cross_Message*)msg;
+    MessageRes reply;
+
+    memset((unsigned char*)&reply, 0x00, sizeof(MessageRes));
+
+    /* step 1. verify signature */
+/*
+    if(verify_message(1, signature, msg, sizeof(Message), NULL))
+        return;
+*/
+
+    verify_message(1, senderSig, senderMSG, sizeof(MessageRes), NULL);
+    verify_message(1, middleManSig, middleManMSG, sizeof(MessageRes), NULL);
+    verify_message(1, receiverSig, receiverMSG, sizeof(MessageRes), NULL);
+
+    if(crossServerMSG != NULL) {
+	    verify_message(1, crossServerSig, crossServerMSG, sizeof(Cross_Message), NULL);
+	    Cross_Message *cross_message = (Cross_Message*) crossServerMSG;
+
+	    if(cross_message->type != CROSS_ALL_COMMIT_REQ) {
+	    	    printf("NOT CROSS ALL COMMIT REQ \n");
+	    	    printf("%d \n", cross_message->type);
+	    	    *result = 1;
+	    	    return;
+	    }
+    } 
+
+    MessageRes *senderMsg = (MessageRes*)senderMSG;
+    MessageRes *middleManMsg = (MessageRes*)middleManMSG;
+    MessageRes *receiverMsg = (MessageRes*)receiverMSG;
+//    printf("%d %d %d \n", senderMsg->amount, middleManMsg->amount, receiverMsg->amount);
+
+    if(senderMsg->amount == middleManMsg->amount && 
+		    middleManMsg->amount == receiverMsg->amount) { /*printf("same amount !! \n");*/ }
+    else { return; }
+
+    verify_message(1, signature, msg, sizeof(Cross_Message), NULL);
+
+    /* step 2. check that message type is 'UD_REQ' */
+
+//    printf("type : %d \n", ud_req->type);
+
+    if(ud_req->type != CROSS_COMMIT_REQ) {
+	printf("NOT UD REQ \n");
+	printf("%d \n", ud_req->type);
+	*result = 1;
+        return;
+    }
+
+    /* step 3. update channel state */
+
+    payment_num = ud_req->payment_num;
+    /*
+    payment_size = ud_req->payment_size;
+    channel_ids = ud_req->channel_ids;
+    payment_amount = ud_req->payment_amount;
+    */
+ 
+    unsigned char *pubAddr;
+    unsigned int num_public_addrs;
+
+    ecall_get_num_public_addrs(&num_public_addrs);
+    pubAddr = (unsigned char*)malloc(sizeof(address) * num_public_addrs);
+
+    ecall_get_public_addrs(pubAddr);
+
+    unsigned char* strpubaddr[41] = {0, };
+
+    int len;
+    len = snprintf((char *)strpubaddr, 41, "%02x", pubAddr[0]);
+    for(int i=1; i<20; i++) {
+	    len += snprintf((char *)strpubaddr+len, 41, "%02x", pubAddr[i]);
+//	    printf("str>>>> : %s \n", strpubaddr);
+	    //if(!strcmp((char*)pubAddr[i], "f5"))
+	//	    printf("OK \n");
+//	    sprintf_s(strpubaddr, "%02x", pubAddr[i]);
+//	    swprintf(strpubaddr, "%02x", (wchar_t)pubAddr[i]);
+    }
+    free(pubAddr);
+
+/*    for(int i=0; i<40; i+=2) {
+	    strpubaddr[i] = (unsigned char)pubAddr[i];
+    }
+*/
+    /*
+    printf("str>>>> : %s \n", strpubaddr);
+
+    printf("%d \n", ud_req->payment_num);
+    printf("%d \n", ud_req->type); 
+
+    printf("%s \n", (ud_req->participant[0]).party);
+    printf("%d \n", (ud_req->participant[0]).payment_size);
+    printf("%d \n", (ud_req->participant[0]).channel_ids[0]);
+
+    printf("%s \n", ud_req->participant[1].party);
+    printf("%d \n", ud_req->participant[1].payment_size);
+    printf("%d \n", ud_req->participant[1].channel_ids[0]);
+    printf("%d \n", ud_req->participant[1].channel_ids[1]);
+
+    printf("%s \n", ud_req->participant[2].party);
+    printf("%d \n", ud_req->participant[2].payment_size);
+    printf("%d \n", ud_req->participant[2].channel_ids[0]);
+    */
+    unsigned char *tempMyAddr; 
+
+    for(int i=0; i<3; i++) {
+   	    tempMyAddr = ud_req->participant[i].party;
+//	    printf("%d temp addr : %s \n", i+1, tempMyAddr);
+
+	    if(!strcmp((char*)tempMyAddr, (char*)strpubaddr)) {
+//		    printf("OK!! \n");
+
+		    payment_size = ud_req->participant[i].payment_size;
+		    channel_ids = ud_req->participant[i].channel_ids;
+		    payment_amount = ud_req->participant[i].payment_amount;
+
+		    break;
+	    }	    
+    }
+
+//    printf("pn : %d POST UPDATE START \n", payment_num);
+//    printf("ps : %d \n", payment_size);
+/*   
+    printf("channel ids: ");
+    for(int i = 0; i < payment_size; i++)
+        printf("[%d] ", channel_ids[i]);
+    printf("\n");    
+*/    
+
+//    printf("#################################### \n");
+    unsigned int value;
+/*
+    if(payments.find(payment_num) == payments.end()) {
+	printf("payment.insert \n");
+        payments.insert(map_payment_value(payment_num, Payment(payment_num)));
+        for(int i = 0; i < payment_size; i++)
+            payments.find(payment_num)->second.add_element(channel_ids[i], payment_amount[i]);
+    }
+*/
+    //rwMutex.lock();
+    
+    for(int i = 0; i < payment_size; i++) {
+//	printf("payment size : %d POST UPDATE PAYMENT SIZE \n", payment_size);
+
+        value = (payment_amount[i] < 0) ? payment_amount[i] * -1 : payment_amount[i];
+ 
+        if(0 < payment_amount[i]) {
+ 	    channels.find(channel_ids[i])->second.m_reserved_balance += value;
+  	    //channels.find(channel_ids[i])->second.paid(value);
+	    reply.amount = value;
+//	    printf("reply.amount %d \n", value);
+	}
+        else {
+            //channels.find(channel_ids[i])->second.m_locked_balance += payment_amount[i];
+            //channels.find(channel_ids[i])->second.pay(value);
+
+	    reply.amount = value;
+//	    printf("reply.amount %d \n", value);
+        }
+
+        channels.find(channel_ids[i])->second.transition_to_cross_post_update();
+//	printf("channel %d is post updated \n", channel_ids[i]);
+    }
+
+    //rwMutex.unlock();
+
+    /* step 4. generate reply message */
+
+    my_addr = channels.find(channel_ids[0])->second.m_my_addr;
+
+    std::vector<unsigned char> pubkey(my_addr, my_addr + 20);
+    std::vector<unsigned char> seckey;
+
+    reply.type = UD_RES;
+    reply.payment_num = payment_num;
+    reply.e = 1;
+
+    seckey = accounts.find(pubkey)->second.get_seckey();
+    sign_message((unsigned char*)&reply, sizeof(MessageRes), (unsigned char*)seckey.data(), reply_signature);
+
+    memcpy(original_msg, (unsigned char*)&reply, sizeof(MessageRes));
+    memcpy(output, reply_signature, 65);
+
+    //free(pubkey);
+    //free(seckey);
+//    printf("%d POST UPDATED \n", payment_num);
+    *result = 9999;
+    return;    
+/*
     unsigned char reply_signature[65] = {0, };
     unsigned char *my_addr;
 
@@ -485,17 +1162,14 @@ void ecall_cross_go_post_update(unsigned char *msg, unsigned char *signature, un
 
     memset((unsigned char*)&reply, 0x00, sizeof(Cross_Message));
 
-    /* step 1. verify signature */
-/*
-    if(verify_message(1, signature, msg, sizeof(Cross_Message), NULL))
-        return;
-*/
-    /* step 2. check that message type is 'UD_REQ' */
+
+//    if(verify_message(1, signature, msg, sizeof(Cross_Message), NULL))
+//        return;
+
 
     if(ud_req->type != CROSS_COMMIT_REQ)
         return;
 
-    /* step 3. update channel state */
 
     payment_num = ud_req->payment_num;
     payment_size = ud_req->payment_size;
@@ -532,7 +1206,6 @@ void ecall_cross_go_post_update(unsigned char *msg, unsigned char *signature, un
         channels.find(channel_ids[i])->second.transition_to_cross_post_update();
     }
 
-    /* step 4. generate reply message */
     printf("COMMIT START - GENERATE REPLY MESSAGE \n");
 
     my_addr = channels.find(channel_ids[0])->second.m_my_addr;
@@ -562,11 +1235,183 @@ void ecall_cross_go_post_update(unsigned char *msg, unsigned char *signature, un
     
     printf("COMMIT END - GENERATE REPLY MESSAGE \n");
     return;    
+*/
 }
 
-
-void ecall_cross_go_idle(unsigned char *msg, unsigned char *signature)
+void ecall_cross_go_idle(unsigned char *msg, unsigned char *signature, unsigned char *senderMSG, unsigned char *senderSig, unsigned char *middleManMSG, unsigned char *middleManSig, unsigned char *receiverMSG, unsigned char *receiverSig, unsigned char *crossServerMSG, unsigned char *crossServerSig, unsigned int *result)
 {
+//    printf("IDLE UPDATE START \n");
+
+    unsigned char reply_signature[65] = {0, };
+
+    unsigned char *my_addr;
+    unsigned int payment_num, payment_size;
+    unsigned int *channel_ids;
+    int *payment_amount; 
+
+    Cross_Message *confirm = (Cross_Message*)msg;
+
+    /* step 1. verify signature */
+/*
+    if(verify_message(1, signature, msg, sizeof(Message), NULL))
+        return;
+*/
+
+    verify_message(1, senderSig, senderMSG, sizeof(MessageRes), NULL);
+    verify_message(1, middleManSig, middleManMSG, sizeof(MessageRes), NULL);
+    verify_message(1, receiverSig, receiverMSG, sizeof(MessageRes), NULL);
+
+    Message *senderMsg = (Message*)senderMSG;
+    Message *middleManMsg = (Message*)middleManMSG;
+    Message *receiverMsg = (Message*)receiverMSG;
+
+    if(crossServerMSG != NULL) {
+	    verify_message(1, crossServerSig, crossServerMSG, sizeof(Cross_Message), NULL);
+	    Cross_Message *cross_message = (Cross_Message*) crossServerMSG;
+
+	    if(cross_message->type != CROSS_ALL_CONFIRM_REQ) {
+	    	    printf("NOT CROSS ALL CONFIRM REQ \n");
+	    	    printf("%d \n", cross_message->type);
+	    	    *result = 1;
+	    	    return;
+	    }
+    } 
+
+
+    if(senderMsg->amount == middleManMsg->amount && 
+		    middleManMsg->amount == receiverMsg->amount) { /*printf("same amount !! \n");*/ }
+    else { return; }
+
+    verify_message(1, signature, msg, sizeof(Cross_Message), NULL);
+
+    /* step 2. check that message type is 'UD_REQ' */
+
+    if(confirm->type != CROSS_CONFIRM_REQ) {
+	printf("NOT CROSS CONFIRM REQ \n");
+	printf("%d \n", confirm->type);
+	*result = 1;
+        return;
+    }
+
+    payment_num = confirm->payment_num;
+    /*
+    payment_size = ud_req->payment_size;
+    channel_ids = ud_req->channel_ids;
+    payment_amount = ud_req->payment_amount;
+    */
+ 
+    unsigned char *pubAddr;
+    unsigned int num_public_addrs;
+
+    ecall_get_num_public_addrs(&num_public_addrs);
+    pubAddr = (unsigned char*)malloc(sizeof(address) * num_public_addrs);
+
+    ecall_get_public_addrs(pubAddr);
+
+    unsigned char* strpubaddr[41] = {0, };
+
+    int len;
+    len = snprintf((char *)strpubaddr, 41, "%02x", pubAddr[0]);
+    for(int i=1; i<20; i++) {
+	    len += snprintf((char *)strpubaddr+len, 41, "%02x", pubAddr[i]);
+//	    printf("str>>>> : %s \n", strpubaddr);
+	    //if(!strcmp((char*)pubAddr[i], "f5"))
+	//	    printf("OK \n");
+//	    sprintf_s(strpubaddr, "%02x", pubAddr[i]);
+//	    swprintf(strpubaddr, "%02x", (wchar_t)pubAddr[i]);
+    }
+    free(pubAddr);
+
+/*    for(int i=0; i<40; i+=2) {
+	    strpubaddr[i] = (unsigned char)pubAddr[i];
+    }
+*/
+
+    /*    
+    printf("str>>>> : %s \n", strpubaddr);
+
+    printf("%d \n", confirm->payment_num);
+    printf("%d \n", confirm->type); 
+
+    printf("%s \n", (confirm->participant[0]).party);
+    printf("%d \n", (confirm->participant[0]).payment_size);
+    printf("%d \n", (confirm->participant[0]).channel_ids[0]);
+
+    printf("%s \n", confirm->participant[1].party);
+    printf("%d \n", confirm->participant[1].payment_size);
+    printf("%d \n", confirm->participant[1].channel_ids[0]);
+    printf("%d \n", confirm->participant[1].channel_ids[1]);
+
+    printf("%s \n", confirm->participant[2].party);
+    printf("%d \n", confirm->participant[2].payment_size);
+    printf("%d \n", confirm->participant[2].channel_ids[0]);
+    */
+
+    unsigned char *tempMyAddr; 
+
+    for(int i=0; i<3; i++) {
+   	    tempMyAddr = confirm->participant[i].party;
+//	    printf("%d temp addr : %s \n", i+1, tempMyAddr);
+
+	    if(!strcmp((char*)tempMyAddr, (char*)strpubaddr)) {
+//		    printf("OK!! \n");
+
+		    payment_size = confirm->participant[i].payment_size;
+		    channel_ids = confirm->participant[i].channel_ids;		    
+		    payment_amount = confirm->participant[i].payment_amount;
+		    break;
+	    }	    
+    }
+
+//    printf("pn : %d POST UPDATE START \n", payment_num);
+//    printf("ps : %d \n", payment_size);
+/*   
+    printf("channel ids: ");
+    for(int i = 0; i < payment_size; i++)
+        printf("[%d] ", channel_ids[i]);
+    printf("\n");    
+*/    
+
+/*
+    if(payments.find(payment_num) == payments.end()) {
+	printf("payment.insert \n");
+        payments.insert(map_payment_value(payment_num, Payment(payment_num)));
+        for(int i = 0; i < payment_size; i++)
+            payments.find(payment_num)->second.add_element(channel_ids[i], payment_amount[i]);
+    }
+*/
+    //rwMutex.lock();
+    
+    for(int i = 0; i < payment_size; i++) {
+//	printf("payment size : %d POST UPDATE PAYMENT SIZE \n", payment_size);
+/*
+        value = (payment_amount[i] < 0) ? payment_amount[i] * -1 : payment_amount[i];
+
+        if(0 < payment_amount[i])
+            channels.find(channel_ids[i])->second.paid(value);
+        else {
+            channels.find(channel_ids[i])->second.m_locked_balance += payment_amount[i];
+            channels.find(channel_ids[i])->second.pay(value);
+        }
+*/
+	unsigned int value = (payment_amount[i] < 0) ? payment_amount[i] * -1 : payment_amount[i];
+
+	if(0 < payment_amount[i]) {
+		channels.find(channel_ids[i])->second.m_reserved_balance -= value;
+		channels.find(channel_ids[i])->second.m_balance += value;
+		//channels.find(channel_ids[i])->second.paid(value);
+        }
+	else {
+		channels.find(channel_ids[i])->second.m_reserved_balance -= value;
+	}
+
+        channels.find(channel_ids[i])->second.transition_to_cross_idle();
+//	printf("channel %d is idle updated \n", channel_ids[i]);
+    }
+
+    *result = 9999;
+    return;
+/*
     unsigned char reply_signature[65] = {0, };
 
     unsigned int payment_num, payment_size;
@@ -576,20 +1421,16 @@ void ecall_cross_go_idle(unsigned char *msg, unsigned char *signature)
 
     Cross_Message *confirm = (Cross_Message*)msg;
 
-    /* step 1. verify signature */
 
     printf("cross_go_idle sig verification \n");
-    /*
-    if(verify_message(1, signature, msg, sizeof(Cross_Message), NULL))
-        return;
-*/
-    /* step 2. check that message type is 'UD_REQ' */
+  
+//    if(verify_message(1, signature, msg, sizeof(Cross_Message), NULL))
+//        return;
 
     printf("cross_go_idle type verification \n");
     if(confirm->type != CROSS_CONFIRM_REQ)
         return;
-
-    /* step 3. complete payment */
+*/
 /*
     payment_num = confirm->payment_num;
 
@@ -599,7 +1440,7 @@ void ecall_cross_go_idle(unsigned char *msg, unsigned char *signature)
 
     }
 */
-
+/*
     payment_num = confirm->payment_num;
     payment_size = confirm->payment_size;
     channel_ids = confirm->channel_ids;
@@ -640,12 +1481,13 @@ void ecall_cross_go_idle(unsigned char *msg, unsigned char *signature)
     }
 
     printf("=========== CORSS IDLE END!!!! ============ \n");
+    */
     return;
 }
 
 void ecall_cross_refund(unsigned char *msg, unsigned char *signature)
 {
-    unsigned char reply_signature[65] = {0, };
+/*    unsigned char reply_signature[65] = {0, };
 
     unsigned int payment_num, payment_size;
     unsigned int *channel_ids;
@@ -653,7 +1495,7 @@ void ecall_cross_refund(unsigned char *msg, unsigned char *signature)
 
 
     Cross_Message *refund = (Cross_Message*)msg;
-
+*/
     /* step 1. verify signature */
 /*
     printf("cross_refund sig verification \n");
@@ -661,12 +1503,13 @@ void ecall_cross_refund(unsigned char *msg, unsigned char *signature)
         return;
 */
     /* step 2. check that message type is 'UD_REQ' */
-
+/*
     printf("cross_refund type verification \n");
     if(refund->type != CROSS_REFUND_REQ)
         return;
 
     printf("TYPE IS CROSS_REFUND_REQ \n");
+*/
     /* step 3. complete payment */
 /*
     payment_num = confirm->payment_num;
@@ -677,7 +1520,7 @@ void ecall_cross_refund(unsigned char *msg, unsigned char *signature)
 
     }
 */
-
+/*
     payment_num = refund->payment_num;
     payment_size = refund->payment_size;
     channel_ids = refund->channel_ids;
@@ -725,7 +1568,7 @@ void ecall_cross_refund(unsigned char *msg, unsigned char *signature)
     }
 
 
-
+*/
     return;
 }
 

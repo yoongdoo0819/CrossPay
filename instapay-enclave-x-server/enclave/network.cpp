@@ -311,7 +311,7 @@ void ecall_cross_create_all_prepare_req_msg_temp(unsigned int payment_num, unsig
 	memset((unsigned char*)&request, 0x00, sizeof(Cross_Message));
 
 //	request.type = CROSS_ALL_PREPARE_REQ;
-	request.type = CROSS_PREPARE_RES ;
+	request.type = CROSS_PREPARE_REQ;
 	request.payment_num = payment_num;
 
 	memcpy(request.participant[0].party, sender, 41);
@@ -448,7 +448,7 @@ void ecall_cross_create_all_commit_req_msg_temp(unsigned int payment_num, unsign
 	memset((unsigned char*)&request, 0x00, sizeof(Cross_Message));
 
 //	request.type = CROSS_ALL_PREPARE_REQ;
-	request.type = CROSS_ALL_COMMIT_REQ;
+	request.type = CROSS_COMMIT_REQ;
 	request.payment_num = payment_num;
 
 	memcpy(request.participant[0].party, sender, 41);
@@ -564,7 +564,7 @@ void ecall_cross_create_all_confirm_req_msg_temp(unsigned int payment_num, unsig
 	memset((unsigned char*)&request, 0x00, sizeof(Cross_Message));
 
 //	request.type = CROSS_ALL_PREPARE_REQ;
-	request.type = CROSS_COMMIT_RES;
+	request.type = CROSS_CONFIRM_REQ;
 	request.payment_num = payment_num;
 
 	memcpy(request.participant[0].party, sender, 41);

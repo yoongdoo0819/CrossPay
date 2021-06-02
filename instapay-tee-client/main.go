@@ -295,7 +295,7 @@ func createPaymentChannelsPrev(sender string, receiver string) {
 	deposit := C.uint(100)
 
 	fmt.Println("start")
-	for i:=1; i<=4500; i+=2 {
+	for i:=1; i<=50; i+=2 {
 		C.ecall_receive_create_channel_w(C.uint(uint32(i)), &_sender[0], &_receiver[0], deposit)
 	}
 
@@ -312,7 +312,7 @@ func createPaymentChannelsForAlice(sender string, receiver string) {
 	deposit := C.uint(100)
 
 	fmt.Println("start")
-	for i:=1; i<=4500; i+=2 {
+	for i:=1; i<=50; i+=2 {
 		C.ecall_receive_create_channel_w(C.uint(uint32(i)), &_sender[0], &_receiver[0], deposit)
 	}
 
@@ -330,7 +330,7 @@ func createPaymentChannelsForBob(sender string, receiver string) {
 	deposit := C.uint(100)
 
 	fmt.Println("start")
-	for i:=2; i<=4500; i+=2 {
+	for i:=2; i<=50; i+=2 {
 		C.ecall_receive_create_channel_w(C.uint(uint32(i)), &_sender[0], &_receiver[0], deposit)
 	}
 
@@ -347,7 +347,7 @@ func createPaymentChannelsForCarol(sender string, receiver string) {
 	deposit := C.uint(100)
 
 	fmt.Println("start")
-	for i:=2; i<=4500; i+=2 {
+	for i:=2; i<=50; i+=2 {
 		C.ecall_receive_create_channel_w(C.uint(uint32(i)), &_sender[0], &_receiver[0], deposit)
 	}
 

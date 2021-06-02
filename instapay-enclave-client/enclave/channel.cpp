@@ -41,13 +41,18 @@ unsigned int Channel::get_balance()
 /*** cross-payment ***/
 void Channel::transition_to_cross_pre_update()
 {
-    m_status = C_PRE;
+    m_cross_status = C_PRE;
 }
 
 
 void Channel::transition_to_cross_post_update()
 {
-    m_status = C_POST;
+    m_cross_status = C_POST;
+}
+
+void Channel::transition_to_cross_idle()
+{
+    m_cross_status = C_IDLE;
 }
 
 

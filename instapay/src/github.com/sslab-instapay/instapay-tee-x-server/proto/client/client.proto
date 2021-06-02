@@ -5,6 +5,12 @@ service Client {
     rpc updateRequest(UpdateRequestsMessage) returns (UpdateResult) {}
     rpc confirmPayment(ConfirmRequestsMessage) returns (ConfirmResult) {}
     rpc directChannelPayment(DirectChannelPaymentMessage) returns (DirectPaymentResult) {}
+    
+    rpc crossPaymentPrepareClientRequest(crossPaymentPrepareReqClientMessage) returns (PrepareResult) {}
+    rpc crossPaymentCommitClientRequest(crossPaymentCommitReqClientMessage) returns (CommitResult) {}
+    rpc crossPaymentConfirmClientRequest(crossPaymentConfirmReqClientMessage) returns (ConfirmResult) {}
+    rpc crossPaymentRefundClientRequest(crossPaymentRefundReqClientMessage) returns (RefundResult) {}
+
 }
 
 message AgreeRequestsMessage {
@@ -67,3 +73,60 @@ message DirectPaymentResult{
     bytes replyMessage = 2;
     bytes replySignature = 3;
 }
+
+
+/*
+ *
+ *
+ * InstaPay 3.0
+ */
+
+message crossPaymentPrepareReqClientMessage {
+     int64 paymentNumber = 1;
+     ChannelPayments channelPayments = 2;
+     repeated string addr = 3;
+     int64 amount = 4;
+     bytes originalMessage = 5;
+     bytes signature = 6;
+}
+
+message crossPaymentCommitReqClientMessage{
+     int64 paymentNumber = 1;
+     ChannelPayments channelPayments = 2;
+     repeated string addr = 3;
+     int64 amount = 4;
+     repeated bytes originalMessage = 5;
+     repeated bytes signature = 6;
+}
+ 
+ message crossPaymentConfirmReqClientMessage{
+     int64 paymentNumber = 1;
+     repeated bytes originalMessage = 2;
+     repeated bytes signature = 3;
+}
+ 
+message crossPaymentRefundReqClientMessage{
+     int64 paymentNumber = 1;
+     repeated bytes originalMessage = 2;
+     repeated bytes signature = 3;
+}
+ 
+message PrepareResult{
+     int64 paymentNumber = 1;
+     bool result = 2;
+     bytes originalMessage = 3;
+     bytes signature = 4;
+}
+ 
+message CommitResult{
+     int64 paymentNumber = 1;
+     bool result = 2;
+     bytes originalMessage = 3;
+     bytes signature = 4;
+}
+ 
+message RefundResult {
+     int64 paymentNumber = 1;
+     bool result = 2;
+}
+ 

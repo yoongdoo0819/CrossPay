@@ -101,7 +101,7 @@ func GetOpenedChannelList() ([]model.Channel, error) {
 	var ochs unsafe.Pointer
 
 	ochs = C.ecall_get_open_channels_w()
-	channelSize := 68
+	channelSize := 76
 	channelSlice := (*[1 << 30]C.channel)(unsafe.Pointer(ochs))[:channelSize:channelSize]
 
 	openChannelNumbers := int(C.ecall_get_num_open_channels_w())
@@ -130,11 +130,33 @@ func GetOpenedChannelList() ([]model.Channel, error) {
 		case 6:
 			channel.Status = model.C_POST
 		}
+
+		switch channelSlice[i].m_cross_status {
+		case 0:
+			channel.CrossStatus = model.PENDING
+		case 1:
+			channel.CrossStatus = model.IDLE
+		case 2:
+			channel.CrossStatus = model.PRE_UPDATE
+		case 3:
+			channel.CrossStatus = model.POST_UPDATE
+		case 4:
+			channel.CrossStatus = model.CLOSED
+		case 5:
+			channel.CrossStatus = model.C_IDLE
+		case 6:
+			channel.CrossStatus = model.C_PRE
+		case 7:
+			channel.CrossStatus = model.C_POST
+		}
+
 		channel.MyDeposit = int(channelSlice[i].m_my_deposit)
 		channel.OtherDeposit = int(channelSlice[i].m_other_deposit)
 		channel.MyBalance = int(channelSlice[i].m_balance)
 		channel.LockedBalance = int(channelSlice[i].m_locked_balance)
 		channel.ReservedBalance = int(channelSlice[i].m_reserved_balance)
+//		channel.CrossStatus = model.IDLE
+//		channel.ReservedBalance = int(channelSlice[i].m_reserved_balance)
 
 		var sig *C.uchar = &(channelSlice[i].m_my_addr[0])
 		hdr := reflect.SliceHeader{

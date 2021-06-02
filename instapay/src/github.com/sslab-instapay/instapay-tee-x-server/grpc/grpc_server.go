@@ -124,8 +124,10 @@ func SendCrossPaymentPrepareRequest(i interface{}) {
 	if client == nil {
 		log.Fatal("client conn err")
 	}
-
+/*
 	r, err := client.AgreementRequest(context.Background(), &pbClient.AgreeRequestsMessage{PaymentNumber: int64(pn), OriginalMessage: originalMessageByte, Signature: signatureByte})
+*/
+	r, err := client.CrossPaymentPrepareClientRequest(context.Background(), &pbClient.CrossPaymentPrepareReqClientMessage{PaymentNumber: int64(pn), OriginalMessage: originalMessageByte, Signature: signatureByte})
 
 	if err != nil {
 		log.Println("client AgreementRequest err : ", err)
@@ -163,8 +165,10 @@ func SendCrossPaymentCommitRequest(i interface{}) {
 		log.Fatal("client conn err")
 	}
 
-
+/*
 	r, err := client.UpdateRequest(context.Background(), &pbClient.UpdateRequestsMessage{PaymentNumber: int64(pn), OriginalMessage: originalMessageByteArray, Signature: signatureByteArray})
+*/
+	r, err := client.CrossPaymentCommitClientRequest(context.Background(), &pbClient.CrossPaymentCommitReqClientMessage{PaymentNumber: int64(pn), OriginalMessage: originalMessageByteArray, Signature: signatureByteArray})
 
 	if err != nil {
 		log.Println("client Commit Request err : ", err)
@@ -204,7 +208,7 @@ func SendCrossPaymentConfirmRequest(i interface{}) {
 		log.Fatal("client conn err")
 	}
 
-	_, err := client.ConfirmPayment(context.Background(), &pbClient.ConfirmRequestsMessage{PaymentNumber: int64(pn), OriginalMessage: originalMessageByteArray, Signature: signatureByteArray})
+	_, err := client.CrossPaymentConfirmClientRequest(context.Background(), &pbClient.CrossPaymentConfirmReqClientMessage{PaymentNumber: int64(pn), OriginalMessage: originalMessageByteArray, Signature: signatureByteArray})
 
 	if err != nil {
 		log.Println("client Confirm Request err : ", err)
@@ -438,7 +442,7 @@ func (s *ServerGrpc) CrossPaymentRequest(ctx context.Context, rs *pbXServer.Cros
 
 //	}
 
-	for i:= 1; i<=6; i++ {
+	for i:= 1; i<=3; i++ {
 
 		var data = <-Ch[int(rs.Pn)]
 
@@ -446,7 +450,7 @@ func (s *ServerGrpc) CrossPaymentRequest(ctx context.Context, rs *pbXServer.Cros
 			chprepared[rs.Pn]++
 		}
 
-		if chprepared[rs.Pn] == 6 {
+		if chprepared[rs.Pn] == 3 {
 			break
 		} else {
 			//return &pbXServer.CrossResult{Result: true}, nil
@@ -514,7 +518,7 @@ func (s *ServerGrpc) CrossPaymentRequest(ctx context.Context, rs *pbXServer.Cros
 		go WrapperCrossPaymentCommitRequest(rs.Pn, p2, _paymentInformation, originalMessageByteArray2, signatureByteArray2)
 	}
 
-	for i:= 1; i<=6; i++ {
+	for i:= 1; i<=3; i++ {
 
 		var data = <-Ch[int(rs.Pn)]
 
@@ -522,7 +526,7 @@ func (s *ServerGrpc) CrossPaymentRequest(ctx context.Context, rs *pbXServer.Cros
 			chCommitted[rs.Pn]++
 		}
 
-		if chCommitted[rs.Pn] == 6 {
+		if chCommitted[rs.Pn] == 3 {
 			break
 		} else {
 			//return &pbXServer.CrossResult{Result: true}, nil

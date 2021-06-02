@@ -1690,3 +1690,14 @@
 =============== Mar 26, 2021 (KST) ===============
 20:39:03.880379 db@close closing
 20:39:03.880721 db@close done T·334.223µs
+=============== Jun 2, 2021 (KST) ===============
+20:15:55.331634 log@legend F·NumFile S·FileSize N·Entry C·BadEntry B·BadBlock Ke·KeyError D·DroppedEntry L·Level Q·SeqNum T·TimeElapsed
+20:15:55.334121 version@stat F·[0 18] S·36MiB[0B 36MiB] Sc·[0.00 0.36]
+20:15:55.334142 db@open opening
+20:15:55.334210 journal@recovery F·1
+20:15:55.336009 journal@recovery recovering @560
+20:15:56.032301 memdb@flush created L0@580 N·481863 S·23MiB "\x01\xb71..\xf9\xdc\xe4,v1468284":"\xfe\\\xc7..n\x149,v1468263"
+20:15:56.038986 version@stat F·[1 18] S·59MiB[23MiB 36MiB] Sc·[0.25 0.36]
+20:15:56.058868 db@janitor F·22 G·1
+20:15:56.058902 db@janitor removing table-559
+20:15:56.059018 db@open done T·724.862242ms

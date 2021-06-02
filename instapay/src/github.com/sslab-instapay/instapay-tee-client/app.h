@@ -42,6 +42,7 @@ typedef struct _channel   // channel.h
     // unsigned int m_other_port;   this field must be requested from the server newly
 
     /*** cross-payment ***/
+    unsigned int m_cross_status;
     unsigned int m_reserved_balance;
 } channel;
 
@@ -161,9 +162,12 @@ void ecall_go_pre_update_two_w(unsigned int payment_num);
  * InstaPay 3.0
  */
 
-void ecall_cross_go_pre_update_w(unsigned char *msg, unsigned char *signature, unsigned char **original_msg, unsigned char **output);
-void ecall_cross_go_post_update_w(unsigned char *msg, unsigned char *signature, unsigned char **original_msg, unsigned char **output);
-void ecall_cross_go_idle_w(unsigned char *msg, unsigned char *signature);
+unsigned int ecall_cross_go_pre_update_w(unsigned char *msg, unsigned char *signature, unsigned char **original_msg, unsigned char **output);
+
+unsigned int ecall_cross_go_post_update_w(unsigned char *msg, unsigned char *signature, unsigned char *senderMSG, unsigned char *senderSig, unsigned char *middleManMSG, unsigned char *middleManSig, unsigned char *receiverMSG, unsigned char *receiverSig, unsigned char *crossServerMSG, unsigned char *crossServerSig,  unsigned char **original_msg, unsigned char **output);
+
+unsigned int ecall_cross_go_idle_w(unsigned char *msg, unsigned char *signature, unsigned char *senderMSG, unsigned char *senderSig, unsigned char *middleManMSG, unsigned char *middleManSig, unsigned char *receiverMSG, unsigned char *receiverSig, unsigned char *crossServerMSG, unsigned char *crossServerSig);
+
 void ecall_cross_refund_w(unsigned char *msg, unsigned char *signature);
 
 

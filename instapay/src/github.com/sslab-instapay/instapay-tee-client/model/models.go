@@ -27,8 +27,15 @@ const (
 	PRE_UPDATE                = "PRE_UPDATE"
 	POST_UPDATE               = "POST_UPDATE"
 	CLOSED                    = "CLOSED"
+//	C_PRE			  = "C_PRE"
+//	C_POST			  = "C_POST"
+)
+
+const (
+	// 0, 1, 2, 3
+	C_IDLE    ChannelStatus   = "C_IDLE"
 	C_PRE			  = "C_PRE"
-	C_POST			  = "C_POST"
+	C_POST                    = "C_POST"
 )
 
 type ChannelType string
@@ -57,6 +64,7 @@ type Channel struct {
 	OtherIp       string        `bson:"otherIp" json:"otherIp"`
 	OtherPort     int           `bson:"otherPort" json:"otherPort"`
 
+	CrossStatus   ChannelStatus `bson:"channelStatus" json:"channelStatus"`
 	ReservedBalance int
 }
 

@@ -45,18 +45,20 @@ void sign_message(unsigned char *original_msg, unsigned int msg_size, unsigned c
 
 int verify_message(unsigned int from, unsigned char *signature, unsigned char *original_msg, unsigned int msg_size, unsigned char *pubaddr)
 {
-	
     secp256k1_context* secp256k1_ctx = NULL;
     secp256k1_ctx = secp256k1_context_create(SECP256K1_CONTEXT_SIGN | SECP256K1_CONTEXT_VERIFY);
 
     secp256k1_ecdsa_recoverable_signature raw_sig;
     int v = signature[64];
 
+//    printf("START 1 ################################## \n");
+//    printf("v : %d \n", v);
     if(v > 3) v -= 27;
     if(!secp256k1_ecdsa_recoverable_signature_parse_compact(secp256k1_ctx, &raw_sig, signature, v)) {
 	secp256k1_context_destroy(secp256k1_ctx);
         return -1;
     }
+//    printf("START 2 ################################## \n");
 
     unsigned char *msg32;
     sha3_context sha3_ctx;
@@ -66,25 +68,34 @@ int verify_message(unsigned int from, unsigned char *signature, unsigned char *o
     sha3_Update(&sha3_ctx, original_msg, msg_size);
     msg32 = (unsigned char*)sha3_Finalize(&sha3_ctx);
 
+//    printf("START 3 ################################## \n");
+
     secp256k1_pubkey raw_pubkey;
     if(!secp256k1_ecdsa_recover(secp256k1_ctx, &raw_pubkey, &raw_sig, msg32)) {
 	secp256k1_context_destroy(secp256k1_ctx);
         return -1;
     }
 
-//    free(msg32);
     unsigned char pubkey[65];
     size_t pubkey_len = 65;
 
+//    printf("START 4 ################################## \n");
+
     secp256k1_ec_pubkey_serialize(secp256k1_ctx, pubkey, &pubkey_len, &raw_pubkey, SECP256K1_EC_UNCOMPRESSED);
+
+//    printf("START 5 ################################## \n");
 
     sha3_Init256(&sha3_ctx);
     sha3_SetFlags(&sha3_ctx, SHA3_FLAGS_KECCAK);
+
+//    printf("START 6 ################################## \n");
+
     sha3_Update(&sha3_ctx, pubkey + 1, pubkey_len - 1);
     msg32 = (unsigned char*)sha3_Finalize(&sha3_ctx);
 
     unsigned char sender[20];
-    
+//    printf("START 7 ################################## \n");
+
     memcpy(sender, msg32 + 12, 20);
     
 /*
@@ -95,6 +106,8 @@ int verify_message(unsigned int from, unsigned char *signature, unsigned char *o
 */
     
     secp256k1_context_destroy(secp256k1_ctx);
+
+//    printf("START 8 ################################## \n");
 
     if(from == 0) {
         //pubaddr = ::arr_to_bytes(pubaddr, 40);
@@ -116,5 +129,7 @@ int verify_message(unsigned int from, unsigned char *signature, unsigned char *o
 	delete server_pubaddr;
         return 1;
     }
-    
+
+//    printf("START 9 ################################## \n");
+
 }

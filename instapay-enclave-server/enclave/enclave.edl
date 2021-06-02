@@ -43,6 +43,23 @@ enclave {
             [user_check] unsigned char *req_msg,
             [user_check] unsigned char *req_sig);
 
+        public void ecall_create_ag_req_msg_temp(
+            unsigned int payment_num, 
+            [user_check] unsigned char *sender, 
+            [user_check] unsigned char *middleMan, 
+            [user_check] unsigned char *receiver, 
+            unsigned int sender_payment_size, 
+            [user_check] unsigned int *sender_channel_ids, 
+            unsigned int middleMan_payment_size, 
+            [user_check] unsigned int *middleMan_channel_ids, 
+            unsigned int receiver_payment_size, 
+            [user_check] unsigned int *receiver_channel_ids, 
+            [user_check] int *sender_amount, 
+            [user_check] int *middleMan_amount, 
+            [user_check] int *receiver_amount,
+            [user_check] unsigned char *req_msg, 
+            [user_check] unsigned char *req_sig);
+
         public void ecall_create_ud_req_msg(
             unsigned int payment_num,
             unsigned int payment_size,
@@ -51,10 +68,44 @@ enclave {
             [user_check] unsigned char *req_msg,
             [user_check] unsigned char *req_sig);
 
+        public void ecall_create_ud_req_msg_temp(
+            unsigned int payment_num, 
+            [user_check] unsigned char *sender, 
+            [user_check] unsigned char *middleMan, 
+            [user_check] unsigned char *receiver, 
+            unsigned int sender_payment_size, 
+            [user_check] unsigned int *sender_channel_ids, 
+            unsigned int middleMan_payment_size, 
+            [user_check] unsigned int *middleMan_channel_ids, 
+            unsigned int receiver_payment_size, 
+            [user_check] unsigned int *receiver_channel_ids, 
+            [user_check] int *sender_amount, 
+            [user_check] int *middleMan_amount, 
+            [user_check] int *receiver_amount,           
+	    [user_check] unsigned char *req_msg, 
+            [user_check] unsigned char *req_sig);
+
         public void ecall_create_confirm_msg(
             unsigned int payment_num,
             [user_check] unsigned char *confirm_msg,
             [user_check] unsigned char *confirm_sig);
+
+	public void ecall_create_confirm_msg_temp(
+	    unsigned int payment_num, 
+	    [user_check] unsigned char *sender, 
+	    [user_check] unsigned char *middleMan, 
+	    [user_check] unsigned char *receiver, 
+	    unsigned int sender_payment_size, 
+	    [user_check] unsigned int *sender_channel_ids, 
+	    unsigned int middleMan_payment_size, 
+	    [user_check] unsigned int *middleMan_channel_ids, 
+	    unsigned int receiver_payment_size, 
+	    [user_check] unsigned int *receiver_channel_ids, 
+            [user_check] int *sender_amount, 
+            [user_check] int *middleMan_amount, 
+            [user_check] int *receiver_amount,
+	    [user_check] unsigned char *confirm_msg, 
+	    [user_check] unsigned char *confirm_sig);
 
         public void ecall_verify_ag_res_msg(
             [user_check] unsigned char *pubaddr,

@@ -14,10 +14,10 @@ void ecall_go_pre_update_two_w(unsigned int payment_num)
 
 unsigned int ecall_go_pre_update_w(unsigned char *msg, unsigned char *signature, unsigned char **original_msg, unsigned char **output)
 {
-    unsigned char *reply_msg = new unsigned char[sizeof(message)];
+    unsigned char *reply_msg = new unsigned char[sizeof(message_res)];
     unsigned char *reply_sig = new unsigned char[65];
 
-    memset(reply_msg, 0x00, sizeof(message));
+    memset(reply_msg, 0x00, sizeof(message_res));
     memset(reply_sig, 0x00, 65);
 /*
     rwMutex.lock();
@@ -30,7 +30,7 @@ unsigned int ecall_go_pre_update_w(unsigned char *msg, unsigned char *signature,
 
     if (ret != SGX_SUCCESS) {
 //	    printf("AG SGX FAILURE \n");
-	    return 2;
+	    result = 2;
     }
 
     *original_msg = reply_msg;
@@ -40,13 +40,12 @@ unsigned int ecall_go_pre_update_w(unsigned char *msg, unsigned char *signature,
     return result;
 }
 
-
-unsigned int ecall_go_post_update_w(unsigned char *msg, unsigned char *signature, unsigned char **original_msg, unsigned char **output)
+unsigned int ecall_go_post_update_w(unsigned char *msg, unsigned char *signature, unsigned char *senderMSG, unsigned char *senderSig, unsigned char *middleManMSG, unsigned char *middleManSig, unsigned char *receiverMSG, unsigned char *receiverSig, unsigned char *crossServerMSG, unsigned char *crossServerSig,  unsigned char **original_msg, unsigned char **output)
 {
-    unsigned char *reply_msg = new unsigned char[sizeof(message)];
+    unsigned char *reply_msg = new unsigned char[sizeof(message_res)];
     unsigned char *reply_sig = new unsigned char[65];
 
-    memset(reply_msg, 0x00, sizeof(message));
+    memset(reply_msg, 0x00, sizeof(message_res));
     memset(reply_sig, 0x00, 65);
 
 //    rwMutex.lock();
@@ -56,12 +55,12 @@ unsigned int ecall_go_post_update_w(unsigned char *msg, unsigned char *signature
     unsigned int result = 1;
 
     sgx_status_t ret = SGX_ERROR_UNEXPECTED;
-    ret = ecall_go_post_update(global_eid, msg, signature, reply_msg, reply_sig, &result); 
+    ret = ecall_go_post_update(global_eid, msg, signature, senderMSG, senderSig, middleManMSG, middleManSig, receiverMSG, receiverSig, crossServerMSG, crossServerSig, reply_msg, reply_sig, &result); 
 
     if (ret != SGX_SUCCESS) {
 //	    printf("UD SGX FAILURE \n");
 
-	    return 2;
+	    result = 2;
     }
 
     *original_msg = reply_msg;
@@ -72,7 +71,7 @@ unsigned int ecall_go_post_update_w(unsigned char *msg, unsigned char *signature
 }
 
 
-unsigned int ecall_go_idle_w(unsigned char *msg, unsigned char *signature)
+unsigned int ecall_go_idle_w(unsigned char *msg, unsigned char *signature, unsigned char *senderMSG, unsigned char *senderSig, unsigned char *middleManMSG, unsigned char *middleManSig, unsigned char *receiverMSG, unsigned char *receiverSig, unsigned char *crossServerMSG, unsigned char *crossServerSig)
 {
 
 
@@ -85,12 +84,12 @@ unsigned int ecall_go_idle_w(unsigned char *msg, unsigned char *signature)
     unsigned int result = 1;
 
     sgx_status_t ret = SGX_ERROR_UNEXPECTED;
-    ret = ecall_go_idle(global_eid, msg, signature, &result);    
+    ret = ecall_go_idle(global_eid, msg, signature, senderMSG, senderSig, middleManMSG, middleManSig, receiverMSG, receiverSig, crossServerMSG, crossServerSig, &result);    
 
     if (ret != SGX_SUCCESS) {
 //	    printf("CF SGX FAILURE \n");
 
-	    return 2;
+	    result = 2;
     }
 
 
@@ -110,41 +109,65 @@ void ecall_register_comminfo_w(unsigned int channel_id, unsigned char *ip, unsig
  * InstaPay 3.0
  */
 
-void ecall_cross_go_pre_update_w(unsigned char *msg, unsigned char *signature, unsigned char **original_msg, unsigned char **output)
+unsigned int ecall_cross_go_pre_update_w(unsigned char *msg, unsigned char *signature, unsigned char **original_msg, unsigned char **output)
 {
-    unsigned char *reply_msg = new unsigned char[sizeof(message)];
+    unsigned char *reply_msg = new unsigned char[sizeof(message_res)];
     unsigned char *reply_sig = new unsigned char[65];
+    unsigned int result = 1;
 
-    memset(reply_msg, 0x00, sizeof(message));
+    memset(reply_msg, 0x00, sizeof(message_res));
     memset(reply_sig, 0x00, 65);
 
-    ecall_cross_go_pre_update(global_eid, msg, signature, reply_msg, reply_sig);
+    sgx_status_t ret = SGX_ERROR_UNEXPECTED;
+    ret = ecall_cross_go_pre_update(global_eid, msg, signature, reply_msg, reply_sig, &result);
+
+    if (ret != SGX_SUCCESS) {
+//	    printf("AG SGX FAILURE \n");
+	    result = 2;
+    }
 
     *original_msg = reply_msg;
     *output = reply_sig;
 
+    return result;
 }
 
-
-void ecall_cross_go_post_update_w(unsigned char *msg, unsigned char *signature, unsigned char **original_msg, unsigned char **output)
+unsigned int ecall_cross_go_post_update_w(unsigned char *msg, unsigned char *signature, unsigned char *senderMSG, unsigned char *senderSig, unsigned char *middleManMSG, unsigned char *middleManSig, unsigned char *receiverMSG, unsigned char *receiverSig, unsigned char *crossServerMSG, unsigned char *crossServerSig,  unsigned char **original_msg, unsigned char **output)
 {
-    unsigned char *reply_msg = new unsigned char[sizeof(message)];
+    unsigned char *reply_msg = new unsigned char[sizeof(message_res)];
     unsigned char *reply_sig = new unsigned char[65];
+    unsigned int result = 1;
 
-    memset(reply_msg, 0x00, sizeof(message));
+    memset(reply_msg, 0x00, sizeof(message_res));
     memset(reply_sig, 0x00, 65);
 
-    ecall_cross_go_post_update(global_eid, msg, signature, reply_msg, reply_sig);
+    sgx_status_t ret = SGX_ERROR_UNEXPECTED;
+    ret = ecall_cross_go_post_update(global_eid, msg, signature, senderMSG, senderSig, middleManMSG, middleManSig, receiverMSG, receiverSig, crossServerMSG, crossServerSig, reply_msg, reply_sig, &result);
+
+    if (ret != SGX_SUCCESS) {
+//	    printf("AG SGX FAILURE \n");
+	    result = 2;
+    }
 
     *original_msg = reply_msg;
     *output = reply_sig;
 
+    return result;
 }
 
-
-void ecall_cross_go_idle_w(unsigned char *msg, unsigned char *signature)
+unsigned int ecall_cross_go_idle_w(unsigned char *msg, unsigned char *signature, unsigned char *senderMSG, unsigned char *senderSig, unsigned char *middleManMSG, unsigned char *middleManSig, unsigned char *receiverMSG, unsigned char *receiverSig, unsigned char *crossServerMSG, unsigned char *crossServerSig)
 {
-    ecall_cross_go_idle(global_eid, msg, signature);    
+	unsigned int result = 1;
+
+	sgx_status_t ret = SGX_ERROR_UNEXPECTED;
+	ret = ecall_cross_go_idle(global_eid, msg, signature, senderMSG, senderSig, middleManMSG, middleManSig, receiverMSG, receiverSig, crossServerMSG, crossServerSig, &result);
+
+	if (ret != SGX_SUCCESS) {
+//	    printf("AG SGX FAILURE \n");
+	    result = 2;
+	 }
+
+	return result;
 }
 
 void ecall_cross_refund_w(unsigned char *msg, unsigned char *signature)
