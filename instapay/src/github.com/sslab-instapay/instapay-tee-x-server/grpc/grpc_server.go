@@ -61,6 +61,8 @@ var StartTime1 time.Time
 var StartTime2 time.Time
 var StartTime3 time.Time
 
+var channelId = 1
+
 type PaymentInformation struct {
 	ChannelInform []C.uint
 	AmountInform  []C.int
@@ -120,6 +122,8 @@ func SendCrossPaymentPrepareRequest(i interface{}) {
 	signatureByte := i.(AG).signatureByte
 
 	client := pbClient.NewClientClient(connectionForClient[clientAddr[address]])
+	client1Context, cancel := context.WithTimeout(context.Background(), time.Second*180)
+	defer cancel()
 
 	if client == nil {
 		log.Fatal("client conn err")
@@ -127,17 +131,23 @@ func SendCrossPaymentPrepareRequest(i interface{}) {
 /*
 	r, err := client.AgreementRequest(context.Background(), &pbClient.AgreeRequestsMessage{PaymentNumber: int64(pn), OriginalMessage: originalMessageByte, Signature: signatureByte})
 */
-	r, err := client.CrossPaymentPrepareClientRequest(context.Background(), &pbClient.CrossPaymentPrepareReqClientMessage{PaymentNumber: int64(pn), OriginalMessage: originalMessageByte, Signature: signatureByte})
+	r, err := client.CrossPaymentPrepareClientRequest(client1Context, &pbClient.CrossPaymentPrepareReqClientMessage{PaymentNumber: int64(pn), OriginalMessage: originalMessageByte, Signature: signatureByte})
 
 	if err != nil {
-		log.Println("client AgreementRequest err : ", err)
+		log.Println("client AgreementRequest err : ", err, clientAddr[address])
 	}
 
 
 	if r.Result {
 		agreementOriginalMessage, signature := convertMsgResByteToPointer(r.OriginalMessage, r.Signature)
 
-		C.ecall_cross_verify_all_prepared_res_msg_temp_w(agreementOriginalMessage, signature)
+		for ; ; {
+			result := C.ecall_cross_verify_all_prepared_res_msg_temp_w(agreementOriginalMessage, signature)
+
+			if result == 9999 {
+				break
+			}
+		}
 
 		var clientPrepareMsgRes = AG{}
 		clientPrepareMsgRes.originalMessageByte = r.OriginalMessage
@@ -160,6 +170,8 @@ func SendCrossPaymentCommitRequest(i interface{}) {
 	signatureByteArray := i.(UD).signatureByteArray
 
 	client := pbClient.NewClientClient(connectionForClient[clientAddr[address]])
+	client1Context, cancel := context.WithTimeout(context.Background(), time.Second*180)
+	defer cancel()
 
 	if client == nil {
 		log.Fatal("client conn err")
@@ -168,17 +180,22 @@ func SendCrossPaymentCommitRequest(i interface{}) {
 /*
 	r, err := client.UpdateRequest(context.Background(), &pbClient.UpdateRequestsMessage{PaymentNumber: int64(pn), OriginalMessage: originalMessageByteArray, Signature: signatureByteArray})
 */
-	r, err := client.CrossPaymentCommitClientRequest(context.Background(), &pbClient.CrossPaymentCommitReqClientMessage{PaymentNumber: int64(pn), OriginalMessage: originalMessageByteArray, Signature: signatureByteArray})
+	r, err := client.CrossPaymentCommitClientRequest(client1Context, &pbClient.CrossPaymentCommitReqClientMessage{PaymentNumber: int64(pn), OriginalMessage: originalMessageByteArray, Signature: signatureByteArray})
 
 	if err != nil {
-		log.Println("client Commit Request err : ", err)
+		log.Println("client Commit Request err : ", err, clientAddr[address])
 	}
 
 
 	if r.Result {
-		fmt.Println(r.Result)
 		updateOriginalMessage, signature := convertMsgResByteToPointer(r.OriginalMessage, r.Signature)
 		C.ecall_cross_verify_all_committed_res_msg_temp_w(updateOriginalMessage, signature)
+		for ; ; {
+			result := C.ecall_cross_verify_all_committed_res_msg_temp_w(updateOriginalMessage, signature)
+			if result == 9999 {
+				break
+			}
+		}
 
 		var clientCommitMsgRes = AG{}
 		clientCommitMsgRes.originalMessageByte = r.OriginalMessage
@@ -335,7 +352,7 @@ func SearchPath(pn int64, amount int64, firstTempChId int, secondTempChId int) (
 	paymentInform3 := PaymentInformation{ChannelInform: channelInform3, AmountInform: amountInform3}
 
          //paymentInformation := make(map[string]PaymentInformation)
-
+	 rwMutex.Lock()
 	 paymentInformation["f55ba9376db959fab2af86d565325829b08ea3c4"] = paymentInform1
 	 paymentInformation["c60f640c4505d15b972e6fc2a2a7cba09d05d9f7"] = paymentInform2
 	 paymentInformation["70603f1189790fcd0fd753a7fef464bdc2c2ad36"] = paymentInform3
@@ -343,6 +360,7 @@ func SearchPath(pn int64, amount int64, firstTempChId int, secondTempChId int) (
 	 _paymentInformation["f4444529d6221122d1712c52623ba119a60609e3"] = paymentInform1
 	 _paymentInformation["d95da40bbd2001abf1a558c0b1dffd75940b8fd9"] = paymentInform2
 	 _paymentInformation["73d8e5475278f7593b5293beaa45fb53f34c9ad2"] = paymentInform3
+	 rwMutex.Unlock()
 
 //         log.Println("===== SearchPath End =====")
 	 return p, p2, paymentInformation, _paymentInformation
@@ -368,7 +386,14 @@ func (s *ServerGrpc) CrossPaymentRequest(ctx context.Context, rs *pbXServer.Cros
 	var originalMessage2ForConfirm *C.uchar
         var signature2ForConfirm *C.uchar
 
-//	p, p2, paymentInformation, _paymentInformation = SearchPath(int64(rs.Pn), 1, 1, 2)
+	rwMutex.Lock()
+	firstTempChId := channelId
+	secondTempChId := channelId+1
+
+	channelId+=2
+	rwMutex.Unlock()
+
+	p, p2, paymentInformation, _paymentInformation = SearchPath(int64(rs.Pn), 1, firstTempChId, secondTempChId)
 
 	sender := []C.uchar(p[0])
 	middleMan := []C.uchar(p[1])
@@ -442,7 +467,7 @@ func (s *ServerGrpc) CrossPaymentRequest(ctx context.Context, rs *pbXServer.Cros
 
 //	}
 
-	for i:= 1; i<=3; i++ {
+	for i:= 1; i<=6; i++ {
 
 		var data = <-Ch[int(rs.Pn)]
 
@@ -450,14 +475,13 @@ func (s *ServerGrpc) CrossPaymentRequest(ctx context.Context, rs *pbXServer.Cros
 			chprepared[rs.Pn]++
 		}
 
-		if chprepared[rs.Pn] == 3 {
+		if chprepared[rs.Pn] == 6 {
 			break
 		} else {
 			//return &pbXServer.CrossResult{Result: true}, nil
 		}
 
 	}
-
 //	return &pbXServer.CrossResult{Result: true}, nil
 
 
@@ -518,7 +542,7 @@ func (s *ServerGrpc) CrossPaymentRequest(ctx context.Context, rs *pbXServer.Cros
 		go WrapperCrossPaymentCommitRequest(rs.Pn, p2, _paymentInformation, originalMessageByteArray2, signatureByteArray2)
 	}
 
-	for i:= 1; i<=3; i++ {
+	for i:= 1; i<=6; i++ {
 
 		var data = <-Ch[int(rs.Pn)]
 
@@ -526,18 +550,17 @@ func (s *ServerGrpc) CrossPaymentRequest(ctx context.Context, rs *pbXServer.Cros
 			chCommitted[rs.Pn]++
 		}
 
-		if chCommitted[rs.Pn] == 3 {
+		if chCommitted[rs.Pn] == 6 {
 			break
 		} else {
 			//return &pbXServer.CrossResult{Result: true}, nil
 		}
 	}
-//	return &pbXServer.CrossResult{Result: true}, nil
 
 
 	for ; ; {
 		result := C.ecall_cross_create_all_confirm_req_msg_temp_w(C.uint(rs.Pn), &sender[0], &middleMan[0], &receiver[0], C.uint(len(channelSlice1)), &channelSlice1[0], C.uint(len(channelSlice2)), &channelSlice2[0], C.uint(len(channelSlice3)), &channelSlice3[0], &amountSlice1[0], &amountSlice2[0], &amountSlice3[0], &originalMessageForConfirm, &signatureForConfirm)
-		
+
 		if result == 9999 {
 			break
 		} else {
@@ -1145,7 +1168,7 @@ func WrapperCrossPaymentConfirmRequest(pn int64, p []string, paymentInformation 
 func GrpcConnection() {
 
 	var err error
-	tempConn := make(map[string]*grpc.ClientConn)
+/*	tempConn := make(map[string]*grpc.ClientConn)
 
 	tempConn["141.223.121.165:50004"], err = grpc.Dial("141.223.121.165:50004", grpc.WithInsecure())
 	if err != nil {
@@ -1166,27 +1189,9 @@ func GrpcConnection() {
 	}
 
 	connectionForServer = tempConn
-
-	tempConn = make(map[string]*grpc.ClientConn)
+*/
+	tempConn := make(map[string]*grpc.ClientConn)
 	tempConn["141.223.121.167:50001"], err = grpc.Dial("141.223.121.167:50001", grpc.WithInsecure())
-	if err != nil {
-		log.Fatal("conn err : ", err)
-		return
-	}
-
-	tempConn["141.223.121.167:50002"], err = grpc.Dial("141.223.121.167:50002", grpc.WithInsecure())
-	if err != nil {
-		log.Fatal("conn err : ", err)
-		return
-	}
-
-	tempConn["141.223.121.167:50003"], err = grpc.Dial("141.223.121.167:50003", grpc.WithInsecure())
-	if err != nil {
-		log.Fatal("conn err : ", err)
-		return
-	}
-
-	tempConn["141.223.121.168:50001"], err = grpc.Dial("141.223.121.168:50001", grpc.WithInsecure())
 	if err != nil {
 		log.Fatal("conn err : ", err)
 		return
@@ -1198,14 +1203,32 @@ func GrpcConnection() {
 		return
 	}
 
-	tempConn["141.223.121.168:50003"], err = grpc.Dial("141.223.121.168:50003", grpc.WithInsecure())
+	tempConn["141.223.121.251:50003"], err = grpc.Dial("141.223.121.251:50003", grpc.WithInsecure())
+	if err != nil {
+		log.Fatal("conn err : ", err)
+		return
+	}
+
+	tempConn["141.223.121.165:50001"], err = grpc.Dial("141.223.121.165:50001", grpc.WithInsecure())
+	if err != nil {
+		log.Fatal("conn err : ", err)
+		return
+	}
+
+	tempConn["141.223.121.166:50002"], err = grpc.Dial("141.223.121.166:50002", grpc.WithInsecure())
+	if err != nil {
+		log.Fatal("conn err : ", err)
+		return
+	}
+
+	tempConn["141.223.121.169:50003"], err = grpc.Dial("141.223.121.169:50003", grpc.WithInsecure())
 	if err != nil {
 		log.Fatal("conn err : ", err)
 		return
 	}
 
 	connectionForClient = tempConn
-	p, p2, paymentInformation, _paymentInformation = SearchPath(1, 1, 1, 2)
+//	p, p2, paymentInformation, _paymentInformation = SearchPath(1, 1, 1, 2)
 
 	fmt.Println("Grpc Connection !!")
 }
@@ -1221,12 +1244,12 @@ func GetClientInfo() {
 	p2 = append(p2, "73d8e5475278f7593b5293beaa45fb53f34c9ad2")
 
 	clientAddr["f55ba9376db959fab2af86d565325829b08ea3c4"] = "141.223.121.167:50001"
-	clientAddr["c60f640c4505d15b972e6fc2a2a7cba09d05d9f7"] = "141.223.121.167:50002"
-	clientAddr["70603f1189790fcd0fd753a7fef464bdc2c2ad36"] = "141.223.121.167:50003"
+	clientAddr["c60f640c4505d15b972e6fc2a2a7cba09d05d9f7"] = "141.223.121.168:50002"
+	clientAddr["70603f1189790fcd0fd753a7fef464bdc2c2ad36"] = "141.223.121.251:50003"
 
-	clientAddr["f4444529d6221122d1712c52623ba119a60609e3"] = "141.223.121.168:50001"
-	clientAddr["d95da40bbd2001abf1a558c0b1dffd75940b8fd9"] = "141.223.121.168:50002"
-	clientAddr["73d8e5475278f7593b5293beaa45fb53f34c9ad2"] = "141.223.121.168:50003"
+	clientAddr["f4444529d6221122d1712c52623ba119a60609e3"] = "141.223.121.165:50001"
+	clientAddr["d95da40bbd2001abf1a558c0b1dffd75940b8fd9"] = "141.223.121.166:50002"
+	clientAddr["73d8e5475278f7593b5293beaa45fb53f34c9ad2"] = "141.223.121.169:50003"
 
 }
 

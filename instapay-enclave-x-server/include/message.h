@@ -29,6 +29,8 @@ enum message_type {
     UD_REQ  = 5,
     UD_RES  = 6,
     CONFIRM = 7,
+    CROSS_PREPARE_RES = 8,
+    CROSS_COMMIT_RES = 9,
 };
 
 typedef struct message {

@@ -300,7 +300,7 @@ void ecall_cross_create_all_prepare_req_msg(unsigned int payment_num, unsigned c
     return;
 }
 
-void ecall_cross_create_all_prepare_req_msg_temp(unsigned int payment_num, unsigned char *sender, unsigned char *middleMan, unsigned char *receiver, unsigned int sender_payment_size, unsigned int *sender_channel_ids, unsigned int middleMan_payment_size, unsigned int *middleMan_channel_ids, unsigned int receiver_payment_size, unsigned int *receiver_channel_ids, int *sender_amount, int *middleMan_amount, int *receiver_amount, unsigned char *req_msg, unsigned char *req_sig)
+void ecall_cross_create_all_prepare_req_msg_temp(unsigned int payment_num, unsigned char *sender, unsigned char *middleMan, unsigned char *receiver, unsigned int sender_payment_size, unsigned int *sender_channel_ids, unsigned int middleMan_payment_size, unsigned int *middleMan_channel_ids, unsigned int receiver_payment_size, unsigned int *receiver_channel_ids, int *sender_amount, int *middleMan_amount, int *receiver_amount, unsigned char *req_msg, unsigned char *req_sig, unsigned int *result)
 {
 	unsigned char req_signature[65] = {0, };
    	unsigned char *seckey_arr = (unsigned char*)"5a5e2194e0639fd017158793812dd5f5668f5bfc9a146f93f39237a4b4ed7dd5";
@@ -334,7 +334,8 @@ void ecall_cross_create_all_prepare_req_msg_temp(unsigned int payment_num, unsig
 	memcpy(req_sig, req_signature, 65);
 
 	free(seckey);
-
+	
+	*result = 9999;
 	return;
 }
 
@@ -399,7 +400,7 @@ void ecall_cross_verify_all_prepared_res_msg_temp(unsigned char *res_msg, unsign
     /* step 2. check that message type is 'AG_RES' */
     MessageRes *res = (MessageRes*)res_msg;
 
-    if(res->type != AG_RES) {// || res->e != 1) {
+    if(res->type != CROSS_PREPARE_RES) {// || res->e != 1) {
         *is_verified = 0;
 	printf("prepared msg type failure");
         return;
@@ -437,7 +438,7 @@ void ecall_cross_create_all_commit_req_msg(unsigned int payment_num, unsigned ch
     return;
 }
 
-void ecall_cross_create_all_commit_req_msg_temp(unsigned int payment_num, unsigned char *sender, unsigned char *middleMan, unsigned char *receiver, unsigned int sender_payment_size, unsigned int *sender_channel_ids, unsigned int middleMan_payment_size, unsigned int *middleMan_channel_ids, unsigned int receiver_payment_size, unsigned int *receiver_channel_ids, int *sender_amount, int *middleMan_amount, int *receiver_amount, unsigned char *req_msg, unsigned char *req_sig)
+void ecall_cross_create_all_commit_req_msg_temp(unsigned int payment_num, unsigned char *sender, unsigned char *middleMan, unsigned char *receiver, unsigned int sender_payment_size, unsigned int *sender_channel_ids, unsigned int middleMan_payment_size, unsigned int *middleMan_channel_ids, unsigned int receiver_payment_size, unsigned int *receiver_channel_ids, int *sender_amount, int *middleMan_amount, int *receiver_amount, unsigned char *req_msg, unsigned char *req_sig, unsigned int *result)
 {
 	unsigned char req_signature[65] = {0, };
    	unsigned char *seckey_arr = (unsigned char*)"5a5e2194e0639fd017158793812dd5f5668f5bfc9a146f93f39237a4b4ed7dd5";
@@ -472,6 +473,7 @@ void ecall_cross_create_all_commit_req_msg_temp(unsigned int payment_num, unsign
 
 	free(seckey);
 
+	*result = 9999;
 	return;
 }
 
@@ -519,7 +521,7 @@ void ecall_cross_verify_all_committed_res_msg_temp(unsigned char *res_msg, unsig
 
     /* step 2. check that message type is 'AG_RES' */
 
-    if(res->type != UD_RES) {// || res->e != 1) {
+    if(res->type != CROSS_COMMIT_RES) {// || res->e != 1) {
         *is_verified = 0;
 	printf("committed msg type failure");
         return;
@@ -553,7 +555,7 @@ void ecall_cross_create_all_confirm_req_msg(unsigned int payment_num, unsigned c
     return;
 }
 
-void ecall_cross_create_all_confirm_req_msg_temp(unsigned int payment_num, unsigned char *sender, unsigned char *middleMan, unsigned char *receiver, unsigned int sender_payment_size, unsigned int *sender_channel_ids, unsigned int middleMan_payment_size, unsigned int *middleMan_channel_ids, unsigned int receiver_payment_size, unsigned int *receiver_channel_ids, int *sender_amount, int *middleMan_amount, int *receiver_amount, unsigned char *req_msg, unsigned char *req_sig)
+void ecall_cross_create_all_confirm_req_msg_temp(unsigned int payment_num, unsigned char *sender, unsigned char *middleMan, unsigned char *receiver, unsigned int sender_payment_size, unsigned int *sender_channel_ids, unsigned int middleMan_payment_size, unsigned int *middleMan_channel_ids, unsigned int receiver_payment_size, unsigned int *receiver_channel_ids, int *sender_amount, int *middleMan_amount, int *receiver_amount, unsigned char *req_msg, unsigned char *req_sig, unsigned int *result)
 {
 	unsigned char req_signature[65] = {0, };
    	unsigned char *seckey_arr = (unsigned char*)"5a5e2194e0639fd017158793812dd5f5668f5bfc9a146f93f39237a4b4ed7dd5";
@@ -588,6 +590,7 @@ void ecall_cross_create_all_confirm_req_msg_temp(unsigned int payment_num, unsig
 
 	free(seckey);
 
+	*result = 9999;
 	return;
 }
 

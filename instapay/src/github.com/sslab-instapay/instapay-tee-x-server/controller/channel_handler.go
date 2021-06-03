@@ -20,17 +20,19 @@ import (
 	"github.com/gin-gonic/gin"
 //	"github.com/sslab-instapay/instapay-tee-x-server/config"
 	serverGrpc "github.com/sslab-instapay/instapay-tee-x-server/grpc"
-        //serverPb "github.com/sslab-instapay/instapay-tee-x-server/proto/server"
+        serverPb "github.com/sslab-instapay/instapay-tee-x-server/proto/server"
 	xServerPb "github.com/sslab-instapay/instapay-tee-x-server/proto/cross-server"
 	"google.golang.org/grpc"
 	"github.com/sslab-instapay/instapay-tee-x-server/repository"
 	"log"
 	"fmt"
 	"strconv"
+	"math/rand"
 )
 
 var pn = 1
 var rwMutex = new(sync.RWMutex)
+var randValue int
 
 func OpenChannelHandler(context *gin.Context)  {
 	//channelName := context.PostForm("ch_name")
@@ -105,6 +107,12 @@ func GetChannelListHandler(context *gin.Context){
 */
 func CrossPaymentToServerChannelHandler(ctx *gin.Context) {
 
+	s1 := rand.NewSource(time.Now().UnixNano())
+	r1 := rand.New(s1)
+	randValue = r1.Intn(100)
+//	randValue = 1
+//	fmt.Println(randValue)
+
 	chain1From := ctx.PostForm("chain1_sender")
 	chain1To := ctx.PostForm("chain1_receiver")
 	chain1Val, err := strconv.Atoi(ctx.PostForm("chain1_sender_val"))
@@ -112,125 +120,190 @@ func CrossPaymentToServerChannelHandler(ctx *gin.Context) {
 		log.Println(err)
 	}
 
-/*
-	chain2From := ctx.PostForm("chain2_sender")
-	chain2To := ctx.PostForm("chain2_receiver")
-	chain2Val, err := strconv.Atoi(ctx.PostForm("chain2_sender_val"))
-	if err != nil {
-		log.Println(err)
-	}
+	if randValue < 1 {
 
-	chain3From := ctx.PostForm("chain3_sender")
-	chain3To := ctx.PostForm("chain3_receiver")
-	chain3Val, err := strconv.Atoi(ctx.PostForm("chain3_sender_val"))
-	if err != nil {
-		log.Println(err)
-	}
+	/*
+		chain2From := ctx.PostForm("chain2_sender")
+		chain2To := ctx.PostForm("chain2_receiver")
+		chain2Val, err := strconv.Atoi(ctx.PostForm("chain2_sender_val"))
+		if err != nil {
+			log.Println(err)
+		}
 
-	serverGrpc.ChainFrom = append(serverGrpc.ChainFrom, chain1From)
-	serverGrpc.ChainTo = append(serverGrpc.ChainTo, chain1To)
-	serverGrpc.ChainVal = append(serverGrpc.ChainVal, int64(chain1Val))
+		chain3From := ctx.PostForm("chain3_sender")
+		chain3To := ctx.PostForm("chain3_receiver")
+		chain3Val, err := strconv.Atoi(ctx.PostForm("chain3_sender_val"))
+		if err != nil {
+			log.Println(err)
+		}
 
-	serverGrpc.ChainFrom = append(serverGrpc.ChainFrom, chain2From)
-	serverGrpc.ChainTo = append(serverGrpc.ChainTo, chain2To)
-	serverGrpc.ChainVal = append(serverGrpc.ChainVal, int64(chain2Val))
-*/
-/*
-	serverGrpc.ChainFrom = append(serverGrpc.ChainFrom, chain3From)
-	serverGrpc.ChainTo = append(serverGrpc.ChainTo, chain3To)
-	serverGrpc.ChainVal = append(serverGrpc.ChainVal, int64(chain3Val))
-*/
-	chain1Sender := []C.uchar(chain1From)
-	chain1Receiver := []C.uchar(chain1To)
+		serverGrpc.ChainFrom = append(serverGrpc.ChainFrom, chain1From)
+		serverGrpc.ChainTo = append(serverGrpc.ChainTo, chain1To)
+		serverGrpc.ChainVal = append(serverGrpc.ChainVal, int64(chain1Val))
 
-	//chain2Sender := []C.uchar(chain2From)
-	//chain2Receiver := []C.uchar(chain2To)
-	var PaymentNum C.uint
-	//var originalMessage *C.uchar
-	//var signature *C.uchar
+		serverGrpc.ChainFrom = append(serverGrpc.ChainFrom, chain2From)
+		serverGrpc.ChainTo = append(serverGrpc.ChainTo, chain2To)
+		serverGrpc.ChainVal = append(serverGrpc.ChainVal, int64(chain2Val))
+	*/
+	/*
+		serverGrpc.ChainFrom = append(serverGrpc.ChainFrom, chain3From)
+		serverGrpc.ChainTo = append(serverGrpc.ChainTo, chain3To)
+		serverGrpc.ChainVal = append(serverGrpc.ChainVal, int64(chain3Val))
+	*/
+		chain1Sender := []C.uchar(chain1From)
+		chain1Receiver := []C.uchar(chain1To)
 
-//	serverGrpc.StartTime = time.Now()
-//	rwMutex.Lock()
-	PaymentNum = C.ecall_cross_accept_request_w(
-		&chain1Sender[0],
-		&chain1Sender[0],
-		&chain1Receiver[0],
-		C.uint(chain1Val),
-		&chain1Sender[0],
-		&chain1Sender[0],
-		&chain1Receiver[0],
-		C.uint(chain1Val),
-		&chain1Sender[0],
-		&chain1Sender[0],
-		&chain1Receiver[0],
-		C.uint(pn))
-	pn++
+		//chain2Sender := []C.uchar(chain2From)
+		//chain2Receiver := []C.uchar(chain2To)
+		var PaymentNum C.uint
+		//var originalMessage *C.uchar
+		//var signature *C.uchar
 
-/*
-	if int(PaymentNum) != pn {
-		fmt.Println("different pn")
-		os.Exit(3)
-	}
-	pn++
-*/
-//	rwMutex.Unlock()
+	//	serverGrpc.StartTime = time.Now()
+	//	rwMutex.Lock()
+		PaymentNum = C.ecall_cross_accept_request_w(
+			&chain1Sender[0],
+			&chain1Sender[0],
+			&chain1Receiver[0],
+			C.uint(chain1Val),
+			&chain1Sender[0],
+			&chain1Sender[0],
+			&chain1Receiver[0],
+			C.uint(chain1Val),
+			&chain1Sender[0],
+			&chain1Sender[0],
+			&chain1Receiver[0],
+			C.uint(pn))
+		pn++
 
-//	fmt.Println(reflect.TypeOf(PaymentNum), reflect.TypeOf(pn))
+	/*
+		if int(PaymentNum) != pn {
+			fmt.Println("different pn")
+			os.Exit(3)
+		}
+		pn++
+	*/
+	//	rwMutex.Unlock()
+
+	//	fmt.Println(reflect.TypeOf(PaymentNum), reflect.TypeOf(pn))
 
 
-/*
-	if PaymentNum == 0 || PaymentNum >= 30000 {
-		fmt.Println(">>>>>>>>>>>> exit pn ", PaymentNum)
-		os.Exit(3)
-		return
-	}
-*/
-	//C.ecall_cross_add_participant_w(C.uint(PaymentNum), &([]C.uchar(chain1Server))[0])
+	/*
+		if PaymentNum == 0 || PaymentNum >= 30000 {
+			fmt.Println(">>>>>>>>>>>> exit pn ", PaymentNum)
+			os.Exit(3)
+			return
+		}
+	*/
+		//C.ecall_cross_add_participant_w(C.uint(PaymentNum), &([]C.uchar(chain1Server))[0])
 
-//	fmt.Println("===== CREATE CROSS ALL PREPARE MSG START =====")
-//	C.ecall_cross_create_all_prepare_req_msg_w(C.uint(PaymentNum), &originalMessage, &signature)
-//	fmt.Println("===== CREATE CROSS ALL PREPARE MSG END =====")
+	//	fmt.Println("===== CREATE CROSS ALL PREPARE MSG START =====")
+	//	C.ecall_cross_create_all_prepare_req_msg_w(C.uint(PaymentNum), &originalMessage, &signature)
+	//	fmt.Println("===== CREATE CROSS ALL PREPARE MSG END =====")
 
-	//originalMessageByte, signatureByte := convertPointerToByte(originalMessage, signature)
-	connectionForCross_Server, err := grpc.Dial("141.223.121.164" + ":" + "50009", grpc.WithInsecure())
-	if err != nil {
-		log.Println(err)
-		return
-	}
+		//originalMessageByte, signatureByte := convertPointerToByte(originalMessage, signature)
+		connectionForCross_Server, err := grpc.Dial("141.223.121.164" + ":" + "50009", grpc.WithInsecure())
+		if err != nil {
+			log.Println(err)
+			return
+		}
 
-	defer connectionForCross_Server.Close()
+		defer connectionForCross_Server.Close()
 
-	client1 := xServerPb.NewCross_ServerClient(connectionForCross_Server)
-	client1Context, cancel := context.WithTimeout(context.Background(), time.Second*180)
-	defer cancel()
+		client1 := xServerPb.NewCross_ServerClient(connectionForCross_Server)
+		client1Context, cancel := context.WithTimeout(context.Background(), time.Second*180)
+		defer cancel()
 
-/*
-	C.ecall_cross_create_all_refund_req_msg_w(C.uint(pn), &originalMessage, &signature)
-	originalMessageByte, signatureByte := convertPointerToByte(originalMessage, signature)
-*/
-//	ctx.JSON(http.StatusOK, gin.H{"message":"Cross-Payment" })
+	/*
+		C.ecall_cross_create_all_refund_req_msg_w(C.uint(pn), &originalMessage, &signature)
+		originalMessageByte, signatureByte := convertPointerToByte(originalMessage, signature)
+	*/
+	//	ctx.JSON(http.StatusOK, gin.H{"message":"Cross-Payment" })
 
-	_, err = client1.CrossPaymentRequest(client1Context, &xServerPb.CrossPaymentMessage{Pn: int64(PaymentNum), ChainTo: serverGrpc.ChainTo, ChainFrom: serverGrpc.ChainFrom, ChainVal: serverGrpc.ChainVal})
-	if err != nil {
-		log.Println(err)
-		return
-	}
+		_, err = client1.CrossPaymentRequest(client1Context, &xServerPb.CrossPaymentMessage{Pn: int64(PaymentNum), ChainTo: serverGrpc.ChainTo, ChainFrom: serverGrpc.ChainFrom, ChainVal: serverGrpc.ChainVal})
+		if err != nil {
+			log.Println(err)
+			return
+		}
 
-//	fmt.Println(r.GetResult())
+	//	fmt.Println(r.GetResult())
 
-/*
-	for i:= 1; i<=1; i++ {
-		go serverGrpc.WrapperCrossPaymentPrepareRequest(i, int64(PaymentNum), serverGrpc.ChainFrom[i], serverGrpc.ChainTo[i], int64(serverGrpc.ChainVal[i]), originalMessageByte, signatureByte)
-	}
-*/
-/*
-	var data = <- serverGrpc.ChComplete[int(PaymentNum)]
-	if data == true {
+	/*
+		for i:= 1; i<=1; i++ {
+			go serverGrpc.WrapperCrossPaymentPrepareRequest(i, int64(PaymentNum), serverGrpc.ChainFrom[i], serverGrpc.ChainTo[i], int64(serverGrpc.ChainVal[i]), originalMessageByte, signatureByte)
+		}
+	*/
+	/*
+		var data = <- serverGrpc.ChComplete[int(PaymentNum)]
+		if data == true {
+			ctx.JSON(http.StatusOK, gin.H{"message":"Cross-Payment" })
+		}
+	*/
+
 		ctx.JSON(http.StatusOK, gin.H{"message":"Cross-Payment" })
-	}
-*/
 
-	ctx.JSON(http.StatusOK, gin.H{"message":"Cross-Payment" })
+	} else if (randValue % 2) == 0 {
+		//serverGrpc.Client[tempPaymentNum%100].PaymentRequest(serverGrpc.ClientContext[tempPaymentNum%100], &serverPb.PaymentRequestMessage{From: myAddress, To: otherAddress, Amount: int64(amount)})
+
+		//ctx.JSON(http.StatusOK, gin.H{"message":"Cross-Payment" })
+
+		connectionForCross_Server, err := grpc.Dial("141.223.121.170" + ":" + "50004", grpc.WithInsecure())
+		if err != nil {
+			log.Println(err)
+			return
+		}
+
+		defer connectionForCross_Server.Close()
+
+		client1 := serverPb.NewServerClient(connectionForCross_Server)
+		client1Context, cancel := context.WithTimeout(context.Background(), time.Second*180)
+		defer cancel()
+
+	/*
+		C.ecall_cross_create_all_refund_req_msg_w(C.uint(pn), &originalMessage, &signature)
+		originalMessageByte, signatureByte := convertPointerToByte(originalMessage, signature)
+	*/
+	//	ctx.JSON(http.StatusOK, gin.H{"message":"Cross-Payment" })
+
+		r, err := client1.PaymentRequest(client1Context, &serverPb.PaymentRequestMessage{From: chain1From, To: chain1To, Amount: int64(chain1Val)})
+		if err != nil {
+			log.Println(err)
+			return
+		}
+		
+		if r.GetResult() == true {
+			ctx.JSON(http.StatusOK, gin.H{"message":"Cross-Payment" })
+		}
+	} else if (randValue % 2) == 1 {
+
+		connectionForCross_Server, err := grpc.Dial("141.223.121.170" + ":" + "50005", grpc.WithInsecure())
+		if err != nil {
+			log.Println(err)
+			return
+		}
+
+		defer connectionForCross_Server.Close()
+
+		client1 := serverPb.NewServerClient(connectionForCross_Server)
+		client1Context, cancel := context.WithTimeout(context.Background(), time.Second*180)
+		defer cancel()
+
+	/*
+		C.ecall_cross_create_all_refund_req_msg_w(C.uint(pn), &originalMessage, &signature)
+		originalMessageByte, signatureByte := convertPointerToByte(originalMessage, signature)
+	*/
+	//	ctx.JSON(http.StatusOK, gin.H{"message":"Cross-Payment" })
+
+		r, err := client1.PaymentRequest(client1Context, &serverPb.PaymentRequestMessage{From: chain1From, To: chain1To, Amount: int64(chain1Val)})
+		if err != nil {
+			log.Println(err)
+			return
+		}
+
+		if r.GetResult() == true {
+			ctx.JSON(http.StatusOK, gin.H{"message":"Cross-Payment" })
+		}
+	}
 
 }
 

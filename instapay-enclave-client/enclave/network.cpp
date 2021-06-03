@@ -1134,7 +1134,7 @@ void ecall_cross_go_post_update(unsigned char *msg, unsigned char *signature, un
     std::vector<unsigned char> pubkey(my_addr, my_addr + 20);
     std::vector<unsigned char> seckey;
 
-    reply.type = UD_RES;
+    reply.type = CROSS_COMMIT_RES;
     reply.payment_num = payment_num;
     reply.e = 1;
 

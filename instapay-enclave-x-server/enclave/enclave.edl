@@ -131,7 +131,8 @@ enclave {
             [user_check] int *middleMan_amount, 
             [user_check] int *receiver_amount,
             [user_check] unsigned char *req_msg, 
-            [user_check] unsigned char *req_sig);
+            [user_check] unsigned char *req_sig,
+	    [user_check] unsigned int *result);
 
         public void ecall_cross_verify_all_prepared_res_msg(
             [user_check] unsigned char *res_msg, 
@@ -158,7 +159,8 @@ enclave {
             [user_check] int *middleMan_amount, 
             [user_check] int *receiver_amount,
             [user_check] unsigned char *req_msg, 
-            [user_check] unsigned char *req_sig);
+            [user_check] unsigned char *req_sig,
+	    [user_check] unsigned int *result);
 
 	public void ecall_cross_verify_all_prepared_res_msg_temp(
 	    [user_check] unsigned char *res_msg, 
@@ -195,7 +197,8 @@ enclave {
             [user_check] int *middleMan_amount, 
             [user_check] int *receiver_amount,
             [user_check] unsigned char *req_msg, 
-            [user_check] unsigned char *req_sig);
+            [user_check] unsigned char *req_sig,
+	    [user_check] unsigned int *result);
 
         public void ecall_cross_create_all_refund_req_msg(
             unsigned int payment_num, 
