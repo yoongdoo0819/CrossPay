@@ -334,7 +334,7 @@ void ecall_cross_create_all_prepare_req_msg_temp(unsigned int payment_num, unsig
 	memcpy(req_sig, req_signature, 65);
 
 	free(seckey);
-	
+
 	*result = 9999;
 	return;
 }
@@ -394,8 +394,11 @@ void ecall_cross_verify_all_prepared_res_msg(unsigned char *res_msg, unsigned ch
 
 void ecall_cross_verify_all_prepared_res_msg_temp(unsigned char *res_msg, unsigned char *res_sig, unsigned int *is_verified)
 {
-//    printf("size : %d \n", sizeof(MessageRes));
+
     verify_message(1, res_sig, res_msg, sizeof(MessageRes), NULL);
+//	    printf("verification failure \n");
+//	    return;
+//    }
 
     /* step 2. check that message type is 'AG_RES' */
     MessageRes *res = (MessageRes*)res_msg;
@@ -406,7 +409,7 @@ void ecall_cross_verify_all_prepared_res_msg_temp(unsigned char *res_msg, unsign
         return;
     }
 
-//    printf("AG RES!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! \n");
+    //printf("AG RES!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! \n");
     *is_verified = 9999;
     return;
 }
@@ -472,6 +475,7 @@ void ecall_cross_create_all_commit_req_msg_temp(unsigned int payment_num, unsign
 	memcpy(req_sig, req_signature, 65);
 
 	free(seckey);
+
 
 	*result = 9999;
 	return;

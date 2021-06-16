@@ -110,7 +110,7 @@ func CrossPaymentToServerChannelHandler(ctx *gin.Context) {
 	s1 := rand.NewSource(time.Now().UnixNano())
 	r1 := rand.New(s1)
 	randValue = r1.Intn(100)
-//	randValue = 1
+	randValue = 1
 //	fmt.Println(randValue)
 
 	chain1From := ctx.PostForm("chain1_sender")
@@ -120,8 +120,7 @@ func CrossPaymentToServerChannelHandler(ctx *gin.Context) {
 		log.Println(err)
 	}
 
-	if randValue < 1 {
-
+	if randValue < 50 {
 	/*
 		chain2From := ctx.PostForm("chain2_sender")
 		chain2To := ctx.PostForm("chain2_receiver")
@@ -161,20 +160,27 @@ func CrossPaymentToServerChannelHandler(ctx *gin.Context) {
 
 	//	serverGrpc.StartTime = time.Now()
 	//	rwMutex.Lock()
-		PaymentNum = C.ecall_cross_accept_request_w(
-			&chain1Sender[0],
-			&chain1Sender[0],
-			&chain1Receiver[0],
-			C.uint(chain1Val),
-			&chain1Sender[0],
-			&chain1Sender[0],
-			&chain1Receiver[0],
-			C.uint(chain1Val),
-			&chain1Sender[0],
-			&chain1Sender[0],
-			&chain1Receiver[0],
-			C.uint(pn))
-		pn++
+
+//		for ; ; {
+			PaymentNum = C.ecall_cross_accept_request_w(
+				&chain1Sender[0],
+				&chain1Sender[0],
+				&chain1Receiver[0],
+				C.uint(chain1Val),
+				&chain1Sender[0],
+				&chain1Sender[0],
+				&chain1Receiver[0],
+				C.uint(chain1Val),
+				&chain1Sender[0],
+				&chain1Sender[0],
+				&chain1Receiver[0],
+				C.uint(pn))
+				pn++
+
+			if PaymentNum != 999999 {
+//				break
+			}
+//		}
 
 	/*
 		if int(PaymentNum) != pn {
@@ -220,7 +226,7 @@ func CrossPaymentToServerChannelHandler(ctx *gin.Context) {
 	*/
 	//	ctx.JSON(http.StatusOK, gin.H{"message":"Cross-Payment" })
 
-		_, err = client1.CrossPaymentRequest(client1Context, &xServerPb.CrossPaymentMessage{Pn: int64(PaymentNum), ChainTo: serverGrpc.ChainTo, ChainFrom: serverGrpc.ChainFrom, ChainVal: serverGrpc.ChainVal})
+		r, err := client1.CrossPaymentRequest(client1Context, &xServerPb.CrossPaymentMessage{Pn: int64(PaymentNum), ChainTo: serverGrpc.ChainTo, ChainFrom: serverGrpc.ChainFrom, ChainVal: serverGrpc.ChainVal})
 		if err != nil {
 			log.Println(err)
 			return
@@ -240,14 +246,16 @@ func CrossPaymentToServerChannelHandler(ctx *gin.Context) {
 		}
 	*/
 
-		ctx.JSON(http.StatusOK, gin.H{"message":"Cross-Payment" })
+		if r.GetResult() == true {
+			ctx.JSON(http.StatusOK, gin.H{"message":"Cross-Payment" })
+		}
 
 	} else if (randValue % 2) == 0 {
 		//serverGrpc.Client[tempPaymentNum%100].PaymentRequest(serverGrpc.ClientContext[tempPaymentNum%100], &serverPb.PaymentRequestMessage{From: myAddress, To: otherAddress, Amount: int64(amount)})
 
 		//ctx.JSON(http.StatusOK, gin.H{"message":"Cross-Payment" })
 
-		connectionForCross_Server, err := grpc.Dial("141.223.121.170" + ":" + "50004", grpc.WithInsecure())
+		connectionForCross_Server, err := grpc.Dial("141.223.121.169" + ":" + "50004", grpc.WithInsecure())
 		if err != nil {
 			log.Println(err)
 			return
@@ -276,7 +284,7 @@ func CrossPaymentToServerChannelHandler(ctx *gin.Context) {
 		}
 	} else if (randValue % 2) == 1 {
 
-		connectionForCross_Server, err := grpc.Dial("141.223.121.170" + ":" + "50005", grpc.WithInsecure())
+		connectionForCross_Server, err := grpc.Dial("141.223.121.165" + ":" + "50005", grpc.WithInsecure())
 		if err != nil {
 			log.Println(err)
 			return

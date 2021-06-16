@@ -3,6 +3,8 @@
 
 #include <message.h>
 
+secp256k1_context* secp256k1_ctx = NULL;
+
 
 void sign_message(unsigned char *original_msg, unsigned int msg_size, unsigned char *seckey, unsigned char *signature)
 {
@@ -10,8 +12,11 @@ void sign_message(unsigned char *original_msg, unsigned int msg_size, unsigned c
     int recid;
 
     /* secp256k1 */
-    secp256k1_context* secp256k1_ctx = NULL;
+    //secp256k1_context* secp256k1_ctx = NULL;
     secp256k1_ecdsa_recoverable_signature sig;
+    if(secp256k1_ctx == NULL) {
+	    secp256k1_ctx = secp256k1_context_create(SECP256K1_CONTEXT_SIGN | SECP256K1_CONTEXT_VERIFY);
+    }
 
     unsigned char output64[64];
 
@@ -23,38 +28,45 @@ void sign_message(unsigned char *original_msg, unsigned int msg_size, unsigned c
     sha3_SetFlags(&sha3_ctx, SHA3_FLAGS_KECCAK);
     sha3_Update(&sha3_ctx, original_msg, msg_size);
     msg32 = (unsigned char*)sha3_Finalize(&sha3_ctx);
-
+/*
+    for(int i=0; i<16; i++) {
+	    printf("%02x \n", msg32[i]);
+    }
+*/
     /* ECDSA sign on the message */
-    secp256k1_ctx = secp256k1_context_create(SECP256K1_CONTEXT_SIGN);
+//    secp256k1_ctx = secp256k1_context_create(SECP256K1_CONTEXT_SIGN);
     secp256k1_ecdsa_sign_recoverable(secp256k1_ctx, &sig, msg32, seckey, NULL, NULL);
     secp256k1_ecdsa_recoverable_signature_serialize_compact(secp256k1_ctx, output64, &recid, &sig);
 
     memcpy(signature, output64, 32);  // copy r
     memcpy(signature + 32, output64 + 32, 32);  // copy s
     memcpy(&signature[64], &recid, 1);  // copy v (recovery id)
-
-    secp256k1_context_destroy(secp256k1_ctx);
+/*
+    for(int i = 0; i < 32; i++)
+        printf("%02x", output64[i]);
+    printf("\n");
+*/
+//    secp256k1_context_destroy(secp256k1_ctx);
 }
 
 
 int verify_message(unsigned int from, unsigned char *signature, unsigned char *original_msg, unsigned int msg_size, unsigned char *pubaddr)
 {
-	
-//	     printf("START 1 !!!!! \n");
 
-    secp256k1_context* secp256k1_ctx = NULL;
-//    printf("################################## \n");
+    if(secp256k1_ctx == NULL) {	
+	    secp256k1_ctx = secp256k1_context_create(SECP256K1_CONTEXT_SIGN | SECP256K1_CONTEXT_VERIFY);
+    }
+
+
+    //secp256k1_context* secp256k1_ctx = NULL;
 //    secp256k1_ctx = secp256k1_context_create(/*SECP256K1_CONTEXT_SIGN |*/ SECP256K1_CONTEXT_VERIFY);
-//    printf("##################################$$$$$$$$$$$$$$$$$$$$$$$ \n");
  
     secp256k1_ecdsa_recoverable_signature raw_sig;
-//    printf("???????????????!!! \n");
     int v = signature[64];
 
-//    printf("START 1 !!!!! \n");
     if(v > 3) v -= 27;
 
-    secp256k1_ctx = secp256k1_context_create(/*SECP256K1_CONTEXT_SIGN |*/ SECP256K1_CONTEXT_VERIFY);
+    //secp256k1_ctx = secp256k1_context_create(SECP256K1_CONTEXT_SIGN | SECP256K1_CONTEXT_VERIFY);
 
     if(!secp256k1_ecdsa_recoverable_signature_parse_compact(secp256k1_ctx, &raw_sig, signature, v))
         return -1;
@@ -64,11 +76,10 @@ int verify_message(unsigned int from, unsigned char *signature, unsigned char *o
 
     sha3_Init256(&sha3_ctx);
     sha3_SetFlags(&sha3_ctx, SHA3_FLAGS_KECCAK);
-//    printf("START 1-1 !!!!! \n");
     sha3_Update(&sha3_ctx, original_msg, msg_size);
     msg32 = (unsigned char*)sha3_Finalize(&sha3_ctx);
 
-//    printf("START 2 !!!!! \n");
+    printf("START 2 !!!!! \n");
 
     secp256k1_pubkey raw_pubkey;
     if(!secp256k1_ecdsa_recover(secp256k1_ctx, &raw_pubkey, &raw_sig, msg32))
@@ -79,7 +90,7 @@ int verify_message(unsigned int from, unsigned char *signature, unsigned char *o
 
     secp256k1_ec_pubkey_serialize(secp256k1_ctx, pubkey, &pubkey_len, &raw_pubkey, SECP256K1_EC_UNCOMPRESSED);
 
-//    printf("START 3 !!!!! \n");
+    printf("START 3 !!!!! \n");
 
     sha3_Init256(&sha3_ctx);
     sha3_SetFlags(&sha3_ctx, SHA3_FLAGS_KECCAK);
@@ -88,21 +99,21 @@ int verify_message(unsigned int from, unsigned char *signature, unsigned char *o
 
     unsigned char sender[20];
 
-//    printf("START 4 !!!!! \n");
+    printf("START 4 !!!!! \n");
 
    
     memcpy(sender, msg32 + 12, 20);
     
-/*
+
     printf("IN verify_message (sender): ");
     for(int i = 0; i < 20; i++)
         printf("%02x", sender[i]);
     printf("\n");
-*/    
+    
 	
-    secp256k1_context_destroy(secp256k1_ctx);
+//    secp256k1_context_destroy(secp256k1_ctx);
 
-//    printf("START 5 !!!!! \n");
+    printf("START 5 !!!!! \n");
 
     if(from == 0) {
         pubaddr = ::arr_to_bytes(pubaddr, 40);
@@ -122,7 +133,7 @@ int verify_message(unsigned int from, unsigned char *signature, unsigned char *o
 	printf("\n");
 */
 	
-//    	printf("START 6 !!!!! \n");
+    	printf("START 6 !!!!! \n");
 
         if(memcmp(sender, server_pubaddr, 20) == 0) {
 	    free(server_pubaddr);

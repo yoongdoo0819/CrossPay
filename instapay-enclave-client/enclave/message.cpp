@@ -3,6 +3,8 @@
 
 #include <message.h>
 
+secp256k1_context* secp256k1_ctx = NULL;
+
 
 void sign_message(unsigned char *original_msg, unsigned int msg_size, unsigned char *seckey, unsigned char *signature)
 {
@@ -11,7 +13,11 @@ void sign_message(unsigned char *original_msg, unsigned int msg_size, unsigned c
 
 //    printf("start\n");
     /* secp256k1 */
-    secp256k1_context* secp256k1_ctx = NULL;
+//    secp256k1_context* secp256k1_ctx = NULL;
+    if(secp256k1_ctx == NULL) {
+	    secp256k1_ctx = secp256k1_context_create(SECP256K1_CONTEXT_SIGN | SECP256K1_CONTEXT_VERIFY);
+    }
+
     secp256k1_ecdsa_recoverable_signature sig;
 
     unsigned char output64[64];
@@ -26,7 +32,7 @@ void sign_message(unsigned char *original_msg, unsigned int msg_size, unsigned c
     msg32 = (unsigned char*)sha3_Finalize(&sha3_ctx);
 //    printf("start2 \n");
     /* ECDSA sign on the message */
-    secp256k1_ctx = secp256k1_context_create(SECP256K1_CONTEXT_SIGN);
+//    secp256k1_ctx = secp256k1_context_create(SECP256K1_CONTEXT_SIGN);
 //    printf("start2 - 1 \n");
 
     secp256k1_ecdsa_sign_recoverable(secp256k1_ctx, &sig, msg32, seckey, NULL, NULL);
@@ -39,14 +45,18 @@ void sign_message(unsigned char *original_msg, unsigned int msg_size, unsigned c
     memcpy(&signature[64], &recid, 1);  // copy v (recovery id)
 //    printf("start4 \n");
 
-    secp256k1_context_destroy(secp256k1_ctx);
+//    secp256k1_context_destroy(secp256k1_ctx);
 }
 
 
 int verify_message(unsigned int from, unsigned char *signature, unsigned char *original_msg, unsigned int msg_size, unsigned char *pubaddr)
 {
-    secp256k1_context* secp256k1_ctx = NULL;
-    secp256k1_ctx = secp256k1_context_create(SECP256K1_CONTEXT_SIGN | SECP256K1_CONTEXT_VERIFY);
+//    secp256k1_context* secp256k1_ctx = NULL;
+//    secp256k1_ctx = secp256k1_context_create(SECP256K1_CONTEXT_SIGN | SECP256K1_CONTEXT_VERIFY);
+
+    if(secp256k1_ctx == NULL) {
+	    secp256k1_ctx = secp256k1_context_create(SECP256K1_CONTEXT_SIGN | SECP256K1_CONTEXT_VERIFY);
+    }
 
     secp256k1_ecdsa_recoverable_signature raw_sig;
     int v = signature[64];
@@ -105,7 +115,7 @@ int verify_message(unsigned int from, unsigned char *signature, unsigned char *o
     printf("\n");
 */
     
-    secp256k1_context_destroy(secp256k1_ctx);
+//    secp256k1_context_destroy(secp256k1_ctx);
 
 //    printf("START 8 ################################## \n");
 

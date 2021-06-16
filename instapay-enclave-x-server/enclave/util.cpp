@@ -1,5 +1,6 @@
 #include <util.h>
-
+#include "enclave.h"
+#include "enclave_t.h"
 
 unsigned char* copy_bytes(unsigned char *data, int n)
 {

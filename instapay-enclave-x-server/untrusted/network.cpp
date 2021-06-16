@@ -117,7 +117,12 @@ unsigned int ecall_accept_request_w(unsigned char *sender, unsigned char *receiv
 {
     unsigned int payment_num;
 
-    ecall_accept_request(global_eid, sender, receiver, amount, &payment_num);
+	sgx_status_t ret = SGX_ERROR_UNEXPECTED;    
+	ret = ecall_accept_request(global_eid, sender, receiver, amount, &payment_num);		 
+	if (ret != SGX_SUCCESS) {
+		// print_error_message(ret);
+		return 999999;
+	}
 
     return payment_num;
 }
@@ -273,10 +278,20 @@ unsigned int ecall_cross_accept_request_w(
 
 {
     unsigned int payment_num;
-
+/*
     rwMutex.lock();
     ecall_cross_accept_request(global_eid, chain1Server, chain1Sender, chain1Receiver, chain1Amount, chain2Server, chain2Sender, chain2Receiver, chain2Amount, chain3Server, chain3Sender, chain3Receiver, chain3Amount, &payment_num);
     rwMutex.unlock();
+*/
+    rwMutex.lock();
+    sgx_status_t ret = SGX_ERROR_UNEXPECTED;    
+    ret =    ecall_cross_accept_request(global_eid, chain1Server, chain1Sender, chain1Receiver, chain1Amount, chain2Server, chain2Sender, chain2Receiver, chain2Amount, chain3Server, chain3Sender, chain3Receiver, chain3Amount, &payment_num);
+    rwMutex.unlock();
+
+    if (ret != SGX_SUCCESS) {
+		// print_error_message(ret);
+	 return 999999;
+    }
 
     return payment_num;
 }
