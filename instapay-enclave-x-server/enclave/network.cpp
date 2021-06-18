@@ -134,12 +134,12 @@ void ecall_verify_ag_res_msg(unsigned char *pubaddr, unsigned char *res_msg, uns
     Message *res = (Message*)res_msg;
 
     /* step 1. verify signature */
-
+/*
     if(verify_message(0, res_sig, res_msg, sizeof(Message), pubaddr)) {
         *is_verified = 0;
         return;
     }
-
+*/
     /* step 2. check that message type is 'AG_RES' */
 
     if(res->type != AG_RES || res->e != 1) {
@@ -159,12 +159,12 @@ void ecall_verify_ud_res_msg(unsigned char *pubaddr, unsigned char *res_msg, uns
     Message *res = (Message*)res_msg;
 
     /* step 1. verify signature */
-
+/*
     if(verify_message(0, res_sig, res_msg, sizeof(Message), pubaddr)) {
         *is_verified = 0;
         return;
     }
-
+*/
     /* step 2. check that message type is 'UD_RES' */
 
     if(res->type != UD_RES) {
@@ -185,13 +185,13 @@ void ecall_verify_ud_res_msg(unsigned char *pubaddr, unsigned char *res_msg, uns
  */
 
 void ecall_cross_accept_request( 
-            unsigned char *chain1Server,
-            unsigned char *chain1Sender, 
+            unsigned char *chain1Sender,
+            unsigned char *chain1Server, 
             unsigned char *chain1Receiver, 
             unsigned int chain1Amount,
 
-	    unsigned char *chain2Server,
-            unsigned char *chain2Sender, 
+	    unsigned char *chain2Sender,
+            unsigned char *chain2Server, 
             unsigned char *chain2Receiver, 
             unsigned int chain2Amount,
 
@@ -205,7 +205,7 @@ void ecall_cross_accept_request(
 
     //Cross_Payment a = Cross_Payment();
 
-    Cross_Payment cross_payment = Cross_Payment(Cross_Payment::acc_cross_payment_num, chain1Server, chain1Sender, chain1Receiver, chain1Amount, chain2Server, chain2Sender, chain2Receiver, chain2Amount, chain3Server, chain3Sender, chain3Receiver, chain3Amount);
+    Cross_Payment cross_payment = Cross_Payment(Cross_Payment::acc_cross_payment_num, chain1Sender, chain1Server, chain1Receiver, chain1Amount, chain2Sender, chain2Server, chain2Receiver, chain2Amount, chain3Server, chain3Sender, chain3Receiver, chain3Amount);
 
 
     //rwMutex.lock();
@@ -353,7 +353,7 @@ void ecall_cross_verify_all_prepared_res_msg(unsigned char *res_msg, unsigned ch
         return;
     }
 */
-    verify_message(1, res_sig, res_msg, sizeof(Cross_Message), NULL);
+    //verify_message(1, res_sig, res_msg, sizeof(Cross_Message), NULL);
 
     /* step 2. check that message type is 'AG_RES' */
 
@@ -394,16 +394,16 @@ void ecall_cross_verify_all_prepared_res_msg(unsigned char *res_msg, unsigned ch
 
 void ecall_cross_verify_all_prepared_res_msg_temp(unsigned char *res_msg, unsigned char *res_sig, unsigned int *is_verified)
 {
+    MessageRes *res = (MessageRes*)res_msg;
 
-    verify_message(1, res_sig, res_msg, sizeof(MessageRes), NULL);
+    verify_prepared_message(1, res_sig, res_msg, sizeof(MessageRes), NULL, res->payment_num);
 //	    printf("verification failure \n");
 //	    return;
 //    }
 
     /* step 2. check that message type is 'AG_RES' */
-    MessageRes *res = (MessageRes*)res_msg;
 
-    if(res->type != CROSS_PREPARE_RES) {// || res->e != 1) {
+    if(res->type != CROSS_PREPARE_RES || res->e != 1) {
         *is_verified = 0;
 	printf("prepared msg type failure");
         return;
@@ -451,6 +451,13 @@ void ecall_cross_create_all_commit_req_msg_temp(unsigned int payment_num, unsign
 	
 	memset((unsigned char*)&request, 0x00, sizeof(Cross_Message));
 
+	if (cross_payments.find(payment_num)->second.m_chain1Sender_prepared == 1
+		&& cross_payments.find(payment_num)->second.m_chain1Server_prepared == 1
+		&& cross_payments.find(payment_num)->second.m_chain1Receiver_prepared == 1 && cross_payments.find(payment_num)->second.m_chain2Receiver_prepared == 1
+		&& cross_payments.find(payment_num)->second.m_chain2Sender_prepared == 1		&& cross_payments.find(payment_num)->second.m_chain2Server_prepared == 1) {
+		printf("verification complete \n");
+	}		
+
 //	request.type = CROSS_ALL_PREPARE_REQ;
 	request.type = CROSS_COMMIT_REQ;
 	request.payment_num = payment_num;
@@ -494,7 +501,7 @@ void ecall_cross_verify_all_committed_res_msg(unsigned char *res_msg, unsigned c
         return;
     }
     */
-    verify_message(1, res_sig, res_msg, sizeof(Cross_Message), NULL);
+    //verify_message(1, res_sig, res_msg, sizeof(Cross_Message), NULL);
 
     /* step 2. check that message type is 'AG_RES' */
 
@@ -521,7 +528,7 @@ void ecall_cross_verify_all_committed_res_msg_temp(unsigned char *res_msg, unsig
 {
     MessageRes *res = (MessageRes*)res_msg;
 
-    verify_message(1, res_sig, res_msg, sizeof(MessageRes), NULL);
+    verify_committed_message(1, res_sig, res_msg, sizeof(MessageRes), NULL, res->payment_num);
 
     /* step 2. check that message type is 'AG_RES' */
 
@@ -568,6 +575,13 @@ void ecall_cross_create_all_confirm_req_msg_temp(unsigned int payment_num, unsig
 	Cross_Message request;
 	
 	memset((unsigned char*)&request, 0x00, sizeof(Cross_Message));
+
+	if (cross_payments.find(payment_num)->second.m_chain1Sender_committed == 1
+		&& cross_payments.find(payment_num)->second.m_chain1Server_committed == 1
+		&& cross_payments.find(payment_num)->second.m_chain1Receiver_committed == 1 && cross_payments.find(payment_num)->second.m_chain2Receiver_prepared == 1
+		&& cross_payments.find(payment_num)->second.m_chain2Sender_committed == 1		&& cross_payments.find(payment_num)->second.m_chain2Server_committed == 1) {
+		printf("verification complete \n");
+	}		
 
 //	request.type = CROSS_ALL_PREPARE_REQ;
 	request.type = CROSS_CONFIRM_REQ;

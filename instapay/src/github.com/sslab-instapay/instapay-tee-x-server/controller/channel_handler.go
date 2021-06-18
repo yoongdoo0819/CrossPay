@@ -151,6 +151,11 @@ func CrossPaymentToServerChannelHandler(ctx *gin.Context) {
 	*/
 		chain1Sender := []C.uchar(chain1From)
 		chain1Receiver := []C.uchar(chain1To)
+		chain1Server := []C.uchar("c60f640c4505d15b972e6fc2a2a7cba09d05d9f7")
+
+		chain2Sender := []C.uchar("f4444529d6221122d1712c52623ba119a60609e3")
+		chain2Server := []C.uchar("d95da40bbd2001abf1a558c0b1dffd75940b8fd9")
+		chain2Receiver := []C.uchar("73d8e5475278f7593b5293beaa45fb53f34c9ad2")
 
 		//chain2Sender := []C.uchar(chain2From)
 		//chain2Receiver := []C.uchar(chain2To)
@@ -161,15 +166,15 @@ func CrossPaymentToServerChannelHandler(ctx *gin.Context) {
 	//	serverGrpc.StartTime = time.Now()
 	//	rwMutex.Lock()
 
-//		for ; ; {
+		for ; ; {
 			PaymentNum = C.ecall_cross_accept_request_w(
 				&chain1Sender[0],
-				&chain1Sender[0],
+				&chain1Server[0],
 				&chain1Receiver[0],
 				C.uint(chain1Val),
-				&chain1Sender[0],
-				&chain1Sender[0],
-				&chain1Receiver[0],
+				&chain2Sender[0],
+				&chain2Server[0],
+				&chain2Receiver[0],
 				C.uint(chain1Val),
 				&chain1Sender[0],
 				&chain1Sender[0],
@@ -178,9 +183,9 @@ func CrossPaymentToServerChannelHandler(ctx *gin.Context) {
 				pn++
 
 			if PaymentNum != 999999 {
-//				break
+				break
 			}
-//		}
+		}
 
 	/*
 		if int(PaymentNum) != pn {
@@ -248,6 +253,8 @@ func CrossPaymentToServerChannelHandler(ctx *gin.Context) {
 
 		if r.GetResult() == true {
 			ctx.JSON(http.StatusOK, gin.H{"message":"Cross-Payment" })
+		} else {
+			ctx.JSON(http.StatusBadRequest, gin.H{"message":"Cross-Payment" })
 		}
 
 	} else if (randValue % 2) == 0 {

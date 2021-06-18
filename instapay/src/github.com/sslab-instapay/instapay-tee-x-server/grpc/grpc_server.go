@@ -149,7 +149,6 @@ func SendCrossPaymentPrepareRequest(i interface{}) {
 	if r.Result {
 		agreementOriginalMessage, signature := convertMsgResByteToPointer(r.OriginalMessage, r.Signature)
 
-		fmt.Println(r.Signature)
 		for ; ; {
 			result := C.ecall_cross_verify_all_prepared_res_msg_temp_w(agreementOriginalMessage, signature)
 
@@ -200,7 +199,7 @@ func SendCrossPaymentCommitRequest(i interface{}) {
 
 	if r.Result {
 		updateOriginalMessage, signature := convertMsgResByteToPointer(r.OriginalMessage, r.Signature)
-		C.ecall_cross_verify_all_committed_res_msg_temp_w(updateOriginalMessage, signature)
+		//C.ecall_cross_verify_all_committed_res_msg_temp_w(updateOriginalMessage, signature)
 		for ; ; {
 			result := C.ecall_cross_verify_all_committed_res_msg_temp_w(updateOriginalMessage, signature)
 			if result == 9999 {
@@ -515,17 +514,17 @@ func (s *ServerGrpc) CrossPaymentRequest(ctx context.Context, rs *pbXServer.Cros
 	}
 
         originalMessageByteForPrepare, signatureByteForPrepare := convertPointerToByte(originalMessageForPrepare, signatureForPrepare)
-        //originalMessageByteForPrepare2, signatureByteForPrepare2 := convertPointerToByte(originalMessageForPrepare2, signatureForPrepare2)
+        originalMessageByteForPrepare2, signatureByteForPrepare2 := convertPointerToByte(originalMessageForPrepare2, signatureForPrepare2)
 
 
 //	for i := 1; i<=1; i++ {
 		go WrapperCrossPaymentPrepareRequest(rs.Pn, p, paymentInformation, originalMessageByteForPrepare, signatureByteForPrepare)
 
-		//go WrapperCrossPaymentPrepareRequest(rs.Pn, p2, _paymentInformation, originalMessageByteForPrepare2, signatureByteForPrepare2)
+		go WrapperCrossPaymentPrepareRequest(rs.Pn, p2, _paymentInformation, originalMessageByteForPrepare2, signatureByteForPrepare2)
 
 //	}
 
-	for i:= 1; i<=3; i++ {
+	for i:= 1; i<=6; i++ {
 
 		var data = <-Ch[int(rs.Pn)]
 
@@ -534,7 +533,7 @@ func (s *ServerGrpc) CrossPaymentRequest(ctx context.Context, rs *pbXServer.Cros
 		}
 
 		prepared := chprepared[rs.Pn]
-		if prepared == 3 {
+		if prepared == 6 {
 			break
 		} else {
 			//return &pbXServer.CrossResult{Result: true}, nil
@@ -542,6 +541,7 @@ func (s *ServerGrpc) CrossPaymentRequest(ctx context.Context, rs *pbXServer.Cros
 
 	}
 
+	fmt.Println("================================")
 	for ; ; {
 		result := C.ecall_cross_create_all_commit_req_msg_temp_w(C.uint(rs.Pn), &sender[0], &middleMan[0], &receiver[0], C.uint(len(channelSlice1)), &channelSlice1[0], C.uint(len(channelSlice2)), &channelSlice2[0], C.uint(len(channelSlice3)), &channelSlice3[0], &amountSlice1[0], &amountSlice2[0], &amountSlice3[0], &originalMessageForCommit, &signatureForCommit)
 
@@ -595,13 +595,13 @@ func (s *ServerGrpc) CrossPaymentRequest(ctx context.Context, rs *pbXServer.Cros
 	}
 
 
-	for i := 1; i<=1; i++ {
+//	for i := 1; i<=1; i++ {
 		go WrapperCrossPaymentCommitRequest(rs.Pn, p, paymentInformation, originalMessageByteArray, signatureByteArray)
 
-//		go WrapperCrossPaymentCommitRequest(rs.Pn, p2, _paymentInformation, originalMessageByteArray2, signatureByteArray2)
-	}
+		go WrapperCrossPaymentCommitRequest(rs.Pn, p2, _paymentInformation, originalMessageByteArray2, signatureByteArray2)
+//	}
 
-	for i:= 1; i<=3; i++ {
+	for i:= 1; i<=6; i++ {
 
 		var data = <-Ch[int(rs.Pn)]
 
@@ -610,7 +610,7 @@ func (s *ServerGrpc) CrossPaymentRequest(ctx context.Context, rs *pbXServer.Cros
 		}
 
 		committed := chCommitted[rs.Pn]
-		if committed == 3 {
+		if committed == 6 {
 			break
 		} else {
 			//return &pbXServer.CrossResult{Result: true}, nil
@@ -672,7 +672,7 @@ func (s *ServerGrpc) CrossPaymentRequest(ctx context.Context, rs *pbXServer.Cros
 	for i := 1; i<=1; i++ {
 		go WrapperCrossPaymentConfirmRequest(rs.Pn, p, paymentInformation, originalMessageByteArrayForConfirm, signatureByteArrayForConfirm)
 
-		//go WrapperCrossPaymentConfirmRequest(rs.Pn, p2, _paymentInformation, originalMessageByteArrayForConfirm2, signatureByteArrayForConfirm2)
+		go WrapperCrossPaymentConfirmRequest(rs.Pn, p2, _paymentInformation, originalMessageByteArrayForConfirm2, signatureByteArrayForConfirm2)
 
 	}
 
@@ -1114,6 +1114,7 @@ func WrapperCrossPaymentCommitRequest(pn int64, p []string, paymentInformation m
 	var UD = UD{}
 	UD.paymentInformation = make(map[string]PaymentInformation)
 	for _, address := range p {
+		fmt.Println(">> : ", address)
 		UD.pn = pn
 		UD.address = address
 		UD.originalMessageByteArray = originalMessageByteArray
