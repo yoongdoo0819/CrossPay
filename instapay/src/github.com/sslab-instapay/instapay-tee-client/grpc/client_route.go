@@ -5,20 +5,526 @@ package grpc
 #cgo LDFLAGS: -L/home/yoongdoo0819/instapay3.0/instapay/src/github.com/sslab-instapay/instapay-tee-client -ltee
 
 #include "app.h"
+#include "message.h"
+#include "cross_message.h"
+#include "channel.h"
 */
 /*
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+channel channels[100000];
 
 void CExample(char *p) {     // 슬라이스를 void * 타입으로 받음
 	printf("zz \n");
 	printf("%c\n", p[0]); // H
 	printf("%s\n", p);    // Hello, world!
 }
+
+void transition_to_go_pre_update(unsigned int index) 
+{
+	channels[index].m_status = PRE_UPDATE;
+	//printf("channel id %d is PRE UPDATED \n", index);
+}
+
+unsigned int go_pre_update(unsigned char *msg, unsigned char *signature, unsigned char *original_msg, unsigned char *output)
+{
+	unsigned char *MY_ADDR = "f55ba9376db959fab2af86d565325829b08ea3c4";
+	unsigned char reply_signature[65] = {0, };
+	unsigned char *my_addr;
+
+	unsigned int payment_num, payment_size;
+	unsigned int *channel_ids;
+	int *payment_amount;
+
+	Message *ag_req = (Message*)msg;
+	MessageRes reply;
+
+	memset((unsigned char*)&reply, 0x00, sizeof(MessageRes));
+
+	// verify_message
+
+	if(ag_req->type != AG_REQ) {
+		printf("NOT AG REQ \n");
+		return 1;
+	}
+
+	payment_num = ag_req->payment_num;
+
+	unsigned char *tempMyAddr;
+
+	for(int i=0; i<3; i++) {
+		tempMyAddr = ag_req->participant[i].party;
+//		printf("addr : %s \n", tempMyAddr);
+
+		if(!strcmp((char*)tempMyAddr, (char*)MY_ADDR)) {
+//			printf("OK \n");
+			payment_size = ag_req->participant[i].payment_size;
+			channel_ids = ag_req->participant[i].channel_ids;
+			payment_amount = ag_req->participant[i].payment_amount;
+
+			break;
+		}
+	}
+
+	for(int i=0; i<payment_size; i++) {
+		//channels.find(channel_ids[i])->second.transition_to_go_pre_update();
+//		printf("id : %d \n", channel_ids[i]);
+		unsigned int channel_id = channel_ids[i];
+		transition_to_go_pre_update(channel_id);
+
+		if(payment_amount[i] < 0) {
+			//channels.find(channel_ids[i])->second.m_locked_balance += payment_amount[i] * -1;
+			channels[channel_ids[i]].m_locked_balance += payment_amount[i];
+//			printf("id %d, locked bal %d \n", channel_ids[i], channels[channel_ids[i]].m_locked_balance);
+			reply.amount = payment_amount[i] * -1;
+		} else {
+			reply.amount = payment_amount[i];
+		}
+	}
+
+	//my_addr = channels.find(channel_ids[0])->second.m_my_addr;
+
+	//std::vector<unsigned char> pubkey(my_addr, my_addr + 20);
+	//std::vector<unsigned char> seckey;
+
+	reply.type = AG_RES;
+	reply.payment_num = payment_num;
+	reply.e = 1;
+	//seckey = accounts.find(pubkey)->second.get_seckey();
+
+	//    printf("SIGN START \n");
+	//sign_message((unsigned char*)&reply, sizeof(MessageRes), (unsigned char*)seckey.data(), reply_signature);
+	//    printf("SIGN END \n");
+
+	//memcpy(original_msg, (unsigned char*)&reply, sizeof(MessageRes));
+	//memcpy(output, reply_signature, 65);
+
+	//free(pubkey);
+	//free(seckey);
+
+	//    printf("PRE UPDATED \n");
+	//*result = 9999;
+	return 9999;
+}
+
+unsigned int go_post_update(unsigned char *msg, unsigned char *signature, unsigned char *senderMSG, unsigned char *senderSig, unsigned char *middleManMSG, unsigned char *middleManSig, unsigned char *receiverMSG, unsigned char *receiverSig, unsigned char *original_msg, unsigned char *output)
+{
+	unsigned char *MY_ADDR = "f55ba9376db959fab2af86d565325829b08ea3c4";
+	unsigned char reply_signature[65] = {0, };
+	unsigned char *my_addr;
+
+	unsigned int payment_num, payment_size;
+	unsigned int *channel_ids;
+	int *payment_amount;
+
+	Message *ud_req = (Message*)msg;
+	MessageRes reply;
+
+	memset((unsigned char*)&reply, 0x00, sizeof(MessageRes));
+
+	// verify_message
+
+	MessageRes *senderMsg = (MessageRes*)senderMSG;
+	MessageRes *middleManMsg = (MessageRes*)middleManMSG;
+	MessageRes *receiverMsg = (MessageRes*)receiverMSG;
+
+	if(senderMsg->amount == middleManMsg->amount &&
+	                    middleManMsg->amount == receiverMsg->amount) { 
+	//	printf("same amount !! \n"); 
+	}
+	else { return 1; }
+
+	if(ud_req->type != UD_REQ) {
+		printf("NOT UD REQ \n");
+		return 1;
+	}
+
+	payment_num = ud_req->payment_num;
+
+	unsigned char *tempMyAddr;
+
+	for(int i=0; i<3; i++) {
+		tempMyAddr = ud_req->participant[i].party;
+//		printf("addr : %s \n", tempMyAddr);
+
+		if(!strcmp((char*)tempMyAddr, (char*)MY_ADDR)) {
+//			printf("OK \n");
+			payment_size = ud_req->participant[i].payment_size;
+			channel_ids = ud_req->participant[i].channel_ids;
+			payment_amount = ud_req->participant[i].payment_amount;
+
+			break;
+		}
+	}
+
+	unsigned int value;
+
+	for(int i=0; i<payment_size; i++) {
+
+		value = (payment_amount[i] < 0) ? payment_amount[i] * -1 : payment_amount[i];
+
+		if(0 < payment_amount[i]) {
+			channels[channel_ids[i]].m_balance += value; // paid			
+			reply.amount = value;
+			//          printf("reply.amount %d \n", value);
+		}
+		else {
+			channels[channel_ids[i]].m_locked_balance += payment_amount[i];
+			channels[channel_ids[i]].m_balance -= value; // pay
+
+			reply.amount = value;
+			//          printf("reply.amount %d \n", value);
+		}
+
+		channels[channel_ids[i]].m_status = POST_UPDATE;
+//		printf("channel %d is post updated \n", channel_ids[i]);
+	}
+
+	//my_addr = channels.find(channel_ids[0])->second.m_my_addr;
+
+	//std::vector<unsigned char> pubkey(my_addr, my_addr + 20);
+	//std::vector<unsigned char> seckey;
+
+	reply.type = AG_RES;
+	reply.payment_num = payment_num;
+	reply.e = 1;
+	//seckey = accounts.find(pubkey)->second.get_seckey();
+
+	//    printf("SIGN START \n");
+	//sign_message((unsigned char*)&reply, sizeof(MessageRes), (unsigned char*)seckey.data(), reply_signature);
+	//    printf("SIGN END \n");
+
+	//memcpy(original_msg, (unsigned char*)&reply, sizeof(MessageRes));
+	//memcpy(output, reply_signature, 65);
+
+	//free(pubkey);
+	//free(seckey);
+
+	//    printf("PRE UPDATED \n");
+	//*result = 9999;
+	return 9999;
+}
+
+unsigned int go_idle(unsigned char *msg, unsigned char *signature, unsigned char *senderMSG, unsigned char *senderSig, unsigned char *middleManMSG, unsigned char *middleManSig, unsigned char *receiverMSG, unsigned char *receiverSig, unsigned char *original_msg, unsigned char *output)
+{
+	unsigned char *MY_ADDR = "f55ba9376db959fab2af86d565325829b08ea3c4";
+	unsigned char reply_signature[65] = {0, };
+	unsigned char *my_addr;
+
+	unsigned int payment_num, payment_size;
+	unsigned int *channel_ids;
+	int *payment_amount;
+
+	Message *confirm = (Message*)msg;
+	MessageRes reply;
+
+	memset((unsigned char*)&reply, 0x00, sizeof(MessageRes));
+
+	// verify_message
+
+	MessageRes *senderMsg = (MessageRes*)senderMSG;
+	MessageRes *middleManMsg = (MessageRes*)middleManMSG;
+	MessageRes *receiverMsg = (MessageRes*)receiverMSG;
+
+	if(senderMsg->amount == middleManMsg->amount &&
+	                    middleManMsg->amount == receiverMsg->amount) { 
+	//	printf("same amount !! \n"); 
+	}
+	else { return 1; }
+
+	if(confirm->type != CONFIRM) {
+		printf("NOT CONFIRM REQ \n");
+		return 1;
+	}
+
+	payment_num = confirm->payment_num;
+
+	unsigned char *tempMyAddr;
+	for(int i=0; i<3; i++) {
+		tempMyAddr = confirm->participant[i].party;
+//		printf("addr : %s \n", tempMyAddr);
+
+		if(!strcmp((char*)tempMyAddr, (char*)MY_ADDR)) {
+//			printf("OK \n");
+			payment_size = confirm->participant[i].payment_size;
+			channel_ids = confirm->participant[i].channel_ids;
+			payment_amount = confirm->participant[i].payment_amount;
+
+			break;
+		}
+	}
+
+	unsigned int value;
+
+	for(int i=0; i<payment_size; i++) {
+		
+		channels[channel_ids[i]].m_status = IDLE;
+//		printf("channel %d is idle \n", channel_ids[i]);
+	}
+
+	return 9999;
+}
+
+unsigned int cross_go_pre_update(unsigned char *msg, unsigned char *signature, unsigned char *original_msg, unsigned char *output)
+{
+	unsigned char *MY_ADDR = "f55ba9376db959fab2af86d565325829b08ea3c4";
+	unsigned char reply_signature[65] = {0, };
+	unsigned char *my_addr;
+
+	unsigned int payment_num, payment_size;
+	unsigned int *channel_ids;
+	int *payment_amount;
+
+	Cross_Message *prepare_req = (Cross_Message*)msg;
+	MessageRes reply;
+
+	memset((unsigned char*)&reply, 0x00, sizeof(MessageRes));
+
+	// verify_message
+
+	if(prepare_req->type != CROSS_PREPARE_REQ) {
+		printf("NOT CROSS_PREPARE_REQ \n");
+		return 1;
+	}
+
+	payment_num = prepare_req->payment_num;
+
+	unsigned char *tempMyAddr;
+
+	for(int i=0; i<3; i++) {
+		tempMyAddr = prepare_req->participant[i].party;
+//		printf("addr : %s \n", tempMyAddr);
+
+		if(!strcmp((char*)tempMyAddr, (char*)MY_ADDR)) {
+//			printf("OK \n");
+			payment_size = prepare_req->participant[i].payment_size;
+			channel_ids = prepare_req->participant[i].channel_ids;
+			payment_amount = prepare_req->participant[i].payment_amount;
+
+			break;
+		}
+	}
+
+	for(int i=0; i<payment_size; i++) {
+		//channels.find(channel_ids[i])->second.transition_to_go_pre_update();
+//		printf("id : %d \n", channel_ids[i]);
+
+		channels[channel_ids[i]].m_cross_status = C_PRE;
+//		printf("channel id %d is cross prepared \n", channel_ids[i]);
+
+		if(payment_amount[i] < 0) {
+
+			channels[channel_ids[i]].m_reserved_balance += payment_amount[i] * -1;
+			channels[channel_ids[i]].m_balance -= payment_amount[i] * -1;
+
+			//printf("id %d, reserved bal %d \n", channel_ids[i], channels[channel_ids[i]].m_reserved_balance);
+			reply.amount = payment_amount[i] * -1;
+		} else {
+			reply.amount = payment_amount[i];
+		}
+	}
+
+	//my_addr = channels.find(channel_ids[0])->second.m_my_addr;
+
+	//std::vector<unsigned char> pubkey(my_addr, my_addr + 20);
+	//std::vector<unsigned char> seckey;
+
+	reply.type = AG_RES;
+	reply.payment_num = payment_num;
+	reply.e = 1;
+	//seckey = accounts.find(pubkey)->second.get_seckey();
+
+	//    printf("SIGN START \n");
+	//sign_message((unsigned char*)&reply, sizeof(MessageRes), (unsigned char*)seckey.data(), reply_signature);
+	//    printf("SIGN END \n");
+
+	//memcpy(original_msg, (unsigned char*)&reply, sizeof(MessageRes));
+	//memcpy(output, reply_signature, 65);
+
+	//free(pubkey);
+	//free(seckey);
+
+	//    printf("PRE UPDATED \n");
+	//*result = 9999;
+	return 9999;
+}
+
+unsigned int cross_go_post_update(unsigned char *msg, unsigned char *signature, unsigned char *senderMSG, unsigned char *senderSig, unsigned char *middleManMSG, unsigned char *middleManSig, unsigned char *receiverMSG, unsigned char *receiverSig, unsigned char *original_msg, unsigned char *output)
+{
+	unsigned char *MY_ADDR = "f55ba9376db959fab2af86d565325829b08ea3c4";
+	unsigned char reply_signature[65] = {0, };
+	unsigned char *my_addr;
+
+	unsigned int payment_num, payment_size;
+	unsigned int *channel_ids;
+	int *payment_amount;
+
+	Cross_Message *ud_req = (Cross_Message*)msg;
+	MessageRes reply;
+
+	memset((unsigned char*)&reply, 0x00, sizeof(MessageRes));
+
+	// verify_message
+
+	MessageRes *senderMsg = (MessageRes*)senderMSG;
+	MessageRes *middleManMsg = (MessageRes*)middleManMSG;
+	MessageRes *receiverMsg = (MessageRes*)receiverMSG;
+
+	if(senderMsg->amount == middleManMsg->amount &&
+	                    middleManMsg->amount == receiverMsg->amount) { 
+	//	printf("same amount !! \n"); 
+	}
+	else { return 1; }
+
+	if(ud_req->type != CROSS_COMMIT_REQ) {
+		printf("NOT CROSS_COMMIT_REQ \n");
+		return 1;
+	}
+
+	payment_num = ud_req->payment_num;
+
+	unsigned char *tempMyAddr;
+
+	for(int i=0; i<3; i++) {
+		tempMyAddr = ud_req->participant[i].party;
+//		printf("addr : %s \n", tempMyAddr);
+
+		if(!strcmp((char*)tempMyAddr, (char*)MY_ADDR)) {
+//			printf("OK \n");
+			payment_size = ud_req->participant[i].payment_size;
+			channel_ids = ud_req->participant[i].channel_ids;
+			payment_amount = ud_req->participant[i].payment_amount;
+
+			break;
+		}
+	}
+
+	unsigned int value;
+
+	for(int i=0; i<payment_size; i++) {
+
+		value = (payment_amount[i] < 0) ? payment_amount[i] * -1 : payment_amount[i];
+
+		if(0 < payment_amount[i]) {
+			channels[channel_ids[i]].m_reserved_balance += value; // paid			
+			reply.amount = value;
+			//          printf("reply.amount %d \n", value);
+		}
+		else {
+			//channels[channel_ids[i]].m_locked_balance += payment_amount[i];
+			//channels[channel_ids[i]].m_balance -= value; // pay
+
+			reply.amount = value;
+			//          printf("reply.amount %d \n", value);
+		}
+
+		channels[channel_ids[i]].m_cross_status = C_POST;
+//		printf("channel %d is cross post updated \n", channel_ids[i]);
+	}
+
+	//my_addr = channels.find(channel_ids[0])->second.m_my_addr;
+
+	//std::vector<unsigned char> pubkey(my_addr, my_addr + 20);
+	//std::vector<unsigned char> seckey;
+
+	reply.type = AG_RES;
+	reply.payment_num = payment_num;
+	reply.e = 1;
+	//seckey = accounts.find(pubkey)->second.get_seckey();
+
+	//    printf("SIGN START \n");
+	//sign_message((unsigned char*)&reply, sizeof(MessageRes), (unsigned char*)seckey.data(), reply_signature);
+	//    printf("SIGN END \n");
+
+	//memcpy(original_msg, (unsigned char*)&reply, sizeof(MessageRes));
+	//memcpy(output, reply_signature, 65);
+
+	//free(pubkey);
+	//free(seckey);
+
+	//    printf("PRE UPDATED \n");
+	//*result = 9999;
+	return 9999;
+}
+
+unsigned int cross_go_idle(unsigned char *msg, unsigned char *signature, unsigned char *senderMSG, unsigned char *senderSig, unsigned char *middleManMSG, unsigned char *middleManSig, unsigned char *receiverMSG, unsigned char *receiverSig, unsigned char *original_msg, unsigned char *output)
+{
+	unsigned char *MY_ADDR = "f55ba9376db959fab2af86d565325829b08ea3c4";
+	unsigned char reply_signature[65] = {0, };
+	unsigned char *my_addr;
+
+	unsigned int payment_num, payment_size;
+	unsigned int *channel_ids;
+	int *payment_amount;
+
+	Cross_Message *confirm = (Cross_Message*)msg;
+	MessageRes reply;
+
+	memset((unsigned char*)&reply, 0x00, sizeof(MessageRes));
+
+	// verify_message
+
+	MessageRes *senderMsg = (MessageRes*)senderMSG;
+	MessageRes *middleManMsg = (MessageRes*)middleManMSG;
+	MessageRes *receiverMsg = (MessageRes*)receiverMSG;
+
+	if(senderMsg->amount == middleManMsg->amount &&
+	                    middleManMsg->amount == receiverMsg->amount) { 
+	//	printf("same amount !! \n"); 
+	}
+	else { return 1; }
+
+	if(confirm->type != CROSS_CONFIRM_REQ) {
+		printf("NOT CROSS_CONFIRM_REQ \n");
+		return 1;
+	}
+
+	payment_num = confirm->payment_num;
+
+	unsigned char *tempMyAddr;
+	for(int i=0; i<3; i++) {
+		tempMyAddr = confirm->participant[i].party;
+//		printf("addr : %s \n", tempMyAddr);
+
+		if(!strcmp((char*)tempMyAddr, (char*)MY_ADDR)) {
+//			printf("OK \n");
+			payment_size = confirm->participant[i].payment_size;
+			channel_ids = confirm->participant[i].channel_ids;
+			payment_amount = confirm->participant[i].payment_amount;
+
+			break;
+		}
+	}
+
+	unsigned int value;
+
+	for(int i=0; i<payment_size; i++) {
+		unsigned int value = (payment_amount[i] < 0) ? payment_amount[i] * -1 : payment_amount[i];
+		if(0 < payment_amount[i]) {
+			channels[channel_ids[i]].m_reserved_balance -= value;
+			channels[channel_ids[i]].m_balance += value;
+			//channels.find(channel_ids[i])->second.paid(value);
+		}
+		else {
+			channels[channel_ids[i]].m_reserved_balance -= value;
+		}
+
+
+		channels[channel_ids[i]].m_cross_status = IDLE;
+//		printf("channel %d is cross idle \n", channel_ids[i]);
+	}
+
+	return 9999;
+}
+
 */
 import "C"
 
 import (
 	"context"
+	//"encoding/hex"
 
 	clientPb "github.com/sslab-instapay/instapay-tee-client/proto/client"
 
@@ -29,7 +535,26 @@ import (
 	"time"
 	"reflect"
 	"unsafe"
+
+        "github.com/decred/dcrd/chaincfg/chainhash"
+	//"github.com/decred/dcrd/dcrec/secp256k1"
+	//"github.com/decred/dcrd/dcrec/secp256k1/schnorr"
+//	"github.com/decred/dcrd/dcrec/secp256k1/v4"
+//	"github.com/decred/dcrd/dcrec/secp256k1/v4/schnorr"
+	//      "github.com/decred/dcrd/dcrec/secp256k1/ecdsa"
+	"github.com/ethereum/go-ethereum/crypto/secp256k1"
+	//"github.com/ethereum/go-ethereum/crypto"
+	//"golang.org/x/crypto/sha3"
 )
+
+type MessageRes struct {
+	/********* common *********/	    
+	messageType C.uint
+	amount C.uint
+	payment_num C.uint
+	e C.uint
+} 
+
 
 type Participant struct {
 
@@ -59,6 +584,8 @@ type Message struct {
 	e C.uint
 }
 
+var seckey = []byte{7, 82, 123, 120, 27, 150, 39, 52, 92, 112, 78, 214, 183, 112, 19, 207, 128, 181, 72, 226, 125, 146, 63, 253, 47, 199, 191, 20, 132, 98, 119, 201}
+
 //var Pn int64
 var ChComplete [500000]chan bool
 var chanCreateCheck = 0
@@ -84,12 +611,13 @@ func (s *ClientGrpc) AgreementRequest(ctx context.Context, in *clientPb.AgreeReq
 
 	convertedOriginalMsg, convertedSignatureMsg := convertByteToPointer(in.OriginalMessage, in.Signature)
 
-
+	
 	rwMutex.Lock()
-	C.ecall_go_pre_update_two_w(C.uint(in.PaymentNumber))
+	C.ecall_accpet_payments_w(C.uint(in.PaymentNumber))
 	rwMutex.Unlock()
 
 	var originalMsg *C.uchar
+	var __signature[65] C.uchar
 	var signature *C.uchar
 //	rwMutex.Lock()
 
@@ -132,20 +660,42 @@ func (s *ClientGrpc) AgreementRequest(ctx context.Context, in *clientPb.AgreeReq
 
 //	C.ecall_go_pre_update_w(convertedOriginalMsg, convertedSignatureMsg, &originalMsg, &signature)
 
-	for ; ; {
-		result := C.ecall_go_pre_update_w(convertedOriginalMsg, convertedSignatureMsg, &originalMsg, &signature)
-		if result == 1 {
+//	for ; ; {
+//		result := C.ecall_go_pre_update_w(convertedOriginalMsg, convertedSignatureMsg, &originalMsg, &signature)
+		result := C.go_pre_update(convertedOriginalMsg, convertedSignatureMsg, nil, nil)
+
+		var MessageRes = MessageRes{}
+		MessageRes.messageType = C.uint(4)
+		MessageRes.payment_num = C.uint(in.PaymentNumber)
+		MessageRes.e = C.uint(1)
+		MessageRes.amount = C.uint(1)
+
+		originalMsg = (*C.uchar)(unsafe.Pointer(&MessageRes))
+		signature = (*C.uchar)(unsafe.Pointer(&__signature))
+
+		originalMessageByte, _ := convertMsgResPointerToByte(originalMsg, signature)
+		messageHash := chainhash.HashB([]byte(originalMessageByte))
+		//fmt.Println(messageHash)
+
+		_signature, err := secp256k1.Sign(messageHash, seckey)
+		if err != nil {
+			fmt.Println("sign error ", err)
+		}
+
+		signature = (*C.uchar)(unsafe.Pointer(&_signature))
+
+		if result == C.uint(1)  {
 			fmt.Println("AG result failure!")
 			return &clientPb.AgreementResult{Result: false}, nil
-		} else if result == 9999  {
-			break
+		} else if result == C.uint(9999) {
+//			break
 		}
 
 		//fmt.Println("AG ################################## ")
-		defer C.free(unsafe.Pointer(originalMsg))
-		defer C.free(unsafe.Pointer(signature))
+		//defer C.free(unsafe.Pointer(originalMsg))
+		//defer C.free(unsafe.Pointer(signature))
 
-	}
+//	}
 
 //	rwMutex.Unlock()
 /*
@@ -165,6 +715,7 @@ func (s *ClientGrpc) AgreementRequest(ctx context.Context, in *clientPb.AgreeReq
 
 	originalMessageStr, signatureStr := convertMsgResPointerToByte(originalMsg, signature)
 
+//	fmt.Println("msg : ", originalMessageStr)
 //	fmt.Println("sig : ", signatureStr)
 
 	return &clientPb.AgreementResult{Result: true, OriginalMessage: originalMessageStr, Signature: signatureStr}, nil
@@ -182,6 +733,15 @@ func (s *ClientGrpc) UpdateRequest(ctx context.Context, in *clientPb.UpdateReque
 	convertedSenderMsg, convertedSenderSig := convertMsgResByteToPointer(in.OriginalMessage[1], in.Signature[1])
 	convertedMiddleManMsg, convertedMiddleManSig := convertMsgResByteToPointer(in.OriginalMessage[2], in.Signature[2])
 	convertedReceiverMsg, convertedReceiverSig := convertMsgResByteToPointer(in.OriginalMessage[3], in.Signature[3])
+
+//	fmt.Println(convertedSenderMsg, convertedSenderSig)
+//	fmt.Println(convertedMiddleManMsg, convertedMiddleManSig)
+//	fmt.Println(convertedReceiverMsg, convertedReceiverSig)
+
+//	fmt.Println(in.OriginalMessage[1], convertedSenderSig)
+//	fmt.Println(in.OriginalMessage[2], convertedMiddleManSig)
+//	fmt.Println(in.OriginalMessage[3], convertedReceiverSig)
+
 /*
 	var convertedCrossPaymentMsg, convertedCrossPaymentSig *C.uchar
 	if in.OriginalMessage[4] != nil {
@@ -189,25 +749,49 @@ func (s *ClientGrpc) UpdateRequest(ctx context.Context, in *clientPb.UpdateReque
 	}
 */
 	var originalMsg *C.uchar
+        var __signature[65] C.uchar
 	var signature *C.uchar
 
 //	C.ecall_go_post_update_w(convertedOriginalMsg, convertedSignatureMsg, &originalMsg, &signature)
 
 //	rwMutex.Lock()
 
-	for ; ; {
-		result := C.ecall_go_post_update_w(convertedOriginalMsg, convertedSignatureMsg, convertedSenderMsg, convertedSenderSig, convertedMiddleManMsg, convertedMiddleManSig, convertedReceiverMsg, convertedReceiverSig, nil, nil, &originalMsg, &signature)
-		if result == 1 {
+//	for ; ; {
+//		result := C.ecall_go_post_update_w(convertedOriginalMsg, convertedSignatureMsg, convertedSenderMsg, convertedSenderSig, convertedMiddleManMsg, convertedMiddleManSig, convertedReceiverMsg, convertedReceiverSig, nil, nil, &originalMsg, &signature)
+
+		result := C.go_post_update(convertedOriginalMsg, convertedSignatureMsg, convertedSenderMsg, convertedSenderSig, convertedMiddleManMsg, convertedMiddleManSig, convertedReceiverMsg, convertedReceiverSig, nil, nil)
+
+		var MessageRes = MessageRes{}
+		MessageRes.messageType = C.uint(6)
+		MessageRes.payment_num = C.uint(in.PaymentNumber)
+		MessageRes.e = C.uint(1)
+		MessageRes.amount = C.uint(1)
+
+		originalMsg = (*C.uchar)(unsafe.Pointer(&MessageRes))
+		signature = (*C.uchar)(unsafe.Pointer(&__signature))
+
+		originalMessageByte, _ := convertMsgResPointerToByte(originalMsg, signature)
+		messageHash := chainhash.HashB([]byte(originalMessageByte))
+//		fmt.Println(messageHash)
+
+		_signature, err := secp256k1.Sign(messageHash, seckey)
+		if err != nil {
+			fmt.Println("sign error ", err)
+		}
+
+		signature = (*C.uchar)(unsafe.Pointer(&_signature))
+
+		if result == C.uint(1) {
 			fmt.Println("UD result failure!")
 			return &clientPb.UpdateResult{Result: false}, nil
-		} else if result == 9999  {
-			break
+		} else if result == C.uint(9999) {
+			//break
 		}
 		//fmt.Println("UD ################################## ")
 
-		defer C.free(unsafe.Pointer(originalMsg))
-		defer C.free(unsafe.Pointer(signature))
-	}
+		//defer C.free(unsafe.Pointer(originalMsg))
+		//defer C.free(unsafe.Pointer(signature))
+//	}
 
 //	rwMutex.Unlock()
 
@@ -225,6 +809,10 @@ func (s *ClientGrpc) ConfirmPayment(ctx context.Context, in *clientPb.ConfirmReq
 	convertedMiddleManMsg, convertedMiddleManSig := convertMsgResByteToPointer(in.OriginalMessage[2], in.Signature[2])
 	convertedReceiverMsg, convertedReceiverSig := convertMsgResByteToPointer(in.OriginalMessage[3], in.Signature[3])
 
+//	fmt.Println(convertedSenderMsg, convertedSenderSig)
+//	fmt.Println(convertedMiddleManMsg, convertedMiddleManSig)
+//	fmt.Println(convertedReceiverMsg, convertedReceiverSig)
+
 //	C.ecall_go_idle_w(convertedOriginalMsg, convertedSignatureMsg)
 
 //	rwMutex.Lock()
@@ -234,19 +822,22 @@ func (s *ClientGrpc) ConfirmPayment(ctx context.Context, in *clientPb.ConfirmReq
 		convertedCrossPaymentMsg, convertedCrossPaymentSig = convertMsgResByteToPointer(in.OriginalMessage[4], in.Signature[4])
 	}
 */
-	for ; ; {
-		result := C.ecall_go_idle_w(convertedOriginalMsg, convertedSignatureMsg, convertedSenderMsg, convertedSenderSig, convertedMiddleManMsg, convertedMiddleManSig, convertedReceiverMsg, convertedReceiverSig, nil, nil)
+//	for ; ; {
+//		result := C.ecall_go_idle_w(convertedOriginalMsg, convertedSignatureMsg, convertedSenderMsg, convertedSenderSig, convertedMiddleManMsg, convertedMiddleManSig, convertedReceiverMsg, convertedReceiverSig, nil, nil)
+
+
+		result := C.go_idle(convertedOriginalMsg, convertedSignatureMsg, convertedSenderMsg, convertedSenderSig, convertedMiddleManMsg, convertedMiddleManSig, convertedReceiverMsg, convertedReceiverSig, nil, nil)
 
 		if result == 1 {
 			fmt.Println("CONFIRM result failure!")
 			return &clientPb.ConfirmResult{Result: false}, nil
 		} else if result == 9999  {
-			break
+//			break
 		}
 
 		//fmt.Println("CONFIRM ################################## ")
 
-	}
+//	}
 
 //	rwMutex.Unlock()
 
@@ -268,17 +859,18 @@ func (s *ClientGrpc) DirectChannelPayment(ctx context.Context, in *clientPb.Dire
 
 	log.Println("--- Start Byte to Pointer ---")
 	originalMessagePointer, signaturePointer := convertByteToPointer(in.OriginalMessage, in.Signature)
+	fmt.Println(originalMessagePointer, signaturePointer)
 	log.Println("--- End Byte to Pointer ---")
 	var replyMessage *C.uchar
 	var replySignature *C.uchar
 
-	C.ecall_paid_w(originalMessagePointer, signaturePointer, &replyMessage, &replySignature)
+	//C.ecall_paid_w(originalMessagePointer, signaturePointer, &replyMessage, &replySignature)
 	log.Println("----Direct Channel Payment Request End----")
 
 	convertedReplyMessage, convertedReplySignature := convertPointerToByte(replyMessage, replySignature)
 
-	defer C.free(unsafe.Pointer(replyMessage))
-	defer C.free(unsafe.Pointer(replySignature))
+	//defer C.free(unsafe.Pointer(replyMessage))
+	//defer C.free(unsafe.Pointer(replySignature))
 
 	return &clientPb.DirectPaymentResult{Result: true, ReplyMessage: convertedReplyMessage, ReplySignature: convertedReplySignature}, nil
 }
@@ -380,8 +972,8 @@ func convertMsgResPointerToByte(originalMsg *C.uchar, signature *C.uchar) ([]byt
 		returnSignature = append(returnSignature, byte(replySigS[i]))
 	}
 
-	defer C.free(unsafe.Pointer(originalMsg))
-	defer C.free(unsafe.Pointer(signature))
+	//defer C.free(unsafe.Pointer(originalMsg))
+	//defer C.free(unsafe.Pointer(signature))
 
 	return returnMsg, returnSignature
 }
@@ -392,17 +984,17 @@ func convertMsgResPointerToByte(originalMsg *C.uchar, signature *C.uchar) ([]byt
  */
 
 func (s *ClientGrpc) CrossPaymentPrepareClientRequest(ctx context.Context, in *clientPb.CrossPaymentPrepareReqClientMessage) (*clientPb.PrepareResult, error) {
-	log.Println("----CROSS PAYMENT PREPARE START IN CLIENT----")
+	//log.Println("----CROSS PAYMENT PREPARE START IN CLIENT----")
 
 
 	convertedOriginalMsg, convertedSignatureMsg := convertByteToPointer(in.OriginalMessage, in.Signature)
-
 
 	rwMutex.Lock()
 //	C.ecall_cross_go_pre_update_two_w(C.uint(in.PaymentNumber))
 	rwMutex.Unlock()
 
 	var originalMsg *C.uchar
+	//var __signature[65] C.uchar
 	var signature *C.uchar
 
 	Addrs = in.Addr
@@ -421,6 +1013,93 @@ func (s *ClientGrpc) CrossPaymentPrepareClientRequest(ctx context.Context, in *c
 */
 	for ; ; {
 		result := C.ecall_cross_go_pre_update_w(convertedOriginalMsg, convertedSignatureMsg, &originalMsg, &signature)
+
+//		originalMessageStr, signatureStr := convertMsgResPointerToByte(originalMsg, signature)
+//		fmt.Println("signature : ", in.Signature)
+
+/*		result := C.cross_go_pre_update(convertedOriginalMsg, convertedSignatureMsg, nil, nil)
+
+		var MessageRes = MessageRes{}
+		MessageRes.messageType = C.uint(8)
+		MessageRes.payment_num = C.uint(in.PaymentNumber)
+		MessageRes.e = C.uint(1)
+		MessageRes.amount = C.uint(1)
+
+		originalMsg = (*C.uchar)(unsafe.Pointer(&MessageRes))
+		signature = (*C.uchar)(unsafe.Pointer(&__signature))
+
+		originalMessageByte, _ := convertMsgResPointerToByte(originalMsg, signature)
+		//fmt.Println(originalMessageStr, originalMessageByte)
+		//fmt.Println(signatureStr)
+
+		//messageHash := crypto.Keccak256(originalMessageByte)
+		//h.Write(originalMessageByte)
+		//messageHash := h.Sum(nil)
+
+		messageHash := chainhash.HashB([]byte(originalMessageByte))
+//		messageHash := []byte("24bb5f9477d980bac42d698307d096ce183d6d557c3c1613404a2a174ba66ce")
+		//fmt.Println(messageHash)
+		_signature, err := secp256k1.Sign(messageHash, seckey)
+		if err != nil {
+			fmt.Println("sign error ", err)
+		}
+
+		signature = (*C.uchar)(unsafe.Pointer(&_signature))
+		//fmt.Println("sig >> ", signatureStr, _signature)
+/*
+		pkBytes, err := hex.DecodeString("5a5e2194e0639fd017158793812dd5f5668f5bfc9a146f93f39237a4b4ed7dd5")
+//			"22a47fa09a223f2aa079edf85a7c2d4f87" +
+//		"20ee63e502ee2869afab7de234b80c")
+		if err != nil {
+			fmt.Println(err)
+			//return
+		}
+		privKey := secp256k1.PrivKeyFromBytes(pkBytes)
+
+		pubKey := privKey.PubKey()
+		fmt.Println(pubKey)
+//		verified := secp256k1.VerifySignature(pubKey, messageHash, in.Signature)
+/*
+		privKey := secp256k1.PrivKeyFromBytes(pkBytes)
+		fmt.Println(privKey)
+		// Sign a message using the private key.
+		message := in.OriginalMessage//"test message"
+		messageHash := chainhash.HashB([]byte(message))
+		signature, err := schnorr.Sign(privKey, messageHash)
+
+		if err != nil {
+			fmt.Println(err)
+			//return
+		}
+
+		// Serialize and display the signature.
+		fmt.Printf("Serialized Signature: %x\n", signature.Serialize())
+		fmt.Println(signature.Serialize())
+		fmt.Println(in.Signature)
+		// Verify the signature for the message using the public key.
+		pubKey := privKey.PubKey()
+		fmt.Println(pubKey)
+		fmt.Println(reflect.TypeOf(signature))
+
+//		sig := (schnorr.Signature*) in.Signature
+		StartTime = time.Now()
+		verified := signature.Verify(messageHash, pubKey)
+		fmt.Printf("Signature Verified? %v\n", verified)
+
+		signature, err = schnorr.ParseSignature(in.Signature)
+		if err != nil {
+			fmt.Println(err)
+		}
+
+		fmt.Println(reflect.TypeOf(signature))
+
+		verified = signature.Verify(messageHash, pubKey)
+
+		elapsedTime := time.Since(StartTime)
+		fmt.Println(elapsedTime)
+
+		fmt.Printf("Signature Verified? %v\n", verified)
+*/
 		if result == 1 {
 			fmt.Println("PREPARE result failure!")
 			return &clientPb.PrepareResult{Result: false}, nil
@@ -449,6 +1128,8 @@ func (s *ClientGrpc) CrossPaymentCommitClientRequest(ctx context.Context, in *cl
 	convertedSenderMsg, convertedSenderSig := convertMsgResByteToPointer(in.OriginalMessage[1], in.Signature[1])
 	convertedMiddleManMsg, convertedMiddleManSig := convertMsgResByteToPointer(in.OriginalMessage[2], in.Signature[2])
 	convertedReceiverMsg, convertedReceiverSig := convertMsgResByteToPointer(in.OriginalMessage[3], in.Signature[3])
+
+
 /*
 	var convertedCrossPaymentMsg, convertedCrossPaymentSig *C.uchar
 	if in.OriginalMessage[4] != nil {
@@ -456,6 +1137,7 @@ func (s *ClientGrpc) CrossPaymentCommitClientRequest(ctx context.Context, in *cl
 	}
 */
 	var originalMsg *C.uchar
+	//var __signature[65] C.uchar
 	var signature *C.uchar
 
 //	C.ecall_go_post_update_w(convertedOriginalMsg, convertedSignatureMsg, &originalMsg, &signature)
@@ -464,6 +1146,28 @@ func (s *ClientGrpc) CrossPaymentCommitClientRequest(ctx context.Context, in *cl
 
 	for ; ; {
 		result := C.ecall_cross_go_post_update_w(convertedOriginalMsg, convertedSignatureMsg, convertedSenderMsg, convertedSenderSig, convertedMiddleManMsg, convertedMiddleManSig, convertedReceiverMsg, convertedReceiverSig, nil, nil, &originalMsg, &signature)
+/*
+		result := C.cross_go_post_update(convertedOriginalMsg, convertedSignatureMsg, convertedSenderMsg, convertedSenderSig, convertedMiddleManMsg, convertedMiddleManSig, convertedReceiverMsg, convertedReceiverSig, nil, nil)
+
+		var MessageRes = MessageRes{}
+		MessageRes.messageType = C.uint(9)
+		MessageRes.payment_num = C.uint(in.PaymentNumber)
+		MessageRes.e = C.uint(1)
+		MessageRes.amount = C.uint(1)
+
+		originalMsg = (*C.uchar)(unsafe.Pointer(&MessageRes))
+		signature = (*C.uchar)(unsafe.Pointer(&__signature))
+
+		originalMessageByte, _ := convertMsgResPointerToByte(originalMsg, signature)
+		messageHash := chainhash.HashB([]byte(originalMessageByte))
+
+		_signature, err := secp256k1.Sign(messageHash, seckey)
+		if err != nil {
+			fmt.Println("sign error ", err)
+		}
+
+		signature = (*C.uchar)(unsafe.Pointer(&_signature))
+*/
 		if result == 1 {
 			fmt.Println("COMMIT result failure!")
 			return &clientPb.CommitResult{Result: false}, nil
@@ -479,8 +1183,7 @@ func (s *ClientGrpc) CrossPaymentCommitClientRequest(ctx context.Context, in *cl
 //	rwMutex.Unlock()
 
 	originalMessageStr, signatureStr := convertMsgResPointerToByte(originalMsg, signature)
-
-	fmt.Println("COMMIT !!")
+//	fmt.Println("COMMIT !!")
 	return &clientPb.CommitResult{Result: true, OriginalMessage: originalMessageStr, Signature: signatureStr}, nil
 
 	// 채널 정보를 업데이트 한다던지 잔액을 변경.
@@ -519,12 +1222,13 @@ func (s *ClientGrpc) CrossPaymentCommitClientRequest(ctx context.Context, in *cl
 
 func (s *ClientGrpc) CrossPaymentConfirmClientRequest(ctx context.Context, in *clientPb.CrossPaymentConfirmReqClientMessage) (*clientPb.ConfirmResult, error) {
 
-	log.Println("----CROSS PAYMENT CONFIRM IN CLIENT----")
+//	log.Println("----CROSS PAYMENT CONFIRM IN CLIENT----")
 
 	convertedOriginalMsg, convertedSignatureMsg := convertByteToPointer(in.OriginalMessage[0], in.Signature[0])
 	convertedSenderMsg, convertedSenderSig := convertMsgResByteToPointer(in.OriginalMessage[1], in.Signature[1])
 	convertedMiddleManMsg, convertedMiddleManSig := convertMsgResByteToPointer(in.OriginalMessage[2], in.Signature[2])
 	convertedReceiverMsg, convertedReceiverSig := convertMsgResByteToPointer(in.OriginalMessage[3], in.Signature[3])
+
 
 //	C.ecall_go_idle_w(convertedOriginalMsg, convertedSignatureMsg)
 
@@ -538,6 +1242,9 @@ func (s *ClientGrpc) CrossPaymentConfirmClientRequest(ctx context.Context, in *c
 	for ; ; {
 		result := C.ecall_cross_go_idle_w(convertedOriginalMsg, convertedSignatureMsg, convertedSenderMsg, convertedSenderSig, convertedMiddleManMsg, convertedMiddleManSig, convertedReceiverMsg, convertedReceiverSig, nil, nil)
 
+/*
+		result := C.cross_go_idle(convertedOriginalMsg, convertedSignatureMsg, convertedSenderMsg, convertedSenderSig, convertedMiddleManMsg, convertedMiddleManSig, convertedReceiverMsg, convertedReceiverSig, nil, nil)
+*/
 		if result == 1 {
 			fmt.Println("CONFIRM result failure!")
 			return &clientPb.ConfirmResult{Result: false}, nil

@@ -26,7 +26,10 @@ extern sgx_enclave_id_t global_eid;    /* global enclave id */
 extern "C" {
 #endif
 
-
+#include "message.h"
+#include "cross_message.h"
+#include "channel.h"
+/*
 typedef struct _channel   // channel.h
 {
     unsigned int m_id;
@@ -41,18 +44,17 @@ typedef struct _channel   // channel.h
     // unsigned char *m_other_ip;   this field must be requested from the server newly
     // unsigned int m_other_port;   this field must be requested from the server newly
 
-    /*** cross-payment ***/
     unsigned int m_cross_status;
     unsigned int m_reserved_balance;
 } channel;
-
+*/
 
 typedef struct _address   // account.h
 {
     unsigned char addr[20];
 } address;
 
-
+/*
 enum message_type {
 	PAY     = 0,
     PAID    = 1,
@@ -65,22 +67,19 @@ enum message_type {
 };
 
 typedef struct _message {
-    /********* common *********/
     unsigned int type;
 
-    /***** direct payment *****/
     unsigned int channel_id;
     int amount;
     unsigned int counter;
 
-    /*** multi-hop payment ****/
     unsigned int payment_num;
     unsigned int payment_size;
     unsigned int channel_ids[2];
     int payment_amount[2];
     unsigned int e;
 } message;
-
+*/
 
 int initialize_enclave(void);
 
@@ -153,7 +152,7 @@ void ecall_store_channel_data_w(char *chfile);
 void ecall_load_account_data_w(char *keyfile);
 void ecall_load_channel_data_w(char *chfile);
 
-void ecall_go_pre_update_two_w(unsigned int payment_num);
+void ecall_accpet_payments_w(unsigned int payment_num);
 
 
 /*

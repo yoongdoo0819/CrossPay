@@ -173,7 +173,7 @@ void ecall_store_channel_data_w(char *chfile);
 void ecall_load_account_data_w(char *keyfile);
 void ecall_load_channel_data_w(char *chfile);
 
-void ecall_go_pre_update_two_w(unsigned int payment_num);
+void ecall_accpet_payments_w(unsigned int payment_num);
 
 
 /*

@@ -6,10 +6,10 @@
 
 std::mutex rwMutex;
 
-void ecall_go_pre_update_two_w(unsigned int payment_num)
+void ecall_accpet_payments_w(unsigned int payment_num)
 {
-    //ecall_accept_payments(global_eid, payment_num);
-    ecall_go_pre_update_two(global_eid, payment_num);
+    ecall_accept_payments(global_eid, payment_num);
+    //ecall_go_pre_update_two(global_eid, payment_num);
 }
 
 unsigned int ecall_go_pre_update_w(unsigned char *msg, unsigned char *signature, unsigned char **original_msg, unsigned char **output)

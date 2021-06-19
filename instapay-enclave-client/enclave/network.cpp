@@ -21,13 +21,11 @@
 using namespace std;
 std::mutex rwMutex;
 
-/*
-void ecall_accept_payment(unsigned int payment_num)
+void ecall_accept_payments(unsigned int payment_num)
 {
     payments.insert(map_payment_value(payment_num, Payment(payment_num)));
-    printf("created payment num : %d \n", payment_num);
 }
-*/
+
 void ecall_go_pre_update(unsigned char *msg, unsigned char *signature, unsigned char *original_msg, unsigned char *output, unsigned int *result)
 {
 //    printf("PRE UPDATE START \n");
@@ -151,8 +149,6 @@ void ecall_go_pre_update(unsigned char *msg, unsigned char *signature, unsigned 
     printf("\n");
 */    
 
-//    rwMutex.lock();
-    //payments.insert(map_payment_value(payment_num, Payment(payment_num)));
 
     for(int i = 0; i < payment_size; i++) {
         //ayments.find(payment_num)->second.add_element(channel_ids[i], payment_amount[i]);
@@ -168,7 +164,6 @@ void ecall_go_pre_update(unsigned char *msg, unsigned char *signature, unsigned 
 //	printf("%d channel is pre updated \n", channel_ids[i]);
     }
 
-//    rwMutex.unlock();
 
     /* step 4. generate reply message */
 
@@ -189,34 +184,12 @@ void ecall_go_pre_update(unsigned char *msg, unsigned char *signature, unsigned 
     memcpy(original_msg, (unsigned char*)&reply, sizeof(MessageRes));
     memcpy(output, reply_signature, 65);
 
-    //free(pubkey);
-    //free(seckey);
-
 //    printf("PRE UPDATED \n");
     *result = 9999;
     return;
 }
 
-void ecall_go_pre_update_two(unsigned int payment_num)
-{
-    //unsigned int payment_num;
-    //Message *ag_req = (Message*)msg;
 
-    //payment_num = ag_req->payment_num;
-
-    payments.insert(map_payment_value(payment_num, Payment(payment_num)));
-//    printf("created payment num : %d \n", payment_num);
-
-/*
-    for(int i = 0; i < payment_size; i++) {
-        payments.find(payment_num)->second.add_element(channel_ids[i], payment_amount[i]);
-        channels.find(channel_ids[i])->second.transition_to_pre_update();
-
-        if(payment_amount[i] < 0)
-            channels.find(channel_ids[i])->second.m_locked_balance += payment_amount[i] * -1;
-    }
-*/
-}
 void ecall_go_post_update(unsigned char *msg, unsigned char *signature, unsigned char *senderMSG, unsigned char *senderSig, unsigned char *middleManMSG, unsigned char *middleManSig, unsigned char *receiverMSG, unsigned char *receiverSig, unsigned char *crossServerMSG, unsigned char* crossServerSig, unsigned char *original_msg, unsigned char *output, unsigned int *result)
 {
 //    printf("POST UPDATE START \n");
@@ -242,18 +215,6 @@ void ecall_go_post_update(unsigned char *msg, unsigned char *signature, unsigned
     verify_message(1, senderSig, senderMSG, sizeof(MessageRes), NULL);
     verify_message(1, middleManSig, middleManMSG, sizeof(MessageRes), NULL);
     verify_message(1, receiverSig, receiverMSG, sizeof(MessageRes), NULL);
-
-    if(crossServerMSG != NULL) {
-	    verify_message(1, crossServerSig, crossServerMSG, sizeof(Cross_Message), NULL);
-	    Cross_Message *cross_message = (Cross_Message*) crossServerMSG;
-
-	    if(cross_message->type != CROSS_ALL_COMMIT_REQ) {
-	    	    printf("NOT CROSS ALL COMMIT REQ \n");
-	    	    printf("%d \n", cross_message->type);
-	    	    *result = 1;
-	    	    return;
-	    }
-    } 
 
     MessageRes *senderMsg = (MessageRes*)senderMSG;
     MessageRes *middleManMsg = (MessageRes*)middleManMSG;
@@ -417,58 +378,6 @@ void ecall_go_post_update(unsigned char *msg, unsigned char *signature, unsigned
     return;    
 }
 
-void ecall_go_post_update_two(unsigned char *msg, unsigned char *signature, unsigned char *original_msg, unsigned char *output)
-{
-	/*
-    unsigned int payment_num, payment_size;
-    unsigned int *channel_ids;
-    int *payment_amount; 
-    Message *req = (Message*)msg;
-
-    payment_num = req->payment_num;
-    payment_size = req->payment_size;
-    channel_ids = req->channel_ids;
-    payment_amount = req->payment_amount;
-
-    unsigned int value;
-    if(req->type == CONFIRM) {
-	    std::vector<Related> c = payments.find(payment_num)->second.m_related_channels;
-	    for(int i = 0; i < c.size(); i++)
-	  	    channels.find(c.at(i).channel_id)->second.transition_to_idle();
-
-	    printf("CONFIRM \n");
-	    return;
-    }
-
-    for(int i = 0; i < payment_size; i++) {
-        value = (payment_amount[i] < 0) ? payment_amount[i] * -1 : payment_amount[i];
-
-        if(0 < payment_amount[i])
-            channels.find(channel_ids[i])->second.paid(value);
-        else {
-            channels.find(channel_ids[i])->second.m_locked_balance += payment_amount[i];
-            channels.find(channel_ids[i])->second.pay(value);
-        }
-
-	if(req->type == AG_REQ)
-		channels.find(channel_ids[i])->second.transition_to_post_update();
-	else if(req->type == UD_REQ)		
-		channels.find(channel_ids[i])->second.transition_to_post_update();
-    }
-
-    printf("AG OR UD \n");
-    */
-    unsigned int payment_num;
-    Message *ag_req = (Message*)msg;
-
-    payment_num = ag_req->payment_num;
-
-    payments.insert(map_payment_value(payment_num, Payment(payment_num)));
-    printf("created payment num : %d \n", payment_num);
-
-    return;    
-}
-
 void ecall_go_idle(unsigned char *msg, unsigned char *signature, unsigned char *senderMSG, unsigned char *senderSig, unsigned char *middleManMSG, unsigned char *middleManSig, unsigned char *receiverMSG, unsigned char *receiverSig, unsigned char *crossServerMSG, unsigned char *crossServerSig, unsigned int *result)
 {
 //    printf("IDLE UPDATE START \n");
@@ -494,19 +403,6 @@ void ecall_go_idle(unsigned char *msg, unsigned char *signature, unsigned char *
     Message *senderMsg = (Message*)senderMSG;
     Message *middleManMsg = (Message*)middleManMSG;
     Message *receiverMsg = (Message*)receiverMSG;
-
-    if(crossServerMSG != NULL) {
-	    verify_message(1, crossServerSig, crossServerMSG, sizeof(Cross_Message), NULL);
-	    Cross_Message *cross_message = (Cross_Message*) crossServerMSG;
-
-	    if(cross_message->type != CROSS_ALL_CONFIRM_REQ) {
-	    	    printf("NOT CROSS ALL CONFIRM REQ \n");
-	    	    printf("%d \n", cross_message->type);
-	    	    *result = 1;
-	    	    return;
-	    }
-    } 
-
 
     if(senderMsg->amount == middleManMsg->amount && 
 		    middleManMsg->amount == receiverMsg->amount) { /*printf("same amount !! \n");*/ }
@@ -650,22 +546,6 @@ void ecall_go_idle(unsigned char *msg, unsigned char *signature, unsigned char *
 
 }
 
-void ecall_go_idle_two(unsigned char *msg, unsigned char *signature)
-{
-	/*
-    unsigned int payment_num;
-
-    Message *confirm = (Message*)msg;
-
-    payment_num = confirm->payment_num;
-
-    std::vector<Related> c = payments.find(payment_num)->second.m_related_channels;
-    //rwMutex.lock();
-    for(int i = 0; i < c.size(); i++)
-        channels.find(c.at(i).channel_id)->second.transition_to_idle();
-	*/
-}
-
 
 void ecall_register_comminfo(unsigned int channel_id, unsigned char *ip, unsigned int ip_size, unsigned int port)
 {
@@ -683,7 +563,7 @@ void ecall_register_comminfo(unsigned int channel_id, unsigned char *ip, unsigne
 
 void ecall_cross_go_pre_update(unsigned char *msg, unsigned char *signature, unsigned char *original_msg, unsigned char *output, unsigned int *result)
 {
-//    printf("PRE UPDATE START \n");
+    //printf("PRE UPDATE START \n");
     unsigned char reply_signature[65] = {0, };
     unsigned char *my_addr;
 
@@ -709,13 +589,15 @@ void ecall_cross_go_pre_update(unsigned char *msg, unsigned char *signature, uns
 */    
 
     /* step 1. verify signature */
-    /*
-    if(verify_message(1, signature, msg, sizeof(Message), NULL))
+    
+    if(verify_message(1, signature, msg, sizeof(Cross_Message), NULL)) {
+	printf("verification failure ! \n");
         return;
-    */
+    }
+
     /* step 2. check that message type is 'AG_REQ' */
    
-    verify_message(1, signature, msg, sizeof(Cross_Message), NULL);
+//    verify_message(1, signature, msg, sizeof(Cross_Message), NULL);
     
 //    printf("type : %d \n", ag_req->type);
 
@@ -822,7 +704,7 @@ void ecall_cross_go_pre_update(unsigned char *msg, unsigned char *signature, uns
 		reply.amount = payment_amount[i];
 	}
 
-//	printf("%d channel is pre updated \n", channel_ids[i]);
+	//printf("%d channel is pre updated \n", channel_ids[i]);
     }
 
 //    rwMutex.unlock();
@@ -852,102 +734,6 @@ void ecall_cross_go_pre_update(unsigned char *msg, unsigned char *signature, uns
 //    printf("PRE UPDATED \n");
     *result = 9999;
     return;
-
-
-/*
-    unsigned char reply_signature[65] = {0, };
-    unsigned char *my_addr;
-
-    unsigned int payment_num, payment_size;
-    unsigned int *channel_ids;
-    int *payment_amount; 
-
-    Cross_Message *ag_req = (Cross_Message*)msg;
-    Cross_Message reply;
-
-    memset((unsigned char*)&reply, 0x00, sizeof(Cross_Message));
-
-    printf("[FROM SERVER] msg: ");
-    for(int i = 0; i < 44; i++)
-        printf("%02x", msg[i]);
-
-    printf("\n");
-
-    printf("[FROM SERVER] sig: ");
-    for(int i = 0; i < 65; i++)
-        printf("%02x", signature[i]);
-  printf("\n");
-
-//    if(verify_message(1, signature, msg, sizeof(Cross_Message), NULL))
-//        return;
-
-
-    if(ag_req->type != CROSS_PREPARE_REQ)
-    {
-	printf("CROSS_PREPARE FAILURE \n");
-        return;
-    }
-
-    printf("PREPARE MSG SUCCESS \n");
-
-
-    payment_num = ag_req->payment_num;
-    payment_size = ag_req->payment_size;
-    channel_ids = ag_req->channel_ids;
-    payment_amount = ag_req->payment_amount;
-
-    printf("channel ids: ");
-    for(int i = 0; i < payment_size; i++)
-        printf("[%d] ", channel_ids[i]);
-    printf("\n");
-
-    payments.insert(map_payment_value(payment_num, Payment(payment_num)));
-
-    for(int i = 0; i < payment_size; i++) {
-        payments.find(payment_num)->second.add_element(channel_ids[i], payment_amount[i]);
-        channels.find(channel_ids[i])->second.transition_to_cross_pre_update();
-
-        if(payment_amount[i] < 0) {
-            channels.find(channel_ids[i])->second.m_reserved_balance += payment_amount[i] * -1;
-            channels.find(channel_ids[i])->second.m_balance -= payment_amount[i] * -1;
-	}
-
-
-    	printf("channel %d pre_update reserved_bal : %d \n", i, channels.find(channel_ids[i])->second.m_reserved_balance);
-    }
-
-
-    printf("PREPARE START - GENERATE REPLY MESSAGE \n");
-    my_addr = channels.find(channel_ids[0])->second.m_my_addr;
-
-    printf("PREPARE START 1 - GENERATE REPLY MESSAGE \n");
-
-    std::vector<unsigned char> pubkey(my_addr, my_addr + 20);
-    std::vector<unsigned char> seckey;
-
-    printf("PREPARE START 2 - GENERATE REPLY MESSAGE \n");
-
-    reply.type = CROSS_PREPARE_RES;
-    reply.payment_num = payment_num;
-    reply.e = 1;
-    seckey = accounts.find(pubkey)->second.get_seckey();
-
-    printf("PREPARE START 3 - GENERATE REPLY MESSAGE \n");
-
-    sign_message((unsigned char*)&reply, sizeof(Cross_Message), (unsigned char*)seckey.data(), reply_signature);
-
-    printf("PREPARE START 4 - GENERATE REPLY MESSAGE \n");
-
-    memcpy(original_msg, (unsigned char*)&reply, sizeof(Cross_Message));
-
-    printf("PREPARE START 5 - GENERATE REPLY MESSAGE \n");
-
-    memcpy(output, reply_signature, 65);
-
-
-    printf("PREPARE END - GENERATE REPLY MESSAGE \n");
-    return;
-    */
 }
 
 void ecall_cross_go_post_update(unsigned char *msg, unsigned char *signature, unsigned char *senderMSG, unsigned char *senderSig, unsigned char *middleManMSG, unsigned char *middleManSig, unsigned char *receiverMSG, unsigned char *receiverSig, unsigned char *crossServerMSG, unsigned char* crossServerSig, unsigned char *original_msg, unsigned char *output, unsigned int *result)
@@ -967,26 +753,14 @@ void ecall_cross_go_post_update(unsigned char *msg, unsigned char *signature, un
     memset((unsigned char*)&reply, 0x00, sizeof(MessageRes));
 
     /* step 1. verify signature */
-/*
-    if(verify_message(1, signature, msg, sizeof(Message), NULL))
+
+    if(verify_message(1, signature, msg, sizeof(Cross_Message), NULL))
         return;
-*/
+
 
     verify_message(1, senderSig, senderMSG, sizeof(MessageRes), NULL);
     verify_message(1, middleManSig, middleManMSG, sizeof(MessageRes), NULL);
     verify_message(1, receiverSig, receiverMSG, sizeof(MessageRes), NULL);
-
-    if(crossServerMSG != NULL) {
-	    verify_message(1, crossServerSig, crossServerMSG, sizeof(Cross_Message), NULL);
-	    Cross_Message *cross_message = (Cross_Message*) crossServerMSG;
-
-	    if(cross_message->type != CROSS_ALL_COMMIT_REQ) {
-	    	    printf("NOT CROSS ALL COMMIT REQ \n");
-	    	    printf("%d \n", cross_message->type);
-	    	    *result = 1;
-	    	    return;
-	    }
-    } 
 
     MessageRes *senderMsg = (MessageRes*)senderMSG;
     MessageRes *middleManMsg = (MessageRes*)middleManMSG;
@@ -997,7 +771,7 @@ void ecall_cross_go_post_update(unsigned char *msg, unsigned char *signature, un
 		    middleManMsg->amount == receiverMsg->amount) { /*printf("same amount !! \n");*/ }
     else { return; }
 
-    verify_message(1, signature, msg, sizeof(Cross_Message), NULL);
+//    verify_message(1, signature, msg, sizeof(Cross_Message), NULL);
 
     /* step 2. check that message type is 'UD_REQ' */
 
@@ -1149,93 +923,6 @@ void ecall_cross_go_post_update(unsigned char *msg, unsigned char *signature, un
 //    printf("%d POST UPDATED \n", payment_num);
     *result = 9999;
     return;    
-/*
-    unsigned char reply_signature[65] = {0, };
-    unsigned char *my_addr;
-
-    unsigned int payment_num, payment_size;
-    unsigned int *channel_ids;
-    int *payment_amount; 
-
-    Cross_Message *ud_req = (Cross_Message*)msg;
-    Cross_Message reply;
-
-    memset((unsigned char*)&reply, 0x00, sizeof(Cross_Message));
-
-
-//    if(verify_message(1, signature, msg, sizeof(Cross_Message), NULL))
-//        return;
-
-
-    if(ud_req->type != CROSS_COMMIT_REQ)
-        return;
-
-
-    payment_num = ud_req->payment_num;
-    payment_size = ud_req->payment_size;
-    channel_ids = ud_req->channel_ids;
-    payment_amount = ud_req->payment_amount;
-
-    printf("channel ids: ");
-    for(int i = 0; i < payment_size; i++)
-        printf("[%d] ", channel_ids[i]);
-    printf("\n");    
-
-    unsigned int value;
-
-    if(payments.find(payment_num) == payments.end()) {
-        payments.insert(map_payment_value(payment_num, Payment(payment_num)));
-        for(int i = 0; i < payment_size; i++)
-            payments.find(payment_num)->second.add_element(channel_ids[i], payment_amount[i]);
-    }
-
-    for(int i = 0; i < payment_size; i++) {
-        value = (payment_amount[i] < 0) ? payment_amount[i] * -1 : payment_amount[i];
-
-        if(0 < payment_amount[i])
-	    channels.find(channel_ids[i])->second.m_reserved_balance += value;
-            //channels.find(channel_ids[i])->second.paid(value);
-        else {
-            //channels.find(channel_ids[i])->second.m_reserved_balance += payment_amount[i];
-
-            //channels.find(channel_ids[i])->second.pay(value);
-        }
-
-    	printf("channel %d post_update reserved_bal : %d \n", i, channels.find(channel_ids[i])->second.m_reserved_balance);
-
-        channels.find(channel_ids[i])->second.transition_to_cross_post_update();
-    }
-
-    printf("COMMIT START - GENERATE REPLY MESSAGE \n");
-
-    my_addr = channels.find(channel_ids[0])->second.m_my_addr;
-
-    printf("COMMIT START 1 - GENERATE REPLY MESSAGE \n");
-
-    std::vector<unsigned char> pubkey(my_addr, my_addr + 20);
-    std::vector<unsigned char> seckey;
-
-    printf("COMMIT START 2 - GENERATE REPLY MESSAGE \n");
-
-    reply.type = CROSS_COMMIT_RES;
-    reply.payment_num = payment_num;
-    seckey = accounts.find(pubkey)->second.get_seckey();
-
-    printf("COMMIT START 3 - GENERATE REPLY MESSAGE \n");
-
-    sign_message((unsigned char*)&reply, sizeof(Cross_Message), (unsigned char*)seckey.data(), reply_signature);
-
-    printf("COMMIT START 4 - GENERATE REPLY MESSAGE \n");
-
-    memcpy(original_msg, (unsigned char*)&reply, sizeof(Cross_Message));
-
-    printf("COMMIT START 5 - GENERATE REPLY MESSAGE \n");
-
-    memcpy(output, reply_signature, 65);
-    
-    printf("COMMIT END - GENERATE REPLY MESSAGE \n");
-    return;    
-*/
 }
 
 void ecall_cross_go_idle(unsigned char *msg, unsigned char *signature, unsigned char *senderMSG, unsigned char *senderSig, unsigned char *middleManMSG, unsigned char *middleManSig, unsigned char *receiverMSG, unsigned char *receiverSig, unsigned char *crossServerMSG, unsigned char *crossServerSig, unsigned int *result)
@@ -1252,10 +939,10 @@ void ecall_cross_go_idle(unsigned char *msg, unsigned char *signature, unsigned 
     Cross_Message *confirm = (Cross_Message*)msg;
 
     /* step 1. verify signature */
-/*
+
     if(verify_message(1, signature, msg, sizeof(Message), NULL))
         return;
-*/
+
 
     verify_message(1, senderSig, senderMSG, sizeof(MessageRes), NULL);
     verify_message(1, middleManSig, middleManMSG, sizeof(MessageRes), NULL);
@@ -1265,24 +952,12 @@ void ecall_cross_go_idle(unsigned char *msg, unsigned char *signature, unsigned 
     Message *middleManMsg = (Message*)middleManMSG;
     Message *receiverMsg = (Message*)receiverMSG;
 
-    if(crossServerMSG != NULL) {
-	    verify_message(1, crossServerSig, crossServerMSG, sizeof(Cross_Message), NULL);
-	    Cross_Message *cross_message = (Cross_Message*) crossServerMSG;
-
-	    if(cross_message->type != CROSS_ALL_CONFIRM_REQ) {
-	    	    printf("NOT CROSS ALL CONFIRM REQ \n");
-	    	    printf("%d \n", cross_message->type);
-	    	    *result = 1;
-	    	    return;
-	    }
-    } 
-
 
     if(senderMsg->amount == middleManMsg->amount && 
 		    middleManMsg->amount == receiverMsg->amount) { /*printf("same amount !! \n");*/ }
     else { return; }
 
-    verify_message(1, signature, msg, sizeof(Cross_Message), NULL);
+//    verify_message(1, signature, msg, sizeof(Cross_Message), NULL);
 
     /* step 2. check that message type is 'UD_REQ' */
 
@@ -1411,77 +1086,6 @@ void ecall_cross_go_idle(unsigned char *msg, unsigned char *signature, unsigned 
 
     *result = 9999;
     return;
-/*
-    unsigned char reply_signature[65] = {0, };
-
-    unsigned int payment_num, payment_size;
-    unsigned int *channel_ids;
-    int *payment_amount; 
-
-
-    Cross_Message *confirm = (Cross_Message*)msg;
-
-
-    printf("cross_go_idle sig verification \n");
-  
-//    if(verify_message(1, signature, msg, sizeof(Cross_Message), NULL))
-//        return;
-
-    printf("cross_go_idle type verification \n");
-    if(confirm->type != CROSS_CONFIRM_REQ)
-        return;
-*/
-/*
-    payment_num = confirm->payment_num;
-
-    std::vector<Related> c = payments.find(payment_num)->second.m_related_channels;
-    for(int i = 0; i < c.size(); i++) {
-        channels.find(c.at(i).channel_id)->second.transition_to_idle();
-
-    }
-*/
-/*
-    payment_num = confirm->payment_num;
-    payment_size = confirm->payment_size;
-    channel_ids = confirm->channel_ids;
-    payment_amount = confirm->payment_amount;
-
-    printf("channel ids: ");
-    for(int i = 0; i < payment_size; i++)
-        printf("[%d] ", channel_ids[i]);
-    printf("\n");    
-
-    unsigned int value;
-
-    if(payments.find(payment_num) == payments.end()) {
-        payments.insert(map_payment_value(payment_num, Payment(payment_num)));
-        for(int i = 0; i < payment_size; i++)
-            payments.find(payment_num)->second.add_element(channel_ids[i], payment_amount[i]);
-    }
-
-    for(int i = 0; i < payment_size; i++) {
-        value = (payment_amount[i] < 0) ? payment_amount[i] * -1 : payment_amount[i];
-
-        if(0 < payment_amount[i]) {
-	    channels.find(channel_ids[i])->second.m_reserved_balance -= value;
-            channels.find(channel_ids[i])->second.m_balance += value;    
-	//channels.find(channel_ids[i])->second.paid(value);
-        }
-        else {
-	    channels.find(channel_ids[i])->second.m_reserved_balance -= value;
-            //channels.find(channel_ids[i])->second.m_balance -= value;    
-
-            //channels.find(channel_ids[i])->second.m_reserved_balance += payment_amount[i];
-            //channels.find(channel_ids[i])->second.pay(value);
-        }
-
-
-	printf("=========== CORSS IDLE ============ \n");
-        channels.find(channel_ids[i])->second.transition_to_idle();
-    }
-
-    printf("=========== CORSS IDLE END!!!! ============ \n");
-    */
     return;
 }
 
