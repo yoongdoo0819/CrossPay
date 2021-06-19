@@ -4,7 +4,7 @@ var EthereumConfig = map[string]string{
 	/* web3 and ethereum */
 	"wsHost":           "141.223.121.164",
 	"wsPort":           "8881",
-	"contractAddr":     "0x58CD83F2ae9d11628bE3753e70564049c435c148",
+	"contractAddr":     "0x745a8d1610D4AC940350221F569338E4C93b1De6",
 	"contractSrcPath":  "../contracts/InstaPay.sol",
 	"contractInstance": "",
 	"web3":             "",
@@ -12,7 +12,7 @@ var EthereumConfig = map[string]string{
 
 	/* grpc configuration */
 	"serverGrpcHost": "141.223.121.164",
-	"serverGrpcPort": "50004",
+	"serverGrpcPort": "50009",
 	"serverProto":    "",
 	"server":         "",
 	"myGrpcPort":     "", //process.argv[3]

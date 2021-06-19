@@ -126,6 +126,10 @@ void ecall_create_channel(unsigned int nonce, unsigned char *owner, unsigned cha
 	    data.insert(data.end(), 0);
     }
 
+    for(int i=0; i<20; i++) {
+	    printf("%02x", receiver[i]);
+    }
+
     data.insert(data.end(), addr, addr + 20);
 
     // deposit *= 1000000000000000000;

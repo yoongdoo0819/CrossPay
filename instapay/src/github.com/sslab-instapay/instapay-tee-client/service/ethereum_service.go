@@ -17,13 +17,14 @@ import (
 	"os"
 	"reflect"
 	"strings"
-	"time"
+	//"time"
 	"unsafe"
-	//"crypto/ecdsa"
+	"crypto/ecdsa"
 
-	//"github.com/ethereum/go-ethereum/crypto"
+	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/accounts/abi"
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
@@ -32,18 +33,18 @@ import (
 	instapay "github.com/sslab-instapay/instapay-tee-client/contracts"
 	"github.com/sslab-instapay/instapay-tee-client/model"
 	"github.com/sslab-instapay/instapay-tee-client/repository"
-	serverPb "github.com/sslab-instapay/instapay-tee-client/proto/server"
-	"google.golang.org/grpc"
+	//serverPb "github.com/sslab-instapay/instapay-tee-client/proto/server"
+	//"google.golang.org/grpc"
 )
 
 func SendOpenChannelTransaction(deposit int, otherAddress string) (string, error) {
 
-	client, err := ethclient.Dial("ws://" + config.EthereumConfig["wsHost"] + ":" + config.EthereumConfig["wsPort"])
-//	client, err := ethclient.Dial("http://141.223.121.164:8555")
+	//client, err := ethclient.Dial("ws://" + config.EthereumConfig["wsHost"] + ":" + config.EthereumConfig["wsPort"])
+	client, err := ethclient.Dial("http://141.223.121.164:8555")
 	if err != nil {
 		log.Println("ee", err)
 	}
-
+/*
 	account := config.GetAccountConfig()
 	address := common.HexToAddress(config.GetAccountConfig().PublicKeyAddress)
 	nonce, err := client.PendingNonceAt(context.Background(), address)
@@ -61,8 +62,13 @@ func SendOpenChannelTransaction(deposit int, otherAddress string) (string, error
 	fmt.Println("otherAddress: ", otherAddress);
 	fmt.Println("address : ", address.Hex());
 	fmt.Println("receiver : %s \n", &receiver[0]);
+*/
 
 /*
+ *
+ * EVENT EXAMPLE
+ */
+ 
 	privateKey, err := crypto.HexToECDSA("fad9c8855b740a0b7ed4c221dbad0f33a83a49cad6b3fe8d5817ac83d38b6a19")
 	if err != nil {
 		log.Fatal(err)
@@ -80,20 +86,39 @@ func SendOpenChannelTransaction(deposit int, otherAddress string) (string, error
 		log.Fatal(err)
 	}
 
-	value := big.NewInt(1000000000000000000) // in wei (1 eth)
-	gasLimit := uint64(2100000)                // in units
+//	value := big.NewInt(1000000000000000000) // in wei (1 eth)
+//	gasLimit := uint64(2100000)                // in units
 	gasPrice, err := client.SuggestGasPrice(context.Background())
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	auth := bind.NewKeyedTransactor(privateKey)
+	auth.Nonce = big.NewInt(int64(nonce))
+	auth.Value = big.NewInt(0)
+	auth.GasLimit = uint64(2100000)
+	auth.GasPrice = gasPrice
+
+	contractAddr := common.HexToAddress("0x745a8d1610D4AC940350221F569338E4C93b1De6")
+	//var data []byte 
+	//data = []byte("0x10cae21a000000000000000000000000ead11aa9f7638d85af59e60bb31f01634168d2a9")
+	instance, err := instapay.NewInstapay(contractAddr, client)
+	if err != nil {
+		log.Fatal("create err : ", err)
+	}
+
+	transx, err := instance.CreateChannel(auth, common.HexToAddress("0xb309f586989d91ade62829176b985a4d79dfe161"))
+	if err != nil {
+		log.Fatal("err ??? ", err)
+	}
+
+	fmt.Printf("TX SENT : %s ", transx.Hash().Hex())
+	return transx.Hash().Hex(), nil
+
 /*
-	contractAddr := common.HexToAddress("0x74DD27a41b01EB8B05630D256Eec6FE06e1ADE91")
-	var data []byte 
-	data = []byte("0x10cae21a000000000000000000000000ead11aa9f7638d85af59e60bb31f01634168d2a9")
-	*/
 	//toAddress := address
-//	var data []byte
-/*	tx := types.NewTransaction(nonce, contractAddr, value, gasLimit, gasPrice, data)
+	var data []byte
+	tx := types.NewTransaction(nonce, contractAddr, value, gasLimit, gasPrice, data)
 	chainID, err := client.NetworkID(context.Background())
 	if err != nil {
 		log.Fatal(err)
@@ -103,7 +128,7 @@ func SendOpenChannelTransaction(deposit int, otherAddress string) (string, error
 		log.Fatal(err)
 	}
 
-	
+
 	ts := types.Transactions{signedTx}
 	rawTxBytes := ts.GetRlp(0)
 	rawTxHex := hex.EncodeToString(rawTxBytes)
@@ -111,19 +136,19 @@ func SendOpenChannelTransaction(deposit int, otherAddress string) (string, error
 	rawTxBytes2, err := hex.DecodeString(rawTxHex)
 	tx2 := new(types.Transaction)
 	rlp.DecodeBytes(rawTxBytes2, &tx2)
-*/
-/*
+
+
 	err = client.SendTransaction(context.Background(), signedTx)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	fmt.Printf("tx sent : %s", signedTx.Hash().Hex())
-	*/
+
 
 	//C.ecall_test_func_w();
-
-	fmt.Println(" ====================== CREATE CHANNEL START IN ENCLAVE ================ \n");
+*/
+/*	fmt.Println(" ====================== CREATE CHANNEL START IN ENCLAVE ================ \n");
 	var sig *C.uchar = C.ecall_create_channel_w(convertNonce, &owner[0], &receiver[0], newDeposit, &SigLen)
 	hdr := reflect.SliceHeader{
 		Data: uintptr(unsafe.Pointer(sig)),
@@ -138,8 +163,9 @@ func SendOpenChannelTransaction(deposit int, otherAddress string) (string, error
 	rawTxBytes, err := hex.DecodeString(convertedRawTx)
 	tx := new(types.Transaction)
 	rlp.DecodeBytes(rawTxBytes, &tx)
+*/
 	// rawTxHex := hex.EncodeToString(rawTxBytes)
-	fmt.Println("rawTxHex : ", hex.EncodeToString(rawTxBytes))
+/*	fmt.Println("rawTxHex : ", hex.EncodeToString(rawTxBytes))
 	for i := 0; i < len(tx.Data()); i++ {
 		fmt.Printf("%02x", tx.Data()[i])
 	}
@@ -165,8 +191,9 @@ func SendOpenChannelTransaction(deposit int, otherAddress string) (string, error
 	fmt.Println("chainId: ", tx.ChainId())
 	fmt.Println("Sender : ", msg.From().Hex())
 	fmt.Println("Receiver: ", msg.To().Hex())
+*/
 //	fmt.Println("Data : ", common.HexToAddress(msg.Data()))
-	err = client.SendTransaction(context.Background(), tx)
+/*	err = client.SendTransaction(context.Background(), tx)
 	if err != nil {
 		log.Println("error : ", err)
 	}
@@ -175,6 +202,7 @@ func SendOpenChannelTransaction(deposit int, otherAddress string) (string, error
 	defer C.free(unsafe.Pointer(sig))
 
 	return tx.Hash().Hex(), nil
+*/
 }
 
 func SendCloseChannelTransaction(channelId int64) {
@@ -245,14 +273,14 @@ func SendCloseChannelTransaction(channelId int64) {
 
 func ListenContractEvent() {
 	log.Println("---Start Listen Contract Event---")
-	client, err := ethclient.Dial("ws://" + config.EthereumConfig["wsHost"] + ":" + config.EthereumConfig["wsPort"])
+	client, err := ethclient.Dial("ws://141.223.121.164:8881")//"ws://" + config.EthereumConfig["wsHost"] + ":" + config.EthereumConfig["wsPort"])
 	//client, err := ethclient.Dial("http://141.223.121.164:8555")
 	
 	if err != nil {
 		log.Fatal("Cannot connect Ethereum So, End Client")
 	}
-	contractAddress := common.HexToAddress(config.EthereumConfig["contractAddr"])
-	fmt.Println("contract Addr : ", contractAddress)
+	contractAddress := common.HexToAddress("0x745a8d1610D4AC940350221F569338E4C93b1De6")//config.EthereumConfig["contractAddr"])
+	fmt.Println("contract Addr : ", config.EthereumConfig["contractAddr"])
 
 	query := ethereum.FilterQuery{
 		Addresses: []common.Address{contractAddress},
@@ -262,7 +290,7 @@ func ListenContractEvent() {
 
 	sub, err := client.SubscribeFilterLogs(context.Background(), query, logs)
 	if err != nil {
-		log.Println(err)
+		log.Println("Err : ", err)
 	}
 	fmt.Println("sub : ", sub)
 
@@ -277,6 +305,7 @@ func ListenContractEvent() {
 	fmt.Println("Abi   : ", contractAbi)
 	fmt.Println()
 	for {
+		fmt.Println("===== EVENT =====")
 		select {
 		case err := <-sub.Err():
 			log.Println(err)
@@ -284,6 +313,7 @@ func ListenContractEvent() {
 			//var createChannelEvent = model.CreateChannelEvent{}
 			//var closeChannelEvent = model.CloseChannelEvent{}
 			//var ejectEvent = model.EjectEvent{}
+			fmt.Println(vLog)
 
 			createChannelEvent := struct {
 				Id	 *big.Int
@@ -302,7 +332,7 @@ func ListenContractEvent() {
 			}{}
 
 			err := contractAbi.UnpackIntoInterface(&createChannelEvent, "EventCreateChannel", vLog.Data)
-			//fmt.Println("a : ", a)
+			fmt.Println("a : ")
 			if err == nil {
 				log.Println("CreateChannel Event Emission")
 				fmt.Printf("Channel ID       : %d\n", createChannelEvent.Id)
@@ -337,6 +367,14 @@ func HandleCreateChannelEvent(event model.CreateChannelEvent) error {
 
 	account := config.GetAccountConfig()
 	log.Println("----- Handle Create Channel Event ----")
+	fmt.Println(event.Owner.String())
+	fmt.Println(config.GetAccountConfig().PublicKeyAddress)
+
+	channelId := C.uint(uint32(event.Id.Int64()))
+	owner := []C.uchar(account.PublicKeyAddress[2:])
+	sender := []C.uchar(event.Owner.Hex()[2:])
+	deposit := C.uint(uint32(event.Deposit.Int64()))
+	C.ecall_receive_create_channel_w(channelId, &sender[0], &owner[0], deposit)
 
 	if strings.ToLower(event.Receiver.String()) == config.GetAccountConfig().PublicKeyAddress {
 		// CASE IN CHANNEL
@@ -357,7 +395,7 @@ func HandleCreateChannelEvent(event model.CreateChannelEvent) error {
 	}
 
 	fmt.Println("HANDLE CREATE CHANNEL EVENT SUCCESS")
-	connection, err := grpc.Dial(config.EthereumConfig["serverGrpcHost"]+":"+config.EthereumConfig["serverGrpcPort"], grpc.WithInsecure())
+/*	connection, err := grpc.Dial(config.EthereumConfig["serverGrpcHost"]+":"+config.EthereumConfig["serverGrpcPort"], grpc.WithInsecure())
 	if err != nil {
 		log.Println("GRPC Connection Error")
 		log.Println(err)
@@ -381,7 +419,7 @@ func HandleCreateChannelEvent(event model.CreateChannelEvent) error {
 		log.Println(err)
 		return err
 	}
-
+*/
 	var defaultDirectory string
 	if os.Getenv("channel_file") == "" {
 		defaultDirectory = "./data/channel/c0"

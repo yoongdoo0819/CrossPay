@@ -49,6 +49,7 @@ func main() {
 
 	sender := flag.String("sender", "f55ba9376db959fab2af86d565325829b08ea3c4", "sender")
 	receiver := flag.String("receiver", "60f640c4505d15b972e6fc2a2a7cba09d05d9f7", "receiver")
+	fmt.Println(sender, receiver, previous_sender)
 
 	flag.Parse()
 
@@ -83,7 +84,7 @@ func main() {
 
 	go service.ListenContractEvent()
 	go startGrpcServer()
-	if *portNum == "3001" {
+/*	if *portNum == "3001" {
 		createPaymentChannelsForAlice(*sender, *receiver)
 	} else if *portNum == "3002" {
 		createPaymentChannelsPrev(*previous_sender, *sender)
@@ -91,7 +92,7 @@ func main() {
 	} else if *portNum == "3003" {
 		createPaymentChannelsForCarol(*sender, *receiver)
 	}
-
+*/
 	startClientWebServer()
 }
 

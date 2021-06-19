@@ -70,6 +70,7 @@ void ecall_load_channel_data(unsigned char *sealed_channel_data)
     ch.m_id = unsealed_channel_data.m_id;
     ch.m_is_in = unsealed_channel_data.m_is_in;
     ch.m_status = (channel_status)unsealed_channel_data.m_status;
+    ch.m_cross_status = (cross_channel_status)unsealed_channel_data.m_cross_status;
 
     ch.m_my_addr = ::copy_bytes(unsealed_channel_data.m_my_addr, 20);
     

@@ -118,6 +118,7 @@ void ecall_store_channel_data(char *chfile)
         data.m_id = iter->second.m_id;
         data.m_is_in = iter->second.m_is_in;
         data.m_status = iter->second.m_status;
+	data.m_cross_status = iter->second.m_cross_status;
         memcpy(data.m_my_addr, iter->second.m_my_addr, 20);
         data.m_my_deposit = iter->second.m_my_deposit;
         data.m_other_deposit = iter->second.m_other_deposit;
@@ -129,6 +130,7 @@ void ecall_store_channel_data(char *chfile)
 	printf("ch id : %d \n", data.m_id);
 	printf("my deposit : %d \n", data.m_my_deposit);
 	printf("reserved bal : %d \n", data.m_reserved_balance);
+	printf("channel size : %d \n", sizeof(channel));
 
         size = sgx_calc_sealed_data_size((const uint32_t)0, (const uint32_t)sizeof(channel));  // sealed log size = 632
         sgx_status_t status = sgx_seal_data(0, NULL, sizeof(channel), (uint8_t *)&data, size, (sgx_sealed_data_t*)sealed_log);

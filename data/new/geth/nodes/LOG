@@ -932,3 +932,37 @@
 12:55:25.159418 version@stat F·[3 2] S·759B[477B 282B] Sc·[0.75 0.00]
 12:55:25.165394 db@janitor F·7 G·0
 12:55:25.165405 db@open done T·9.200293ms
+=============== Jun 19, 2021 (KST) ===============
+19:45:12.963878 db@close closing
+19:45:12.976229 db@close done T·12.348478ms
+=============== Jun 19, 2021 (KST) ===============
+19:45:37.034023 log@legend F·NumFile S·FileSize N·Entry C·BadEntry B·BadBlock Ke·KeyError D·DroppedEntry L·Level Q·SeqNum T·TimeElapsed
+19:45:37.034123 version@stat F·[3 2] S·759B[477B 282B] Sc·[0.75 0.00]
+19:45:37.034137 db@open opening
+19:45:37.034167 journal@recovery F·1
+19:45:37.034231 journal@recovery recovering @220
+19:45:37.037998 memdb@flush created L0@222 N·1 S·159B "loc..seq,v137":"loc..seq,v137"
+19:45:37.038307 version@stat F·[4 2] S·918B[636B 282B] Sc·[1.00 0.00]
+19:45:37.045219 db@janitor F·8 G·0
+19:45:37.045247 db@open done T·11.104673ms
+19:45:37.045361 table@compaction L0·4 -> L1·1 S·795B Q·138
+19:45:37.048154 table@build created L1@225 N·1 S·159B "loc..seq,v137":"loc..seq,v137"
+19:45:37.048201 version@stat F·[0 2] S·282B[0B 282B] Sc·[0.00 0.00]
+19:45:37.050256 table@compaction committed F-4 S-636B Ke·0 D·4 T·4.846881ms
+19:45:37.050343 table@remove removed @219
+19:45:37.050379 table@remove removed @216
+19:45:37.050553 table@remove removed @213
+19:45:37.050592 table@remove removed @212
+21:57:32.804933 db@close closing
+21:57:32.804982 db@close done T·48.673µs
+=============== Jun 19, 2021 (KST) ===============
+22:00:07.714626 log@legend F·NumFile S·FileSize N·Entry C·BadEntry B·BadBlock Ke·KeyError D·DroppedEntry L·Level Q·SeqNum T·TimeElapsed
+22:00:07.714726 version@stat F·[0 2] S·282B[0B 282B] Sc·[0.00 0.00]
+22:00:07.714739 db@open opening
+22:00:07.714767 journal@recovery F·1
+22:00:07.714829 journal@recovery recovering @223
+22:00:07.717106 memdb@flush created L0@226 N·1 S·159B "loc..seq,v139":"loc..seq,v139"
+22:00:07.717191 version@stat F·[1 2] S·441B[159B 282B] Sc·[0.25 0.00]
+22:00:07.723185 db@janitor F·6 G·1
+22:00:07.723191 db@janitor removing table-222
+22:00:07.723210 db@open done T·8.467533ms

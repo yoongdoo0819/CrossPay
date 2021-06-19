@@ -21,7 +21,7 @@ var EthereumConfig = map[string]string{
 	"rpcPort":          "8555",
 	"wsHost":           "141.223.121.164",
 	"wsPort":           "8881",
-	"contractAddr":     "58CD83F2ae9d11628bE3753e70564049c435c148",
+	"contractAddr":     "0x7Ae5bFd89Da357f7651991B45F0a4e37675Fd65E",
 
 	/* grpc configuration */
 	"serverGrpcHost":   "141.223.121.164",
