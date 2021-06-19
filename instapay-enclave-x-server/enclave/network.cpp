@@ -205,13 +205,12 @@ void ecall_cross_accept_request(
 
     //Cross_Payment a = Cross_Payment();
 
-    Cross_Payment cross_payment = Cross_Payment(Cross_Payment::acc_cross_payment_num, chain1Sender, chain1Server, chain1Receiver, chain1Amount, chain2Sender, chain2Server, chain2Receiver, chain2Amount, chain3Server, chain3Sender, chain3Receiver, chain3Amount);
+    Cross_Payment cross_payment = Cross_Payment(Cross_Payment::acc_cross_payment_num, chain1Sender, chain1Server, chain1Receiver, chain1Amount, chain2Sender, chain2Server, chain2Receiver, chain2Amount);
 
 
     //rwMutex.lock();
     cross_payments.insert(map_cross_payment_value(Cross_Payment::acc_cross_payment_num, cross_payment));
     *payment_num = Cross_Payment::acc_cross_payment_num;
-//    printf("[ENCLAVE] >>>>>>>>>>>>>>>>> PN :%d \n", *payment_num);
 
     Cross_Payment::acc_cross_payment_num++;
     //rwMutex.unlock();
@@ -236,68 +235,14 @@ void ecall_cross_update_committedServer_list(unsigned int payment_num, unsigned 
 
 void ecall_cross_check_prepared_unanimity(unsigned int payment_num, int which_list, unsigned int *is_unanimous)
 {
-
-    if (cross_payments.find(payment_num)->second.m_chain1Server_prepared == 1) {
-//	&& cross_payments.find(payment_num)->second.m_chain2Server_prepared == 1) {
-//	&& cross_payments.find(payment_num)->second.m_chain3Server_prepared == 1) {
-
-	    cross_payments.find(payment_num)->second.m_cross_status = PREPARED;
-	    ocall_print_string((const char*)"Status : PREPARED \n");
-	    *is_unanimous = 1;
-    }
-    else {
-//	    printf("[ENCLAVE] P PN : %d, %d %d %d \n", payment_num, cross_payments.find(payment_num)->second.m_chain1Server_prepared, cross_payments.find(payment_num)->second.m_chain2Server_prepared, cross_payments.find(payment_num)->second.m_chain3Server_prepared);
-	    //ocall_print_string((const char*)"Status : NONE \n", payment_num);
-	    *is_unanimous = 0;
-    }
-    //*is_unanimous = cross_payments.find(payment_num)->second.check_unanimity(which_list);
 }
 
 void ecall_cross_check_committed_unanimity(unsigned int payment_num, int which_list, unsigned int *is_unanimous)
 {
-    if (cross_payments.find(payment_num)->second.m_chain1Server_committed == 1) {
-//	&& cross_payments.find(payment_num)->second.m_chain2Server_committed == 1) {
-//	&& cross_payments.find(payment_num)->second.m_chain3Server_committed == 1) {
-
-	    cross_payments.find(payment_num)->second.m_cross_status = COMMITTED;
-	    ocall_print_string((const char*)"Status : COMMITTED \n");
-	    *is_unanimous = 1;
-    }
-    else {
-//	    printf("[ENCLAVE] C PN : %d, %d %d %d \n", payment_num, cross_payments.find(payment_num)->second.m_chain1Server_committed, cross_payments.find(payment_num)->second.m_chain2Server_committed, cross_payments.find(payment_num)->second.m_chain3Server_committed);
-
-	    *is_unanimous = 0;
-    }
-    //*is_unanimous = cross_payments.find(payment_num)->second.check_unanimity(which_list);
 }
-
-
 
 void ecall_cross_create_all_prepare_req_msg(unsigned int payment_num, unsigned char *req_msg, unsigned char *req_sig)
 {
-    unsigned char req_signature[65] = {0, };
-    unsigned char *seckey_arr = (unsigned char*)"5a5e2194e0639fd017158793812dd5f5668f5bfc9a146f93f39237a4b4ed7dd5";
-    unsigned char *seckey = ::arr_to_bytes(seckey_arr, 64);
-
-    Cross_Message request;
-
-    memset((unsigned char*)&request, 0x00, sizeof(Cross_Message));
-
-    /* create cross all prepare request message */
-    
-    request.type = CROSS_ALL_PREPARE_REQ;
-    request.payment_num = payment_num;
-    //request.payment_size = payment_size;
-    //memcpy(request.channel_ids, channel_ids, sizeof(unsigned int) * payment_size);
-    //memcpy(request.payment_amount, amount, sizeof(int) * payment_size);
-
-    sign_message((unsigned char*)&request, sizeof(Cross_Message), seckey, req_signature);
-
-    memcpy(req_msg, (unsigned char*)&request, sizeof(Cross_Message));
-    memcpy(req_sig, req_signature, 65);
-
-    free(seckey);
-    return;
 }
 
 void ecall_cross_create_all_prepare_req_msg_temp(unsigned int payment_num, unsigned char *sender, unsigned char *middleMan, unsigned char *receiver, unsigned int sender_payment_size, unsigned int *sender_channel_ids, unsigned int middleMan_payment_size, unsigned int *middleMan_channel_ids, unsigned int receiver_payment_size, unsigned int *receiver_channel_ids, int *sender_amount, int *middleMan_amount, int *receiver_amount, unsigned char *req_msg, unsigned char *req_sig, unsigned int *result)
@@ -342,54 +287,6 @@ void ecall_cross_create_all_prepare_req_msg_temp(unsigned int payment_num, unsig
 
 void ecall_cross_verify_all_prepared_res_msg(unsigned char *res_msg, unsigned char *res_sig, unsigned int *is_verified)
 {
-    Cross_Message *res = (Cross_Message*)res_msg;
-//    ocall_print_string((const char*)"verification of all prepared msg");
-
-    /* step 1. verify signature */
-/*
-    if(verify_message(1, res_sig, res_msg, sizeof(Cross_Message), NULL)) {
-        *is_verified = 0;
-	printf("prepared msg verification failure");
-        return;
-    }
-*/
-    //verify_message(1, res_sig, res_msg, sizeof(Cross_Message), NULL);
-
-    /* step 2. check that message type is 'AG_RES' */
-
-    if(res->type != CROSS_ALL_PREPARED) {// || res->e != 1) {
-        *is_verified = 0;
-	printf("prepared msg type failure");
-        return;
-    }
-/*
-    printf("payment num : %d \n", res->payment_num);
-    printf("server : %d \n", res->server);
-    printf("type : %d \n", res->type);
-*/
-    if(res->server == CHAIN1_SERVER) {
-	    //printf("prepared server chain1 : %d \n", res->server);
-	    cross_payments.find(res->payment_num)->second.m_chain1Server_prepared = 1;
-    }
-    else if(res->server == CHAIN2_SERVER) {	    
-	    printf("prepared server chain2 : %d \n", res->server);
-	    cross_payments.find(res->payment_num)->second.m_chain2Server_prepared = 1;
-    }
-/*    else if(res->server == CHAIN3_SERVER) {	    
-	    printf("prepared server chain3 : %d \n", res->server);
-	    cross_payments.find(res->payment_num)->second.m_chain3Server_prepared = 1;
-    }
-*/
-    /* step 3. mark as verified */
-
-    //ecall_cross_update_preparedServer_list(res->payment_num, res->server);
-    //cross_payments.find((res->payment_num))->second.update_preparedServer(res->server);
-
-    *is_verified = 1;
-//    printf("participants : %s \n", cross_payments.find((res->payment_num))->m_participants);
-     //ocall_print_string((const char*)"verification end of all prepared msg");
-   
-    return;
 }
 
 void ecall_cross_verify_all_prepared_res_msg_temp(unsigned char *res_msg, unsigned char *res_sig, unsigned int *is_verified)
@@ -416,29 +313,6 @@ void ecall_cross_verify_all_prepared_res_msg_temp(unsigned char *res_msg, unsign
 
 void ecall_cross_create_all_commit_req_msg(unsigned int payment_num, unsigned char *req_msg, unsigned char *req_sig)
 {
-    unsigned char req_signature[65] = {0, };
-    unsigned char *seckey_arr = (unsigned char*)"5a5e2194e0639fd017158793812dd5f5668f5bfc9a146f93f39237a4b4ed7dd5";
-    unsigned char *seckey = ::arr_to_bytes(seckey_arr, 64);
-
-    Cross_Message request;
-
-    memset((unsigned char*)&request, 0x00, sizeof(Cross_Message));
-
-    /* create update request message */
-
-    request.type = CROSS_ALL_COMMIT_REQ;
-    request.payment_num = payment_num;
-    //request.payment_size = payment_size;
-    //memcpy(request.channel_ids, channel_ids, sizeof(unsigned int) * payment_size);
-    //memcpy(request.payment_amount, amount, sizeof(int) * payment_size);
-
-    sign_message((unsigned char*)&request, sizeof(Cross_Message), seckey, req_signature);
-
-    memcpy(req_msg, (unsigned char*)&request, sizeof(Cross_Message));
-    memcpy(req_sig, req_signature, 65);
-
-    free(seckey);
-    return;
 }
 
 void ecall_cross_create_all_commit_req_msg_temp(unsigned int payment_num, unsigned char *sender, unsigned char *middleMan, unsigned char *receiver, unsigned int sender_payment_size, unsigned int *sender_channel_ids, unsigned int middleMan_payment_size, unsigned int *middleMan_channel_ids, unsigned int receiver_payment_size, unsigned int *receiver_channel_ids, int *sender_amount, int *middleMan_amount, int *receiver_amount, unsigned char *req_msg, unsigned char *req_sig, unsigned int *result)
@@ -452,10 +326,11 @@ void ecall_cross_create_all_commit_req_msg_temp(unsigned int payment_num, unsign
 	memset((unsigned char*)&request, 0x00, sizeof(Cross_Message));
 
 	if (cross_payments.find(payment_num)->second.m_chain1Sender_prepared == 1
-		&& cross_payments.find(payment_num)->second.m_chain1Server_prepared == 1
-		&& cross_payments.find(payment_num)->second.m_chain1Receiver_prepared == 1 && cross_payments.find(payment_num)->second.m_chain2Receiver_prepared == 1
-		&& cross_payments.find(payment_num)->second.m_chain2Sender_prepared == 1		&& cross_payments.find(payment_num)->second.m_chain2Server_prepared == 1) {
+		&& cross_payments.find(payment_num)->second.m_chain1MiddleMan_prepared == 1
+		&& cross_payments.find(payment_num)->second.m_chain1Receiver_prepared == 1 && cross_payments.find(payment_num)->second.m_chain2Sender_prepared == 1
+		&& cross_payments.find(payment_num)->second.m_chain2MiddleMan_prepared == 1		&& cross_payments.find(payment_num)->second.m_chain2Receiver_prepared == 1) {
 		printf("verification complete \n");
+		cross_payments.find(payment_num)->second.m_cross_status = PREPARED;
 	}		
 
 //	request.type = CROSS_ALL_PREPARE_REQ;
@@ -490,38 +365,6 @@ void ecall_cross_create_all_commit_req_msg_temp(unsigned int payment_num, unsign
 
 void ecall_cross_verify_all_committed_res_msg(unsigned char *res_msg, unsigned char *res_sig, unsigned int *is_verified)
 {
-    Cross_Message *res = (Cross_Message*)res_msg;
-
-    /* step 1. verify signature */
-
-    /*
-    if(verify_message(1, res_sig, res_msg, sizeof(Cross_Message), NULL)) {
-        *is_verified = 0;
-	ocall_print_string("verify failure");
-        return;
-    }
-    */
-    //verify_message(1, res_sig, res_msg, sizeof(Cross_Message), NULL);
-
-    /* step 2. check that message type is 'AG_RES' */
-
-    if(res->type != CROSS_ALL_COMMITTED) {// || res->e != 1) {
-        *is_verified = 0;
-        return;
-    }
-
-    if(res->server == CHAIN1_SERVER)
-	    cross_payments.find(res->payment_num)->second.m_chain1Server_committed = 1;
-    else if(res->server == CHAIN2_SERVER)
-	    cross_payments.find(res->payment_num)->second.m_chain2Server_committed = 1;
-/*    else if(res->server == CHAIN3_SERVER)
-	    cross_payments.find(res->payment_num)->second.m_chain3Server_committed = 1;
-*/	    
-
-    /* step 3. mark as verified */
-
-    *is_verified = 1;
-    return;
 }
 
 void ecall_cross_verify_all_committed_res_msg_temp(unsigned char *res_msg, unsigned char *res_sig, unsigned int *is_verified)
@@ -532,7 +375,7 @@ void ecall_cross_verify_all_committed_res_msg_temp(unsigned char *res_msg, unsig
 
     /* step 2. check that message type is 'AG_RES' */
 
-    if(res->type != CROSS_COMMIT_RES) {// || res->e != 1) {
+    if(res->type != CROSS_COMMIT_RES || res->e != 1) {
         *is_verified = 0;
 	printf("committed msg type failure");
         return;
@@ -544,26 +387,6 @@ void ecall_cross_verify_all_committed_res_msg_temp(unsigned char *res_msg, unsig
 }
 void ecall_cross_create_all_confirm_req_msg(unsigned int payment_num, unsigned char *confirm_msg, unsigned char *confirm_sig)
 {
-    unsigned char confirm_signature[65] = {0, };
-    unsigned char *seckey_arr = (unsigned char*)"5a5e2194e0639fd017158793812dd5f5668f5bfc9a146f93f39237a4b4ed7dd5";
-    unsigned char *seckey = ::arr_to_bytes(seckey_arr, 64);
-
-    Cross_Message confirm;
-
-    memset((unsigned char*)&confirm, 0x00, sizeof(Cross_Message));
-
-    /* create payment confirm message */
-    
-    confirm.type = CROSS_ALL_CONFIRM_REQ;
-    confirm.payment_num = payment_num;
-
-    sign_message((unsigned char*)&confirm, sizeof(Cross_Message), seckey, confirm_signature);
-
-    memcpy(confirm_msg, (unsigned char*)&confirm, sizeof(Cross_Message));
-    memcpy(confirm_sig, confirm_signature, 65);
-
-    free(seckey);
-    return;
 }
 
 void ecall_cross_create_all_confirm_req_msg_temp(unsigned int payment_num, unsigned char *sender, unsigned char *middleMan, unsigned char *receiver, unsigned int sender_payment_size, unsigned int *sender_channel_ids, unsigned int middleMan_payment_size, unsigned int *middleMan_channel_ids, unsigned int receiver_payment_size, unsigned int *receiver_channel_ids, int *sender_amount, int *middleMan_amount, int *receiver_amount, unsigned char *req_msg, unsigned char *req_sig, unsigned int *result)
@@ -577,10 +400,11 @@ void ecall_cross_create_all_confirm_req_msg_temp(unsigned int payment_num, unsig
 	memset((unsigned char*)&request, 0x00, sizeof(Cross_Message));
 
 	if (cross_payments.find(payment_num)->second.m_chain1Sender_committed == 1
-		&& cross_payments.find(payment_num)->second.m_chain1Server_committed == 1
-		&& cross_payments.find(payment_num)->second.m_chain1Receiver_committed == 1 && cross_payments.find(payment_num)->second.m_chain2Receiver_prepared == 1
-		&& cross_payments.find(payment_num)->second.m_chain2Sender_committed == 1		&& cross_payments.find(payment_num)->second.m_chain2Server_committed == 1) {
+		&& cross_payments.find(payment_num)->second.m_chain1MiddleMan_committed == 1
+		&& cross_payments.find(payment_num)->second.m_chain1Receiver_committed == 1 && cross_payments.find(payment_num)->second.m_chain2Sender_prepared == 1
+		&& cross_payments.find(payment_num)->second.m_chain2MiddleMan_committed == 1		&& cross_payments.find(payment_num)->second.m_chain2Receiver_committed == 1) {
 		printf("verification complete \n");
+		cross_payments.find(payment_num)->second.m_cross_status = COMMITTED;
 	}		
 
 //	request.type = CROSS_ALL_PREPARE_REQ;
@@ -630,7 +454,7 @@ void ecall_cross_create_all_refund_req_msg(unsigned int payment_num, unsigned ch
 
     /* create cross payment refund message */
     
-    refund.type = CROSS_ALL_REFUND_REQ;
+    refund.type = CROSS_REFUND_REQ;
     refund.payment_num = payment_num;
 
     sign_message((unsigned char*)&refund, sizeof(Cross_Message), seckey, refund_signature);

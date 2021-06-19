@@ -21,7 +21,7 @@ func GetAllChannelsLockedBalance() (int64, error) {
 	var lockedBalances int64
 
 	ochs = C.ecall_get_open_channels_w()
-	channelSize := 68
+	channelSize := 76
 	channelSlice := (*[1 << 30]C.channel)(unsafe.Pointer(ochs))[:channelSize:channelSize]
 
 	openChannelNumbers := int(C.ecall_get_num_open_channels_w())
@@ -39,7 +39,7 @@ func GetClosedChannelList() ([]model.Channel, error) {
 	var cchs unsafe.Pointer
 
 	cchs = C.ecall_get_closed_channels_w()
-	channelStructSize := 68
+	channelStructSize := 76
 	channelSlice := (*[1 << 30]C.channel)(unsafe.Pointer(cchs))[:channelStructSize:channelStructSize]
 
 	closedChannelNumbers := int(C.ecall_get_num_closed_channels_w())
