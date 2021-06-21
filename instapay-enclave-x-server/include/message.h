@@ -65,4 +65,6 @@ int verify_prepared_message(unsigned int from, unsigned char *signature, unsigne
 
 int verify_committed_message(unsigned int from, unsigned char *signature, unsigned char *original_msg, unsigned int msg_size, unsigned char *pubaddr, unsigned int payment_num);
 
+//secp256k1_context* secp256k1_ctx = NULL;
+
 #endif

@@ -166,6 +166,7 @@ func CrossPaymentToServerChannelHandler(ctx *gin.Context) {
 	//	serverGrpc.StartTime = time.Now()
 	//	rwMutex.Lock()
 
+//		time.Sleep(5 * time.Millisecond)
 		for ; ; {
 			PaymentNum = C.ecall_cross_accept_request_w(
 				&chain1Sender[0],

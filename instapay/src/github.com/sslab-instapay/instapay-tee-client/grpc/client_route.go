@@ -285,7 +285,7 @@ unsigned int cross_go_pre_update(unsigned char *msg, unsigned char *signature, u
 	// verify_message
 
 	if(prepare_req->type != CROSS_PREPARE_REQ) {
-		printf("NOT CROSS_PREPARE_REQ \n");
+		printf("NOT CROSS_PREPARE_REQ : %d \n", prepare_req->type);
 		return 1;
 	}
 
@@ -346,7 +346,7 @@ unsigned int cross_go_pre_update(unsigned char *msg, unsigned char *signature, u
 	//free(pubkey);
 	//free(seckey);
 
-	//    printf("PRE UPDATED \n");
+//	printf("PRE UPDATED \n");
 	//*result = 9999;
 	return 9999;
 }
@@ -444,7 +444,7 @@ unsigned int cross_go_post_update(unsigned char *msg, unsigned char *signature, 
 	//free(pubkey);
 	//free(seckey);
 
-	//    printf("PRE UPDATED \n");
+//	printf("POST UPDATED \n");
 	//*result = 9999;
 	return 9999;
 }
@@ -516,6 +516,7 @@ unsigned int cross_go_idle(unsigned char *msg, unsigned char *signature, unsigne
 //		printf("channel %d is cross idle \n", channel_ids[i]);
 	}
 
+//	printf("CROSS IDLE ! \n");
 	return 9999;
 }
 
@@ -537,14 +538,9 @@ import (
 	"unsafe"
 
         "github.com/decred/dcrd/chaincfg/chainhash"
-	//"github.com/decred/dcrd/dcrec/secp256k1"
-	//"github.com/decred/dcrd/dcrec/secp256k1/schnorr"
-//	"github.com/decred/dcrd/dcrec/secp256k1/v4"
-//	"github.com/decred/dcrd/dcrec/secp256k1/v4/schnorr"
-	//      "github.com/decred/dcrd/dcrec/secp256k1/ecdsa"
+//	SECP256K1 "github.com/decred/dcrd/dcrec/secp256k1"
 	"github.com/ethereum/go-ethereum/crypto/secp256k1"
-	//"github.com/ethereum/go-ethereum/crypto"
-	//"golang.org/x/crypto/sha3"
+	"github.com/ethereum/go-ethereum/crypto"
 )
 
 type MessageRes struct {
@@ -586,6 +582,7 @@ type Message struct {
 
 var seckey = []byte{7, 82, 123, 120, 27, 150, 39, 52, 92, 112, 78, 214, 183, 112, 19, 207, 128, 181, 72, 226, 125, 146, 63, 253, 47, 199, 191, 20, 132, 98, 119, 201}
 
+var SERVER_PUBKEY = "046095b778be1953cc520377e70c1e6ae6ae3815"
 //var Pn int64
 var ChComplete [500000]chan bool
 var chanCreateCheck = 0
@@ -994,7 +991,7 @@ func (s *ClientGrpc) CrossPaymentPrepareClientRequest(ctx context.Context, in *c
 	rwMutex.Unlock()
 
 	var originalMsg *C.uchar
-	//var __signature[65] C.uchar
+	var __signature[65] C.uchar
 	var signature *C.uchar
 
 	Addrs = in.Addr
@@ -1011,13 +1008,81 @@ func (s *ClientGrpc) CrossPaymentPrepareClientRequest(ctx context.Context, in *c
 		}
 	}
 */
-	for ; ; {
+//	for ; ; {
 		result := C.ecall_cross_go_pre_update_w(convertedOriginalMsg, convertedSignatureMsg, &originalMsg, &signature)
 
 //		originalMessageStr, signatureStr := convertMsgResPointerToByte(originalMsg, signature)
-//		fmt.Println("signature : ", in.Signature)
+		fmt.Println("signature : ", in.Signature)
 
-/*		result := C.cross_go_pre_update(convertedOriginalMsg, convertedSignatureMsg, nil, nil)
+		hash := crypto.Keccak256(in.OriginalMessage)
+/*
+		fmt.Printf("hash hex : ")
+		for i:=0; i<16; i++ {
+			fmt.Printf("%02x", hash[i])
+		}
+		fmt.Println()
+		fmt.Println("hash : ", hash)
+		tempPubKey, err := secp256k1.RecoverPubkey(hash, in.Signature)
+		if err != nil {
+			log.Fatal(err)
+		}
+		fmt.Printf("temp Pubkey :")
+		for i:=0; i<20; i++ {
+			fmt.Printf("%02x", tempPubKey[i])
+		}
+		fmt.Println()
+
+		abc, err := hex.DecodeString("7e58a6de07fa27d93716a77c369a1ab07f9d1682")
+		for i:=0; i<20; i++ {
+			fmt.Printf("%02x", abc[i])
+		}
+		fmt.Println()
+
+		pkBytes, err := hex.DecodeString("5a5e2194e0639fd017158793812dd5f5668f5bfc9a146f93f39237a4b4ed7dd5")
+		privKey := SECP256K1.PrivKeyFromBytes(pkBytes)
+		pubKey := privKey.PubKey()
+
+		fmt.Println("len priv key : ", len(privKey.Serialize()))
+		seckey := []byte("5a5e2194e0639fd017158793812dd5f5668f5bfc9a146f93f39237a4b4ed7dd5")
+		fmt.Println("seckey : ", seckey)
+		tempSignature, err := secp256k1.Sign(hash, privKey.Serialize())
+		fmt.Println("tempSig : ", tempSignature)
+
+		tempPubKey2, err := secp256k1.RecoverPubkey(hash, tempSignature)
+		fmt.Printf("temp Pubkey two :")
+		for i:=0; i<20; i++ {
+			fmt.Printf("%02x", tempPubKey2[i])
+		}
+		fmt.Println()
+
+		pub := pubKey.SerializeUncompressed()
+		fmt.Printf("pub : ")
+		for i:=0; i<20; i++ {
+			fmt.Printf("%02x", pub[i])
+		}
+		fmt.Println()
+
+		fmt.Printf("privkey serialize() : ")
+		for i:=0; i<32; i++ {
+			fmt.Printf("%02x", privKey.Serialize()[i])
+		}
+		fmt.Println()
+
+		verified := secp256k1.VerifySignature(tempPubKey2, hash, tempSignature)
+
+		fmt.Printf("Signature Verified? %v\n", verified)
+	//privKey = secp256k1.PrivKeyFromBytes(pkBytes)
+
+		pubKey = privKey.PubKey()
+		fmt.Println(pubKey)
+//		verified := secp256k1.VerifySignature(pubKey, messageHash, in.Signature)
+*/
+		pubKey, err := secp256k1.RecoverPubkey(hash, in.Signature)
+		verified := secp256k1.VerifySignature(pubKey, hash, in.Signature)
+
+		fmt.Printf("Signature Verified? %v\n", verified)
+
+		result = C.cross_go_pre_update(convertedOriginalMsg, convertedSignatureMsg, nil, nil)
 
 		var MessageRes = MessageRes{}
 		MessageRes.messageType = C.uint(8)
@@ -1036,7 +1101,7 @@ func (s *ClientGrpc) CrossPaymentPrepareClientRequest(ctx context.Context, in *c
 		//h.Write(originalMessageByte)
 		//messageHash := h.Sum(nil)
 
-		messageHash := chainhash.HashB([]byte(originalMessageByte))
+		messageHash := crypto.Keccak256([]byte(originalMessageByte))
 //		messageHash := []byte("24bb5f9477d980bac42d698307d096ce183d6d557c3c1613404a2a174ba66ce")
 		//fmt.Println(messageHash)
 		_signature, err := secp256k1.Sign(messageHash, seckey)
@@ -1045,7 +1110,7 @@ func (s *ClientGrpc) CrossPaymentPrepareClientRequest(ctx context.Context, in *c
 		}
 
 		signature = (*C.uchar)(unsafe.Pointer(&_signature))
-		//fmt.Println("sig >> ", signatureStr, _signature)
+//		fmt.Println("sig >> ", _signature)
 /*
 		pkBytes, err := hex.DecodeString("5a5e2194e0639fd017158793812dd5f5668f5bfc9a146f93f39237a4b4ed7dd5")
 //			"22a47fa09a223f2aa079edf85a7c2d4f87" +
@@ -1104,22 +1169,19 @@ func (s *ClientGrpc) CrossPaymentPrepareClientRequest(ctx context.Context, in *c
 			fmt.Println("PREPARE result failure!")
 			return &clientPb.PrepareResult{Result: false}, nil
 		} else if result == 9999  {
-			break
+//			break
 		}
 
 		//fmt.Println("AG ################################## ")
-		defer C.free(unsafe.Pointer(originalMsg))
-		defer C.free(unsafe.Pointer(signature))
+//		defer C.free(unsafe.Pointer(originalMsg))
+//		defer C.free(unsafe.Pointer(signature))
 
-	}
+//	}
 
-	originalMessageStr, signatureStr := convertMsgResPointerToByte(originalMsg, signature)
-
-//	fmt.Println("sig : ", signatureStr)
+	originalMessageStr, _/*signatureStr*/ := convertMsgResPointerToByte(originalMsg, signature)
 
 
-
-	return &clientPb.PrepareResult{Result: true, OriginalMessage: originalMessageStr, Signature: signatureStr}, nil
+	return &clientPb.PrepareResult{Result: true, OriginalMessage: originalMessageStr, Signature: _signature}, nil
 }
 
 func (s *ClientGrpc) CrossPaymentCommitClientRequest(ctx context.Context, in *clientPb.CrossPaymentCommitReqClientMessage) (*clientPb.CommitResult, error) {
@@ -1137,16 +1199,36 @@ func (s *ClientGrpc) CrossPaymentCommitClientRequest(ctx context.Context, in *cl
 	}
 */
 	var originalMsg *C.uchar
-	//var __signature[65] C.uchar
+	var __signature[65] C.uchar
 	var signature *C.uchar
 
 //	C.ecall_go_post_update_w(convertedOriginalMsg, convertedSignatureMsg, &originalMsg, &signature)
 
 //	rwMutex.Lock()
 
-	for ; ; {
-		result := C.ecall_cross_go_post_update_w(convertedOriginalMsg, convertedSignatureMsg, convertedSenderMsg, convertedSenderSig, convertedMiddleManMsg, convertedMiddleManSig, convertedReceiverMsg, convertedReceiverSig, nil, nil, &originalMsg, &signature)
-/*
+//	for ; ; {
+//		result := C.ecall_cross_go_post_update_w(convertedOriginalMsg, convertedSignatureMsg, convertedSenderMsg, convertedSenderSig, convertedMiddleManMsg, convertedMiddleManSig, convertedReceiverMsg, convertedReceiverSig, nil, nil, &originalMsg, &signature)
+
+		hash := crypto.Keccak256(in.OriginalMessage[0])
+		pubKey, err := secp256k1.RecoverPubkey(hash, in.Signature[0])
+		verified := secp256k1.VerifySignature(pubKey, hash, in.Signature[0])
+		fmt.Printf("Signature Verified? %v\n", verified)
+
+		hash = crypto.Keccak256(in.OriginalMessage[1])
+		pubKey, err = secp256k1.RecoverPubkey(hash, in.Signature[1])
+		verified = secp256k1.VerifySignature(pubKey, hash, in.Signature[1])
+		fmt.Printf("Signature Verified? %v\n", verified)
+
+		hash = crypto.Keccak256(in.OriginalMessage[2])
+		pubKey, err = secp256k1.RecoverPubkey(hash, in.Signature[2])
+		verified = secp256k1.VerifySignature(pubKey, hash, in.Signature[2])
+		fmt.Printf("Signature Verified? %v\n", verified)
+
+		hash = crypto.Keccak256(in.OriginalMessage[2])
+		pubKey, err = secp256k1.RecoverPubkey(hash, in.Signature[2])
+		verified = secp256k1.VerifySignature(pubKey, hash, in.Signature[2])
+		fmt.Printf("Signature Verified? %v\n", verified)
+
 		result := C.cross_go_post_update(convertedOriginalMsg, convertedSignatureMsg, convertedSenderMsg, convertedSenderSig, convertedMiddleManMsg, convertedMiddleManSig, convertedReceiverMsg, convertedReceiverSig, nil, nil)
 
 		var MessageRes = MessageRes{}
@@ -1167,24 +1249,24 @@ func (s *ClientGrpc) CrossPaymentCommitClientRequest(ctx context.Context, in *cl
 		}
 
 		signature = (*C.uchar)(unsafe.Pointer(&_signature))
-*/
+
 		if result == 1 {
 			fmt.Println("COMMIT result failure!")
 			return &clientPb.CommitResult{Result: false}, nil
 		} else if result == 9999  {
-			break
+//			break
 		}
 		//fmt.Println("UD ################################## ")
 
-		defer C.free(unsafe.Pointer(originalMsg))
-		defer C.free(unsafe.Pointer(signature))
-	}
+//		defer C.free(unsafe.Pointer(originalMsg))
+//		defer C.free(unsafe.Pointer(signature))
+//	}
 
 //	rwMutex.Unlock()
 
-	originalMessageStr, signatureStr := convertMsgResPointerToByte(originalMsg, signature)
+	originalMessageStr, _/*signatureStr*/ := convertMsgResPointerToByte(originalMsg, signature)
 //	fmt.Println("COMMIT !!")
-	return &clientPb.CommitResult{Result: true, OriginalMessage: originalMessageStr, Signature: signatureStr}, nil
+	return &clientPb.CommitResult{Result: true, OriginalMessage: originalMessageStr, Signature: _signature}, nil
 
 	// 채널 정보를 업데이트 한다던지 잔액을 변경.
 //	time.Sleep(time.Second * 50)
@@ -1239,22 +1321,45 @@ func (s *ClientGrpc) CrossPaymentConfirmClientRequest(ctx context.Context, in *c
 		convertedCrossPaymentMsg, convertedCrossPaymentSig = convertMsgResByteToPointer(in.OriginalMessage[4], in.Signature[4])
 	}
 */
-	for ; ; {
-		result := C.ecall_cross_go_idle_w(convertedOriginalMsg, convertedSignatureMsg, convertedSenderMsg, convertedSenderSig, convertedMiddleManMsg, convertedMiddleManSig, convertedReceiverMsg, convertedReceiverSig, nil, nil)
+//	for ; ; {
+//		result := C.ecall_cross_go_idle_w(convertedOriginalMsg, convertedSignatureMsg, convertedSenderMsg, convertedSenderSig, convertedMiddleManMsg, convertedMiddleManSig, convertedReceiverMsg, convertedReceiverSig, nil, nil)
 
-/*
+		hash := crypto.Keccak256(in.OriginalMessage[0])
+		pubKey, err := secp256k1.RecoverPubkey(hash, in.Signature[0])
+		if err != nil {
+			log.Fatal("err :", err)
+		}
+
+		verified := secp256k1.VerifySignature(pubKey, hash, in.Signature[0])
+		fmt.Printf("Signature Verified? %v\n", verified)
+
+		hash = crypto.Keccak256(in.OriginalMessage[1])
+		pubKey, err = secp256k1.RecoverPubkey(hash, in.Signature[1])
+		verified = secp256k1.VerifySignature(pubKey, hash, in.Signature[1])
+		fmt.Printf("Signature Verified? %v\n", verified)
+
+		hash = crypto.Keccak256(in.OriginalMessage[2])
+		pubKey, err = secp256k1.RecoverPubkey(hash, in.Signature[2])
+		verified = secp256k1.VerifySignature(pubKey, hash, in.Signature[2])
+		fmt.Printf("Signature Verified? %v\n", verified)
+
+		hash = crypto.Keccak256(in.OriginalMessage[2])
+		pubKey, err = secp256k1.RecoverPubkey(hash, in.Signature[2])
+		verified = secp256k1.VerifySignature(pubKey, hash, in.Signature[2])
+		fmt.Printf("Signature Verified? %v\n", verified)
+
 		result := C.cross_go_idle(convertedOriginalMsg, convertedSignatureMsg, convertedSenderMsg, convertedSenderSig, convertedMiddleManMsg, convertedMiddleManSig, convertedReceiverMsg, convertedReceiverSig, nil, nil)
-*/
+
 		if result == 1 {
 			fmt.Println("CONFIRM result failure!")
 			return &clientPb.ConfirmResult{Result: false}, nil
 		} else if result == 9999  {
-			break
+//			break
 		}
 
 		//fmt.Println("CONFIRM ################################## ")
 
-	}
+//	}
 
 //	rwMutex.Unlock()
 

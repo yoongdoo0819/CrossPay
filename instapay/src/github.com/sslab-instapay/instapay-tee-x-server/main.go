@@ -14,7 +14,7 @@ import (
 	"os"
 	"github.com/gin-gonic/gin"
 	"github.com/sslab-instapay/instapay-tee-x-server/router"
-	"github.com/sslab-instapay/instapay-tee-x-server/config"
+	//"github.com/sslab-instapay/instapay-tee-x-server/config"
 	serverGrpc "github.com/sslab-instapay/instapay-tee-x-server/grpc"
 	//pbXServer  "github.com/sslab-instapay/instapay-tee-x-server/proto/cross-server"
 	//"google.golang.org/grpc"
@@ -42,7 +42,7 @@ func main() {
 
 	C.initialize_enclave()
 
-	config.GetContract()
+//	config.GetContract()
 	go serverGrpc.StartGrpcServer()
 
 	StartWebServer()

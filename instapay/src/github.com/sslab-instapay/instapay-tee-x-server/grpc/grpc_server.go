@@ -502,6 +502,7 @@ func (s *ServerGrpc) CrossPaymentRequest(ctx context.Context, rs *pbXServer.Cros
 			C.free(unsafe.Pointer(signatureForPrepare))
 		}
 	}
+//	return &pbXServer.CrossResult{Result: true}, nil
 
 	for ; ; {
 		result := C.ecall_cross_create_all_prepare_req_msg_temp_w(C.uint(rs.Pn), &sender2[0], &middleMan2[0], &receiver2[0], C.uint(len(channelSlice1)), &channelSlice1[0], C.uint(len(channelSlice2)), &channelSlice2[0], C.uint(len(channelSlice3)), &channelSlice3[0], &amountSlice1[0], &amountSlice2[0], &amountSlice3[0], &originalMessageForPrepare2, &signatureForPrepare2)
@@ -522,6 +523,7 @@ func (s *ServerGrpc) CrossPaymentRequest(ctx context.Context, rs *pbXServer.Cros
 
 		go WrapperCrossPaymentPrepareRequest(rs.Pn, p2, _paymentInformation, originalMessageByteForPrepare2, signatureByteForPrepare2)
 
+
 //	}
 
 	for i:= 1; i<=6; i++ {
@@ -541,7 +543,6 @@ func (s *ServerGrpc) CrossPaymentRequest(ctx context.Context, rs *pbXServer.Cros
 
 	}
 
-	fmt.Println("================================")
 	for ; ; {
 		result := C.ecall_cross_create_all_commit_req_msg_temp_w(C.uint(rs.Pn), &sender[0], &middleMan[0], &receiver[0], C.uint(len(channelSlice1)), &channelSlice1[0], C.uint(len(channelSlice2)), &channelSlice2[0], C.uint(len(channelSlice3)), &channelSlice3[0], &amountSlice1[0], &amountSlice2[0], &amountSlice3[0], &originalMessageForCommit, &signatureForCommit)
 
@@ -617,7 +618,6 @@ func (s *ServerGrpc) CrossPaymentRequest(ctx context.Context, rs *pbXServer.Cros
 		}
 	}
 
-
 	for ; ; {
 		result := C.ecall_cross_create_all_confirm_req_msg_temp_w(C.uint(rs.Pn), &sender[0], &middleMan[0], &receiver[0], C.uint(len(channelSlice1)), &channelSlice1[0], C.uint(len(channelSlice2)), &channelSlice2[0], C.uint(len(channelSlice3)), &channelSlice3[0], &amountSlice1[0], &amountSlice2[0], &amountSlice3[0], &originalMessageForConfirm, &signatureForConfirm)
 
@@ -676,7 +676,7 @@ func (s *ServerGrpc) CrossPaymentRequest(ctx context.Context, rs *pbXServer.Cros
 
 	}
 
-	fmt.Println("END ")
+	fmt.Println("END")
 	return &pbXServer.CrossResult{Result: true}, nil
 }
 
@@ -946,7 +946,6 @@ func WrapperCrossPaymentCommitRequest(pn int64, p []string, paymentInformation m
 	var UD = UD{}
 	UD.paymentInformation = make(map[string]PaymentInformation)
 	for _, address := range p {
-		fmt.Println(">> : ", address)
 		UD.pn = pn
 		UD.address = address
 		UD.originalMessageByteArray = originalMessageByteArray

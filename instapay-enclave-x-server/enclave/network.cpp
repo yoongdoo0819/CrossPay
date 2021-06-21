@@ -18,6 +18,7 @@ void ecall_accept_request(unsigned char *sender, unsigned char *receiver, unsign
     payments.insert(map_payment_value(Payment::acc_payment_num, Payment(Payment::acc_payment_num, sender, receiver, amount)));
     *payment_num = Payment::acc_payment_num;
     Payment::acc_payment_num++;
+   
 }
 
 
@@ -214,7 +215,6 @@ void ecall_cross_accept_request(
 
     Cross_Payment::acc_cross_payment_num++;
     //rwMutex.unlock();
-    
 }       
 
 void ecall_cross_add_participant(unsigned int payment_num, unsigned char *addr)

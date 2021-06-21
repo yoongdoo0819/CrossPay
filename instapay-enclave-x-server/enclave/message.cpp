@@ -29,11 +29,11 @@ void sign_message(unsigned char *original_msg, unsigned int msg_size, unsigned c
     sha3_SetFlags(&sha3_ctx, SHA3_FLAGS_KECCAK);
     sha3_Update(&sha3_ctx, original_msg, msg_size);
     msg32 = (unsigned char*)sha3_Finalize(&sha3_ctx);
-/*
+
     for(int i=0; i<16; i++) {
 	    printf("%02x \n", msg32[i]);
     }
-*/
+
     /* ECDSA sign on the message */
 //    secp256k1_ctx = secp256k1_context_create(SECP256K1_CONTEXT_SIGN);
     secp256k1_ecdsa_sign_recoverable(secp256k1_ctx, &sig, msg32, seckey, NULL, NULL);
@@ -42,11 +42,11 @@ void sign_message(unsigned char *original_msg, unsigned int msg_size, unsigned c
     memcpy(signature, output64, 32);  // copy r
     memcpy(signature + 32, output64 + 32, 32);  // copy s
     memcpy(&signature[64], &recid, 1);  // copy v (recovery id)
-/*
+
     for(int i = 0; i < 32; i++)
         printf("%02x", output64[i]);
     printf("\n");
-*/
+
 //    secp256k1_context_destroy(secp256k1_ctx);
 }
 
@@ -127,39 +127,33 @@ int verify_prepared_message(unsigned int from, unsigned char *signature, unsigne
     }
     else if(from == 1) {
         unsigned char *server_pubaddr = ::arr_to_bytes(SERVER_PUBADDR, 40);
-	
+/*	
 	printf("server_pubaddr :");
 	for(int i=0; i<20; i++)
 		printf("%02x", cross_payments.find(payment_num)->second.m_chain2Receiver[i]);
 	printf("\n");
-
-
+*/
+/*
 	if (memcmp(sender, cross_payments.find(payment_num)->second.m_chain1Sender, 20) == 0) {
 		cross_payments.find(payment_num)->second.m_chain1Sender_prepared = 1;
-		printf(" 1 \n");
 	}
 	else if (memcmp(sender, cross_payments.find(payment_num)->second.m_chain1MiddleMan, 20) == 0) {
 		cross_payments.find(payment_num)->second.m_chain1MiddleMan_prepared = 1;
-		printf(" 2 \n");
 
 	}
 	else if (memcmp(sender, cross_payments.find(payment_num)->second.m_chain1Receiver, 20) == 0) {
 		cross_payments.find(payment_num)->second.m_chain1Receiver_prepared = 1;
-		printf(" 3 \n");
 	}
 	else if (memcmp(sender, cross_payments.find(payment_num)->second.m_chain2Sender, 20) == 0) {
 		cross_payments.find(payment_num)->second.m_chain2Sender_prepared = 1;
-		printf(" 4 \n");
 	}
 	else if (memcmp(sender, cross_payments.find(payment_num)->second.m_chain2MiddleMan, 20) == 0) {
 		cross_payments.find(payment_num)->second.m_chain2MiddleMan_prepared = 1;
-		printf(" 5 \n");
 	}
 	else if (memcmp(sender, cross_payments.find(payment_num)->second.m_chain2Receiver, 20) == 0) {
 		cross_payments.find(payment_num)->second.m_chain2Receiver_prepared = 1;
-		printf(" 6 \n");
 	}
-	
+*/	
 	//    	printf("START 6 !!!!! \n");
 
         if(memcmp(sender, server_pubaddr, 20) == 0) {
@@ -249,39 +243,32 @@ int verify_committed_message(unsigned int from, unsigned char *signature, unsign
     }
     else if(from == 1) {
         unsigned char *server_pubaddr = ::arr_to_bytes(SERVER_PUBADDR, 40);
-	
+/*	
 	printf("server_pubaddr :");
 	for(int i=0; i<20; i++)
 		printf("%02x", cross_payments.find(payment_num)->second.m_chain2Receiver[i]);
 	printf("\n");
-
-
+*/
+/*
 	if (memcmp(sender, cross_payments.find(payment_num)->second.m_chain1Sender, 20) == 0) {
 		cross_payments.find(payment_num)->second.m_chain1Sender_committed = 1;
-		printf(" 1 \n");
 	}
 	else if (memcmp(sender, cross_payments.find(payment_num)->second.m_chain1MiddleMan, 20) == 0) {
 		cross_payments.find(payment_num)->second.m_chain1MiddleMan_committed = 1;
-		printf(" 2 \n");
-
 	}
 	else if (memcmp(sender, cross_payments.find(payment_num)->second.m_chain1Receiver, 20) == 0) {
 		cross_payments.find(payment_num)->second.m_chain1Receiver_committed = 1;
-		printf(" 3 \n");
 	}
 	else if (memcmp(sender, cross_payments.find(payment_num)->second.m_chain2Sender, 20) == 0) {
 		cross_payments.find(payment_num)->second.m_chain2Sender_committed = 1;
-		printf(" 4 \n");
 	}
 	else if (memcmp(sender, cross_payments.find(payment_num)->second.m_chain2MiddleMan, 20) == 0) {
 		cross_payments.find(payment_num)->second.m_chain2MiddleMan_committed = 1;
-		printf(" 5 \n");
 	}
 	else if (memcmp(sender, cross_payments.find(payment_num)->second.m_chain2Receiver, 20) == 0) {
 		cross_payments.find(payment_num)->second.m_chain2Receiver_committed = 1;
-		printf(" 6 \n");
 	}
-	
+*/	
 	//    	printf("START 6 !!!!! \n");
 
         if(memcmp(sender, server_pubaddr, 20) == 0) {

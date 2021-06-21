@@ -21,22 +21,10 @@ extern "C" {
 using namespace std;
 
 enum cross_message_type {
-
-    CROSS_ALL_PREPARE_REQ = 1,
-    CROSS_PREPARE_REQ     = 2,
-//    CROSS_PREPARE_RES     = 3,
-    CROSS_ALL_PREPARED    = 4,
-
-    CROSS_ALL_COMMIT_REQ  = 5,
-    CROSS_COMMIT_REQ      = 6,
-//    CROSS_COMMIT_RES      = 7,
-    CROSS_ALL_COMMITTED   = 8,
-
-    CROSS_ALL_CONFIRM_REQ = 9,
-    CROSS_CONFIRM_REQ     = 10,
-
-    CROSS_ALL_REFUND_REQ  = 11,
-    CROSS_REFUND_REQ      = 12,
+    CROSS_PREPARE_REQ     = 1,
+    CROSS_COMMIT_REQ      = 2,
+    CROSS_CONFIRM_REQ     = 3,
+    CROSS_REFUND_REQ      = 4,
 };
 
 enum cross_payment_server {
