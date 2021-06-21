@@ -15,6 +15,7 @@ package grpc
 #include <string.h>
 
 channel channels[100000];
+unsigned char *MY_ADDR = "f55ba9376db959fab2af86d565325829b08ea3c4";
 
 void CExample(char *p) {     // 슬라이스를 void * 타입으로 받음
 	printf("zz \n");
@@ -30,7 +31,6 @@ void transition_to_go_pre_update(unsigned int index)
 
 unsigned int go_pre_update(unsigned char *msg, unsigned char *signature, unsigned char *original_msg, unsigned char *output)
 {
-	unsigned char *MY_ADDR = "f55ba9376db959fab2af86d565325829b08ea3c4";
 	unsigned char reply_signature[65] = {0, };
 	unsigned char *my_addr;
 
@@ -84,26 +84,6 @@ unsigned int go_pre_update(unsigned char *msg, unsigned char *signature, unsigne
 		}
 	}
 
-	//my_addr = channels.find(channel_ids[0])->second.m_my_addr;
-
-	//std::vector<unsigned char> pubkey(my_addr, my_addr + 20);
-	//std::vector<unsigned char> seckey;
-
-	reply.type = AG_RES;
-	reply.payment_num = payment_num;
-	reply.e = 1;
-	//seckey = accounts.find(pubkey)->second.get_seckey();
-
-	//    printf("SIGN START \n");
-	//sign_message((unsigned char*)&reply, sizeof(MessageRes), (unsigned char*)seckey.data(), reply_signature);
-	//    printf("SIGN END \n");
-
-	//memcpy(original_msg, (unsigned char*)&reply, sizeof(MessageRes));
-	//memcpy(output, reply_signature, 65);
-
-	//free(pubkey);
-	//free(seckey);
-
 	//    printf("PRE UPDATED \n");
 	//*result = 9999;
 	return 9999;
@@ -111,7 +91,6 @@ unsigned int go_pre_update(unsigned char *msg, unsigned char *signature, unsigne
 
 unsigned int go_post_update(unsigned char *msg, unsigned char *signature, unsigned char *senderMSG, unsigned char *senderSig, unsigned char *middleManMSG, unsigned char *middleManSig, unsigned char *receiverMSG, unsigned char *receiverSig, unsigned char *original_msg, unsigned char *output)
 {
-	unsigned char *MY_ADDR = "f55ba9376db959fab2af86d565325829b08ea3c4";
 	unsigned char reply_signature[65] = {0, };
 	unsigned char *my_addr;
 
@@ -182,26 +161,6 @@ unsigned int go_post_update(unsigned char *msg, unsigned char *signature, unsign
 //		printf("channel %d is post updated \n", channel_ids[i]);
 	}
 
-	//my_addr = channels.find(channel_ids[0])->second.m_my_addr;
-
-	//std::vector<unsigned char> pubkey(my_addr, my_addr + 20);
-	//std::vector<unsigned char> seckey;
-
-	reply.type = AG_RES;
-	reply.payment_num = payment_num;
-	reply.e = 1;
-	//seckey = accounts.find(pubkey)->second.get_seckey();
-
-	//    printf("SIGN START \n");
-	//sign_message((unsigned char*)&reply, sizeof(MessageRes), (unsigned char*)seckey.data(), reply_signature);
-	//    printf("SIGN END \n");
-
-	//memcpy(original_msg, (unsigned char*)&reply, sizeof(MessageRes));
-	//memcpy(output, reply_signature, 65);
-
-	//free(pubkey);
-	//free(seckey);
-
 	//    printf("PRE UPDATED \n");
 	//*result = 9999;
 	return 9999;
@@ -209,7 +168,6 @@ unsigned int go_post_update(unsigned char *msg, unsigned char *signature, unsign
 
 unsigned int go_idle(unsigned char *msg, unsigned char *signature, unsigned char *senderMSG, unsigned char *senderSig, unsigned char *middleManMSG, unsigned char *middleManSig, unsigned char *receiverMSG, unsigned char *receiverSig, unsigned char *original_msg, unsigned char *output)
 {
-	unsigned char *MY_ADDR = "f55ba9376db959fab2af86d565325829b08ea3c4";
 	unsigned char reply_signature[65] = {0, };
 	unsigned char *my_addr;
 
@@ -269,7 +227,6 @@ unsigned int go_idle(unsigned char *msg, unsigned char *signature, unsigned char
 
 unsigned int cross_go_pre_update(unsigned char *msg, unsigned char *signature, unsigned char *original_msg, unsigned char *output)
 {
-	unsigned char *MY_ADDR = "f55ba9376db959fab2af86d565325829b08ea3c4";
 	unsigned char reply_signature[65] = {0, };
 	unsigned char *my_addr;
 
@@ -326,26 +283,6 @@ unsigned int cross_go_pre_update(unsigned char *msg, unsigned char *signature, u
 		}
 	}
 
-	//my_addr = channels.find(channel_ids[0])->second.m_my_addr;
-
-	//std::vector<unsigned char> pubkey(my_addr, my_addr + 20);
-	//std::vector<unsigned char> seckey;
-
-	reply.type = AG_RES;
-	reply.payment_num = payment_num;
-	reply.e = 1;
-	//seckey = accounts.find(pubkey)->second.get_seckey();
-
-	//    printf("SIGN START \n");
-	//sign_message((unsigned char*)&reply, sizeof(MessageRes), (unsigned char*)seckey.data(), reply_signature);
-	//    printf("SIGN END \n");
-
-	//memcpy(original_msg, (unsigned char*)&reply, sizeof(MessageRes));
-	//memcpy(output, reply_signature, 65);
-
-	//free(pubkey);
-	//free(seckey);
-
 //	printf("PRE UPDATED \n");
 	//*result = 9999;
 	return 9999;
@@ -353,7 +290,6 @@ unsigned int cross_go_pre_update(unsigned char *msg, unsigned char *signature, u
 
 unsigned int cross_go_post_update(unsigned char *msg, unsigned char *signature, unsigned char *senderMSG, unsigned char *senderSig, unsigned char *middleManMSG, unsigned char *middleManSig, unsigned char *receiverMSG, unsigned char *receiverSig, unsigned char *original_msg, unsigned char *output)
 {
-	unsigned char *MY_ADDR = "f55ba9376db959fab2af86d565325829b08ea3c4";
 	unsigned char reply_signature[65] = {0, };
 	unsigned char *my_addr;
 
@@ -424,26 +360,6 @@ unsigned int cross_go_post_update(unsigned char *msg, unsigned char *signature, 
 //		printf("channel %d is cross post updated \n", channel_ids[i]);
 	}
 
-	//my_addr = channels.find(channel_ids[0])->second.m_my_addr;
-
-	//std::vector<unsigned char> pubkey(my_addr, my_addr + 20);
-	//std::vector<unsigned char> seckey;
-
-	reply.type = AG_RES;
-	reply.payment_num = payment_num;
-	reply.e = 1;
-	//seckey = accounts.find(pubkey)->second.get_seckey();
-
-	//    printf("SIGN START \n");
-	//sign_message((unsigned char*)&reply, sizeof(MessageRes), (unsigned char*)seckey.data(), reply_signature);
-	//    printf("SIGN END \n");
-
-	//memcpy(original_msg, (unsigned char*)&reply, sizeof(MessageRes));
-	//memcpy(output, reply_signature, 65);
-
-	//free(pubkey);
-	//free(seckey);
-
 //	printf("POST UPDATED \n");
 	//*result = 9999;
 	return 9999;
@@ -451,7 +367,6 @@ unsigned int cross_go_post_update(unsigned char *msg, unsigned char *signature, 
 
 unsigned int cross_go_idle(unsigned char *msg, unsigned char *signature, unsigned char *senderMSG, unsigned char *senderSig, unsigned char *middleManMSG, unsigned char *middleManSig, unsigned char *receiverMSG, unsigned char *receiverSig, unsigned char *original_msg, unsigned char *output)
 {
-	unsigned char *MY_ADDR = "f55ba9376db959fab2af86d565325829b08ea3c4";
 	unsigned char reply_signature[65] = {0, };
 	unsigned char *my_addr;
 
@@ -582,7 +497,6 @@ type Message struct {
 
 var seckey = []byte{7, 82, 123, 120, 27, 150, 39, 52, 92, 112, 78, 214, 183, 112, 19, 207, 128, 181, 72, 226, 125, 146, 63, 253, 47, 199, 191, 20, 132, 98, 119, 201}
 
-var SERVER_PUBKEY = "046095b778be1953cc520377e70c1e6ae6ae3815"
 //var Pn int64
 var ChComplete [500000]chan bool
 var chanCreateCheck = 0
@@ -996,192 +910,148 @@ func (s *ClientGrpc) CrossPaymentPrepareClientRequest(ctx context.Context, in *c
 
 	Addrs = in.Addr
         Amount = in.Amount
+
+	/*
+	 *
+	 * Using SGX
+	 ***/
 /*
-	for {
-
-		if C_pre_yes == 1 {
-			break
-		} else if C_pre_yes == 2 {
-			C_pre_yes = 0
-			return &clientPb.PrepareResult{Result: false}, nil
-
-		}
-	}
-*/
-//	for ; ; {
+	for ; ; {
 		result := C.ecall_cross_go_pre_update_w(convertedOriginalMsg, convertedSignatureMsg, &originalMsg, &signature)
 
-//		originalMessageStr, signatureStr := convertMsgResPointerToByte(originalMsg, signature)
-		fmt.Println("signature : ", in.Signature)
-
-		hash := crypto.Keccak256(in.OriginalMessage)
-/*
-		fmt.Printf("hash hex : ")
-		for i:=0; i<16; i++ {
-			fmt.Printf("%02x", hash[i])
-		}
-		fmt.Println()
-		fmt.Println("hash : ", hash)
-		tempPubKey, err := secp256k1.RecoverPubkey(hash, in.Signature)
-		if err != nil {
-			log.Fatal(err)
-		}
-		fmt.Printf("temp Pubkey :")
-		for i:=0; i<20; i++ {
-			fmt.Printf("%02x", tempPubKey[i])
-		}
-		fmt.Println()
-
-		abc, err := hex.DecodeString("7e58a6de07fa27d93716a77c369a1ab07f9d1682")
-		for i:=0; i<20; i++ {
-			fmt.Printf("%02x", abc[i])
-		}
-		fmt.Println()
-
-		pkBytes, err := hex.DecodeString("5a5e2194e0639fd017158793812dd5f5668f5bfc9a146f93f39237a4b4ed7dd5")
-		privKey := SECP256K1.PrivKeyFromBytes(pkBytes)
-		pubKey := privKey.PubKey()
-
-		fmt.Println("len priv key : ", len(privKey.Serialize()))
-		seckey := []byte("5a5e2194e0639fd017158793812dd5f5668f5bfc9a146f93f39237a4b4ed7dd5")
-		fmt.Println("seckey : ", seckey)
-		tempSignature, err := secp256k1.Sign(hash, privKey.Serialize())
-		fmt.Println("tempSig : ", tempSignature)
-
-		tempPubKey2, err := secp256k1.RecoverPubkey(hash, tempSignature)
-		fmt.Printf("temp Pubkey two :")
-		for i:=0; i<20; i++ {
-			fmt.Printf("%02x", tempPubKey2[i])
-		}
-		fmt.Println()
-
-		pub := pubKey.SerializeUncompressed()
-		fmt.Printf("pub : ")
-		for i:=0; i<20; i++ {
-			fmt.Printf("%02x", pub[i])
-		}
-		fmt.Println()
-
-		fmt.Printf("privkey serialize() : ")
-		for i:=0; i<32; i++ {
-			fmt.Printf("%02x", privKey.Serialize()[i])
-		}
-		fmt.Println()
-
-		verified := secp256k1.VerifySignature(tempPubKey2, hash, tempSignature)
-
-		fmt.Printf("Signature Verified? %v\n", verified)
-	//privKey = secp256k1.PrivKeyFromBytes(pkBytes)
-
-		pubKey = privKey.PubKey()
-		fmt.Println(pubKey)
-//		verified := secp256k1.VerifySignature(pubKey, messageHash, in.Signature)
-*/
-		pubKey, err := secp256k1.RecoverPubkey(hash, in.Signature)
-		verified := secp256k1.VerifySignature(pubKey, hash, in.Signature)
-
-		fmt.Printf("Signature Verified? %v\n", verified)
-
-		result = C.cross_go_pre_update(convertedOriginalMsg, convertedSignatureMsg, nil, nil)
-
-		var MessageRes = MessageRes{}
-		MessageRes.messageType = C.uint(8)
-		MessageRes.payment_num = C.uint(in.PaymentNumber)
-		MessageRes.e = C.uint(1)
-		MessageRes.amount = C.uint(1)
-
-		originalMsg = (*C.uchar)(unsafe.Pointer(&MessageRes))
-		signature = (*C.uchar)(unsafe.Pointer(&__signature))
-
-		originalMessageByte, _ := convertMsgResPointerToByte(originalMsg, signature)
-		//fmt.Println(originalMessageStr, originalMessageByte)
-		//fmt.Println(signatureStr)
-
-		//messageHash := crypto.Keccak256(originalMessageByte)
-		//h.Write(originalMessageByte)
-		//messageHash := h.Sum(nil)
-
-		messageHash := crypto.Keccak256([]byte(originalMessageByte))
-//		messageHash := []byte("24bb5f9477d980bac42d698307d096ce183d6d557c3c1613404a2a174ba66ce")
-		//fmt.Println(messageHash)
-		_signature, err := secp256k1.Sign(messageHash, seckey)
-		if err != nil {
-			fmt.Println("sign error ", err)
-		}
-
-		signature = (*C.uchar)(unsafe.Pointer(&_signature))
-//		fmt.Println("sig >> ", _signature)
-/*
-		pkBytes, err := hex.DecodeString("5a5e2194e0639fd017158793812dd5f5668f5bfc9a146f93f39237a4b4ed7dd5")
-//			"22a47fa09a223f2aa079edf85a7c2d4f87" +
-//		"20ee63e502ee2869afab7de234b80c")
-		if err != nil {
-			fmt.Println(err)
-			//return
-		}
-		privKey := secp256k1.PrivKeyFromBytes(pkBytes)
-
-		pubKey := privKey.PubKey()
-		fmt.Println(pubKey)
-//		verified := secp256k1.VerifySignature(pubKey, messageHash, in.Signature)
-/*
-		privKey := secp256k1.PrivKeyFromBytes(pkBytes)
-		fmt.Println(privKey)
-		// Sign a message using the private key.
-		message := in.OriginalMessage//"test message"
-		messageHash := chainhash.HashB([]byte(message))
-		signature, err := schnorr.Sign(privKey, messageHash)
-
-		if err != nil {
-			fmt.Println(err)
-			//return
-		}
-
-		// Serialize and display the signature.
-		fmt.Printf("Serialized Signature: %x\n", signature.Serialize())
-		fmt.Println(signature.Serialize())
-		fmt.Println(in.Signature)
-		// Verify the signature for the message using the public key.
-		pubKey := privKey.PubKey()
-		fmt.Println(pubKey)
-		fmt.Println(reflect.TypeOf(signature))
-
-//		sig := (schnorr.Signature*) in.Signature
-		StartTime = time.Now()
-		verified := signature.Verify(messageHash, pubKey)
-		fmt.Printf("Signature Verified? %v\n", verified)
-
-		signature, err = schnorr.ParseSignature(in.Signature)
-		if err != nil {
-			fmt.Println(err)
-		}
-
-		fmt.Println(reflect.TypeOf(signature))
-
-		verified = signature.Verify(messageHash, pubKey)
-
-		elapsedTime := time.Since(StartTime)
-		fmt.Println(elapsedTime)
-
-		fmt.Printf("Signature Verified? %v\n", verified)
-*/
 		if result == 1 {
 			fmt.Println("PREPARE result failure!")
 			return &clientPb.PrepareResult{Result: false}, nil
 		} else if result == 9999  {
-//			break
+			break
 		}
 
 		//fmt.Println("AG ################################## ")
-//		defer C.free(unsafe.Pointer(originalMsg))
-//		defer C.free(unsafe.Pointer(signature))
+		defer C.free(unsafe.Pointer(originalMsg))
+		defer C.free(unsafe.Pointer(signature))
 
-//	}
+	}
+	originalMessageStr, signatureStr := convertMsgResPointerToByte(originalMsg, signature)
 
-	originalMessageStr, _/*signatureStr*/ := convertMsgResPointerToByte(originalMsg, signature)
 
+	return &clientPb.PrepareResult{Result: true, OriginalMessage: originalMessageStr, Signature: signatureStr}, nil
+
+*/
+
+	/*
+	 *
+	 * Non-Using SGX
+	 ***/
+
+/*
+ * 
+ *  	//// signature example ////
+
+	hash := crypto.Keccak256(in.OriginalMessage)
+
+	fmt.Printf("hash hex : ")
+	for i:=0; i<16; i++ {
+		fmt.Printf("%02x", hash[i])
+	}
+	fmt.Println()
+	fmt.Println("hash : ", hash)
+	tempPubKey, err := secp256k1.RecoverPubkey(hash, in.Signature)
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Printf("temp Pubkey :")
+	for i:=0; i<20; i++ {
+		fmt.Printf("%02x", tempPubKey[i])
+	}
+	fmt.Println()
+
+	abc, err := hex.DecodeString("7e58a6de07fa27d93716a77c369a1ab07f9d1682")
+	for i:=0; i<20; i++ {
+		fmt.Printf("%02x", abc[i])
+	}
+	fmt.Println()
+
+	pkBytes, err := hex.DecodeString("5a5e2194e0639fd017158793812dd5f5668f5bfc9a146f93f39237a4b4ed7dd5")
+	privKey := SECP256K1.PrivKeyFromBytes(pkBytes)
+	pubKey := privKey.PubKey()
+
+	fmt.Println("len priv key : ", len(privKey.Serialize()))
+	seckey := []byte("5a5e2194e0639fd017158793812dd5f5668f5bfc9a146f93f39237a4b4ed7dd5")
+	fmt.Println("seckey : ", seckey)
+	tempSignature, err := secp256k1.Sign(hash, privKey.Serialize())
+	fmt.Println("tempSig : ", tempSignature)
+
+	tempPubKey2, err := secp256k1.RecoverPubkey(hash, tempSignature)
+	fmt.Printf("temp Pubkey two :")
+	for i:=0; i<20; i++ {
+		fmt.Printf("%02x", tempPubKey2[i])
+	}
+	fmt.Println()
+
+	pub := pubKey.SerializeUncompressed()
+	fmt.Printf("pub : ")
+	for i:=0; i<20; i++ {
+		fmt.Printf("%02x", pub[i])
+	}
+	fmt.Println()
+
+	fmt.Printf("privkey serialize() : ")
+	for i:=0; i<32; i++ {
+		fmt.Printf("%02x", privKey.Serialize()[i])
+	}
+	fmt.Println()
+
+	verified := secp256k1.VerifySignature(tempPubKey2, hash, tempSignature)
+
+	fmt.Printf("Signature Verified? %v\n", verified)
+//privKey = secp256k1.PrivKeyFromBytes(pkBytes)
+
+	pubKey = privKey.PubKey()
+	fmt.Println(pubKey)
+//		verified := secp256k1.VerifySignature(pubKey, messageHash, in.Signature)
+*/
+
+	hash := crypto.Keccak256(in.OriginalMessage)
+
+	pubKey, err := secp256k1.RecoverPubkey(hash, in.Signature)
+	verified := secp256k1.VerifySignature(pubKey, hash, in.Signature)
+	if verified != true {
+		return &clientPb.PrepareResult{Result: false}, nil
+	}
+//		fmt.Printf("Signature Verified? %v\n", verified)
+
+	result := C.cross_go_pre_update(convertedOriginalMsg, convertedSignatureMsg, nil, nil)
+
+	var MessageRes = MessageRes{}
+	MessageRes.messageType = C.uint(8)
+	MessageRes.payment_num = C.uint(in.PaymentNumber)
+	MessageRes.e = C.uint(1)
+	MessageRes.amount = C.uint(1)
+
+	originalMsg = (*C.uchar)(unsafe.Pointer(&MessageRes))
+	signature = (*C.uchar)(unsafe.Pointer(&__signature))
+
+	originalMessageByte, _ := convertMsgResPointerToByte(originalMsg, signature)
+
+	messageHash := crypto.Keccak256([]byte(originalMessageByte))
+	_signature, err := secp256k1.Sign(messageHash, seckey)
+	if err != nil {
+		fmt.Println("sign error ", err)
+	}
+
+	signature = (*C.uchar)(unsafe.Pointer(&_signature))
+
+	if result == 1 {
+		fmt.Println("PREPARE result failure!")
+		return &clientPb.PrepareResult{Result: false}, nil
+	} else if result == 9999  {
+
+	}
+
+	originalMessageStr, _ := convertMsgResPointerToByte(originalMsg, signature)
 
 	return &clientPb.PrepareResult{Result: true, OriginalMessage: originalMessageStr, Signature: _signature}, nil
+
 }
 
 func (s *ClientGrpc) CrossPaymentCommitClientRequest(ctx context.Context, in *clientPb.CrossPaymentCommitReqClientMessage) (*clientPb.CommitResult, error) {
@@ -1191,115 +1061,105 @@ func (s *ClientGrpc) CrossPaymentCommitClientRequest(ctx context.Context, in *cl
 	convertedMiddleManMsg, convertedMiddleManSig := convertMsgResByteToPointer(in.OriginalMessage[2], in.Signature[2])
 	convertedReceiverMsg, convertedReceiverSig := convertMsgResByteToPointer(in.OriginalMessage[3], in.Signature[3])
 
-
-/*
-	var convertedCrossPaymentMsg, convertedCrossPaymentSig *C.uchar
-	if in.OriginalMessage[4] != nil {
-		convertedCrossPaymentMsg, convertedCrossPaymentSig = convertMsgResByteToPointer(in.OriginalMessage[4], in.Signature[4])
-	}
-*/
 	var originalMsg *C.uchar
 	var __signature[65] C.uchar
 	var signature *C.uchar
 
-//	C.ecall_go_post_update_w(convertedOriginalMsg, convertedSignatureMsg, &originalMsg, &signature)
 
-//	rwMutex.Lock()
-
-//	for ; ; {
-//		result := C.ecall_cross_go_post_update_w(convertedOriginalMsg, convertedSignatureMsg, convertedSenderMsg, convertedSenderSig, convertedMiddleManMsg, convertedMiddleManSig, convertedReceiverMsg, convertedReceiverSig, nil, nil, &originalMsg, &signature)
-
-		hash := crypto.Keccak256(in.OriginalMessage[0])
-		pubKey, err := secp256k1.RecoverPubkey(hash, in.Signature[0])
-		verified := secp256k1.VerifySignature(pubKey, hash, in.Signature[0])
-		fmt.Printf("Signature Verified? %v\n", verified)
-
-		hash = crypto.Keccak256(in.OriginalMessage[1])
-		pubKey, err = secp256k1.RecoverPubkey(hash, in.Signature[1])
-		verified = secp256k1.VerifySignature(pubKey, hash, in.Signature[1])
-		fmt.Printf("Signature Verified? %v\n", verified)
-
-		hash = crypto.Keccak256(in.OriginalMessage[2])
-		pubKey, err = secp256k1.RecoverPubkey(hash, in.Signature[2])
-		verified = secp256k1.VerifySignature(pubKey, hash, in.Signature[2])
-		fmt.Printf("Signature Verified? %v\n", verified)
-
-		hash = crypto.Keccak256(in.OriginalMessage[2])
-		pubKey, err = secp256k1.RecoverPubkey(hash, in.Signature[2])
-		verified = secp256k1.VerifySignature(pubKey, hash, in.Signature[2])
-		fmt.Printf("Signature Verified? %v\n", verified)
-
-		result := C.cross_go_post_update(convertedOriginalMsg, convertedSignatureMsg, convertedSenderMsg, convertedSenderSig, convertedMiddleManMsg, convertedMiddleManSig, convertedReceiverMsg, convertedReceiverSig, nil, nil)
-
-		var MessageRes = MessageRes{}
-		MessageRes.messageType = C.uint(9)
-		MessageRes.payment_num = C.uint(in.PaymentNumber)
-		MessageRes.e = C.uint(1)
-		MessageRes.amount = C.uint(1)
-
-		originalMsg = (*C.uchar)(unsafe.Pointer(&MessageRes))
-		signature = (*C.uchar)(unsafe.Pointer(&__signature))
-
-		originalMessageByte, _ := convertMsgResPointerToByte(originalMsg, signature)
-		messageHash := chainhash.HashB([]byte(originalMessageByte))
-
-		_signature, err := secp256k1.Sign(messageHash, seckey)
-		if err != nil {
-			fmt.Println("sign error ", err)
-		}
-
-		signature = (*C.uchar)(unsafe.Pointer(&_signature))
+	/*
+	 *
+	 * Using SGX
+	 ***/
+/*
+	for ; ; {
+		result := C.ecall_cross_go_post_update_w(convertedOriginalMsg, convertedSignatureMsg, convertedSenderMsg, convertedSenderSig, convertedMiddleManMsg, convertedMiddleManSig, convertedReceiverMsg, convertedReceiverSig, nil, nil, &originalMsg, &signature)
 
 		if result == 1 {
 			fmt.Println("COMMIT result failure!")
 			return &clientPb.CommitResult{Result: false}, nil
 		} else if result == 9999  {
-//			break
+			break
 		}
 		//fmt.Println("UD ################################## ")
 
-//		defer C.free(unsafe.Pointer(originalMsg))
-//		defer C.free(unsafe.Pointer(signature))
-//	}
+		defer C.free(unsafe.Pointer(originalMsg))
+		defer C.free(unsafe.Pointer(signature))
+	}
 
-//	rwMutex.Unlock()
+	originalMessageStr, signatureStr := convertMsgResPointerToByte(originalMsg, signature)
+//	fmt.Println("COMMIT !!")
+	return &clientPb.CommitResult{Result: true, OriginalMessage: originalMessageStr, Signature: signatureStr}, nil
 
-	originalMessageStr, _/*signatureStr*/ := convertMsgResPointerToByte(originalMsg, signature)
+*/
+
+	/*
+	 *
+	 * Non-Using SGX
+	 ***/
+
+	hash := crypto.Keccak256(in.OriginalMessage[0])
+	pubKey, err := secp256k1.RecoverPubkey(hash, in.Signature[0])
+	verified := secp256k1.VerifySignature(pubKey, hash, in.Signature[0])
+	if verified != true {
+		return &clientPb.CommitResult{Result: false}, nil
+	}
+	//fmt.Printf("Signature Verified? %v\n", verified)
+
+	hash = crypto.Keccak256(in.OriginalMessage[1])
+	pubKey, err = secp256k1.RecoverPubkey(hash, in.Signature[1])
+	verified = secp256k1.VerifySignature(pubKey, hash, in.Signature[1])
+	if verified != true {
+		return &clientPb.CommitResult{Result: false}, nil
+	}
+	//fmt.Printf("Signature Verified? %v\n", verified)
+
+	hash = crypto.Keccak256(in.OriginalMessage[2])
+	pubKey, err = secp256k1.RecoverPubkey(hash, in.Signature[2])
+	verified = secp256k1.VerifySignature(pubKey, hash, in.Signature[2])
+	if verified != true {
+		return &clientPb.CommitResult{Result: false}, nil
+	}
+	//fmt.Printf("Signature Verified? %v\n", verified)
+
+	hash = crypto.Keccak256(in.OriginalMessage[3])
+	pubKey, err = secp256k1.RecoverPubkey(hash, in.Signature[3])
+	verified = secp256k1.VerifySignature(pubKey, hash, in.Signature[3])
+	if verified != true {
+		return &clientPb.CommitResult{Result: false}, nil
+	}
+	//fmt.Printf("Signature Verified? %v\n", verified)
+
+	result := C.cross_go_post_update(convertedOriginalMsg, convertedSignatureMsg, convertedSenderMsg, convertedSenderSig, convertedMiddleManMsg, convertedMiddleManSig, convertedReceiverMsg, convertedReceiverSig, nil, nil)
+
+	var MessageRes = MessageRes{}
+	MessageRes.messageType = C.uint(9)
+	MessageRes.payment_num = C.uint(in.PaymentNumber)
+	MessageRes.e = C.uint(1)
+	MessageRes.amount = C.uint(1)
+
+	originalMsg = (*C.uchar)(unsafe.Pointer(&MessageRes))
+	signature = (*C.uchar)(unsafe.Pointer(&__signature))
+
+	originalMessageByte, _ := convertMsgResPointerToByte(originalMsg, signature)
+	messageHash := chainhash.HashB([]byte(originalMessageByte))
+
+	_signature, err := secp256k1.Sign(messageHash, seckey)
+	if err != nil {
+		fmt.Println("sign error ", err)
+	}
+
+	signature = (*C.uchar)(unsafe.Pointer(&_signature))
+
+	if result == 1 {
+		fmt.Println("COMMIT result failure!")
+		return &clientPb.CommitResult{Result: false}, nil
+	} else if result == 9999  {
+	}
+
+	originalMessageStr, _ := convertMsgResPointerToByte(originalMsg, signature)
 //	fmt.Println("COMMIT !!")
 	return &clientPb.CommitResult{Result: true, OriginalMessage: originalMessageStr, Signature: _signature}, nil
 
-	// 채널 정보를 업데이트 한다던지 잔액을 변경.
-//	time.Sleep(time.Second * 50)
-//	log.Println("----CROSS PAYMENT COMMIT START IN CLIENT----")
-/*
-	for {
-		if C_post_yes == 1 {
-			break
-		}
-		
-		if C_post_yes == 2 {
-			C_post_yes = 0
-			return &clientPb.CommitResult{Result: false}, nil
-
-		}
-	}
-*/
-/*
-	convertedOriginalMsg, convertedSignatureMsg := convertByteToPointer(in.OriginalMessage, in.Signature)
-
-	var originalMsg *C.uchar
-	var signature *C.uchar
-
-//	rwMutex.Lock()
-	C.ecall_cross_go_post_update_w(convertedOriginalMsg, convertedSignatureMsg, &originalMsg, &signature)
-//	rwMutex.Unlock()
-
-	originalMessageStr, signatureStr := convertPointerToByte(originalMsg, signature)
-
-	C_post_yes = 0
-	log.Println("----CROSS PAYMENT COMMIT END IN CLIENT----")
-	return &clientPb.CommitResult{Result: true, OriginalMessage: originalMessageStr, Signature: signatureStr}, nil
-	*/
 }
 
 func (s *ClientGrpc) CrossPaymentConfirmClientRequest(ctx context.Context, in *clientPb.CrossPaymentConfirmReqClientMessage) (*clientPb.ConfirmResult, error) {
@@ -1311,91 +1171,81 @@ func (s *ClientGrpc) CrossPaymentConfirmClientRequest(ctx context.Context, in *c
 	convertedMiddleManMsg, convertedMiddleManSig := convertMsgResByteToPointer(in.OriginalMessage[2], in.Signature[2])
 	convertedReceiverMsg, convertedReceiverSig := convertMsgResByteToPointer(in.OriginalMessage[3], in.Signature[3])
 
-
-//	C.ecall_go_idle_w(convertedOriginalMsg, convertedSignatureMsg)
-
-//	rwMutex.Lock()
+	/*
+	 *
+	 * Using SGX
+	 ***/
 /*
-	var convertedCrossPaymentMsg, convertedCrossPaymentSig *C.uchar
-	if in.OriginalMessage[4] != nil {
-		convertedCrossPaymentMsg, convertedCrossPaymentSig = convertMsgResByteToPointer(in.OriginalMessage[4], in.Signature[4])
-	}
-*/
-//	for ; ; {
-//		result := C.ecall_cross_go_idle_w(convertedOriginalMsg, convertedSignatureMsg, convertedSenderMsg, convertedSenderSig, convertedMiddleManMsg, convertedMiddleManSig, convertedReceiverMsg, convertedReceiverSig, nil, nil)
-
-		hash := crypto.Keccak256(in.OriginalMessage[0])
-		pubKey, err := secp256k1.RecoverPubkey(hash, in.Signature[0])
-		if err != nil {
-			log.Fatal("err :", err)
-		}
-
-		verified := secp256k1.VerifySignature(pubKey, hash, in.Signature[0])
-		fmt.Printf("Signature Verified? %v\n", verified)
-
-		hash = crypto.Keccak256(in.OriginalMessage[1])
-		pubKey, err = secp256k1.RecoverPubkey(hash, in.Signature[1])
-		verified = secp256k1.VerifySignature(pubKey, hash, in.Signature[1])
-		fmt.Printf("Signature Verified? %v\n", verified)
-
-		hash = crypto.Keccak256(in.OriginalMessage[2])
-		pubKey, err = secp256k1.RecoverPubkey(hash, in.Signature[2])
-		verified = secp256k1.VerifySignature(pubKey, hash, in.Signature[2])
-		fmt.Printf("Signature Verified? %v\n", verified)
-
-		hash = crypto.Keccak256(in.OriginalMessage[2])
-		pubKey, err = secp256k1.RecoverPubkey(hash, in.Signature[2])
-		verified = secp256k1.VerifySignature(pubKey, hash, in.Signature[2])
-		fmt.Printf("Signature Verified? %v\n", verified)
-
-		result := C.cross_go_idle(convertedOriginalMsg, convertedSignatureMsg, convertedSenderMsg, convertedSenderSig, convertedMiddleManMsg, convertedMiddleManSig, convertedReceiverMsg, convertedReceiverSig, nil, nil)
+	for ; ; {
+		result := C.ecall_cross_go_idle_w(convertedOriginalMsg, convertedSignatureMsg, convertedSenderMsg, convertedSenderSig, convertedMiddleManMsg, convertedMiddleManSig, convertedReceiverMsg, convertedReceiverSig, nil, nil)
 
 		if result == 1 {
 			fmt.Println("CONFIRM result failure!")
 			return &clientPb.ConfirmResult{Result: false}, nil
 		} else if result == 9999  {
-//			break
+			break
 		}
 
 		//fmt.Println("CONFIRM ################################## ")
+	}
 
-//	}
-
-//	rwMutex.Unlock()
-
-//	log.Println("----ConfirmPayment Request End----")
-
-	// fmt.Println(C.ecall_get_balance_w(C.uint(1)))
-	// fmt.Println(C.ecall_get_balance_w(C.uint(2)))
-	// fmt.Println(time.Since(controller.ExecutionTime))
-
-//	var pn = in.PaymentNumber
-//	ChComplete[pn] <- true
-
-	//fmt.Println("?")
 	return &clientPb.ConfirmResult{Result: true}, nil
-//	time.Sleep(time.Second * 50)
+*/
 
-	//convertedOriginalMsg, convertedSignatureMsg := convertByteToPointer(in.OriginalMessage, in.Signature)
-
-//	rwMutex.Lock()
-	//C.ecall_cross_go_idle_w(convertedOriginalMsg, convertedSignatureMsg)
-//	rwMutex.Unlock()
-
-        log.Println("----CROSS PAYMENT CONFIRM END IN CLIENT----")
-
-	elapsedTime := time.Since(StartTime)
-	fmt.Println("execution time : ", elapsedTime.Seconds())
-	fmt.Printf("execution time : %s", elapsedTime)
+	/*
+	 *
+	 * Non-Using SGX
+	 ***/
 
 
-	// fmt.Println(C.ecall_get_balance_w(C.uint(1)))
-	// fmt.Println(C.ecall_get_balance_w(C.uint(2)))
-	// fmt.Println(time.Since(controller.ExecutionTime))
+	hash := crypto.Keccak256(in.OriginalMessage[0])
+	pubKey, err := secp256k1.RecoverPubkey(hash, in.Signature[0])
+	if err != nil {
+		log.Fatal("err :", err)
+	}
 
-	Amount = 0
-	Addrs = nil
+	verified := secp256k1.VerifySignature(pubKey, hash, in.Signature[0])
+	if verified != true {
+		return &clientPb.ConfirmResult{Result: false}, nil
+	}
+	//fmt.Printf("Signature Verified? %v\n", verified)
+
+	hash = crypto.Keccak256(in.OriginalMessage[1])
+	pubKey, err = secp256k1.RecoverPubkey(hash, in.Signature[1])
+	verified = secp256k1.VerifySignature(pubKey, hash, in.Signature[1])
+	if verified != true {
+		return &clientPb.ConfirmResult{Result: false}, nil
+	}
+	//fmt.Printf("Signature Verified? %v\n", verified)
+
+	hash = crypto.Keccak256(in.OriginalMessage[2])
+	pubKey, err = secp256k1.RecoverPubkey(hash, in.Signature[2])
+	verified = secp256k1.VerifySignature(pubKey, hash, in.Signature[2])
+	if verified != true {
+		return &clientPb.ConfirmResult{Result: false}, nil
+	}
+	//fmt.Printf("Signature Verified? %v\n", verified)
+
+	hash = crypto.Keccak256(in.OriginalMessage[3])
+	pubKey, err = secp256k1.RecoverPubkey(hash, in.Signature[3])
+	verified = secp256k1.VerifySignature(pubKey, hash, in.Signature[3])
+	if verified != true {
+		return &clientPb.ConfirmResult{Result: false}, nil
+	}
+	//fmt.Printf("Signature Verified? %v\n", verified)
+
+	result := C.cross_go_idle(convertedOriginalMsg, convertedSignatureMsg, convertedSenderMsg, convertedSenderSig, convertedMiddleManMsg, convertedMiddleManSig, convertedReceiverMsg, convertedReceiverSig, nil, nil)
+
+	if result == 1 {
+		fmt.Println("CONFIRM result failure!")
+		return &clientPb.ConfirmResult{Result: false}, nil
+	} else if result == 9999  {
+	}
+
+	//fmt.Println("CONFIRM ################################## ")
+
 	return &clientPb.ConfirmResult{Result: true}, nil
+
 }
 
 func (s *ClientGrpc) CrossPaymentRefundClientRequest(ctx context.Context, in *clientPb.CrossPaymentRefundReqClientMessage) (*clientPb.RefundResult, error) {

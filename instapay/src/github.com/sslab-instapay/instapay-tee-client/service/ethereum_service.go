@@ -273,7 +273,7 @@ func ListenContractEvent() {
 	fmt.Println("Abi   : ", contractAbi)
 	fmt.Println()
 	for {
-		fmt.Println("===== EVENT =====")
+
 		select {
 		case err := <-sub.Err():
 			log.Println(err)
@@ -300,7 +300,7 @@ func ListenContractEvent() {
 			}{}
 
 			err := contractAbi.UnpackIntoInterface(&createChannelEvent, "EventCreateChannel", vLog.Data)
-			fmt.Println("a : ")
+
 			if err == nil {
 				log.Println("CreateChannel Event Emission")
 				fmt.Printf("Channel ID       : %d\n", createChannelEvent.Id)

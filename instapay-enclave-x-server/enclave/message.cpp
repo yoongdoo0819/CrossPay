@@ -29,11 +29,11 @@ void sign_message(unsigned char *original_msg, unsigned int msg_size, unsigned c
     sha3_SetFlags(&sha3_ctx, SHA3_FLAGS_KECCAK);
     sha3_Update(&sha3_ctx, original_msg, msg_size);
     msg32 = (unsigned char*)sha3_Finalize(&sha3_ctx);
-
+/*
     for(int i=0; i<16; i++) {
 	    printf("%02x \n", msg32[i]);
     }
-
+*/
     /* ECDSA sign on the message */
 //    secp256k1_ctx = secp256k1_context_create(SECP256K1_CONTEXT_SIGN);
     secp256k1_ecdsa_sign_recoverable(secp256k1_ctx, &sig, msg32, seckey, NULL, NULL);
@@ -42,11 +42,11 @@ void sign_message(unsigned char *original_msg, unsigned int msg_size, unsigned c
     memcpy(signature, output64, 32);  // copy r
     memcpy(signature + 32, output64 + 32, 32);  // copy s
     memcpy(&signature[64], &recid, 1);  // copy v (recovery id)
-
+/*
     for(int i = 0; i < 32; i++)
         printf("%02x", output64[i]);
     printf("\n");
-
+*/
 //    secp256k1_context_destroy(secp256k1_ctx);
 }
 
