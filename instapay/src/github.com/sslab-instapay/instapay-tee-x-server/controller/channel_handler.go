@@ -11,7 +11,7 @@ import "C"
 import (
 	//"context"
 	"net/http"
-	//"time"
+	"time"
 	"unsafe"
 	"reflect"
 	"sync"
@@ -128,6 +128,7 @@ func CrossPaymentToServerChannelHandler(ctx *gin.Context) {
 		log.Println(err)
 	}
 */
+	serverGrpc.StartTime = time.Now()
 	chain1From := ctx.PostForm("chain1_sender")
 	chain1To := ctx.PostForm("chain1_receiver")
 	chain1Val, err := strconv.Atoi(ctx.PostForm("chain1_sender_val"))
