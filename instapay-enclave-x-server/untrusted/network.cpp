@@ -292,6 +292,11 @@ unsigned int ecall_cross_accept_request_w(
     return payment_num;
 }
 
+void ecall_initSecp256k1CTX_w()
+{
+   ecall_initSecp256k1CTX(global_eid);
+}
+
 void ecall_cross_add_participant_w(unsigned int payment_num, unsigned char *addr)
 {
     ecall_cross_add_participant(global_eid, payment_num, addr);
@@ -352,7 +357,7 @@ unsigned int ecall_cross_create_all_prepare_req_msg_temp_w(unsigned int payment_
 	ret = ecall_cross_create_all_prepare_req_msg_temp(global_eid, payment_num, sender, middleMan, receiver, sender_payment_size, sender_channel_ids, middleMan_payment_size, middleMan_channel_ids, receiver_payment_size, receiver_channel_ids, sender_amount, middleMan_amount, receiver_amount, req_msg, req_sig, &result);
 		    
 	if (ret != SGX_SUCCESS) {
-		// print_error_message(ret);
+//	print_error_message(ret);
 		return 1;
 	}
 
@@ -371,7 +376,7 @@ unsigned int ecall_cross_verify_all_prepared_res_msg_w(unsigned char *res_msg, u
     ret = ecall_cross_verify_all_prepared_res_msg(global_eid, res_msg, res_sig, &is_verified);
 
     if (ret != SGX_SUCCESS) {
-	    print_error_message(ret);
+//	    print_error_message(ret);
 	    return 1;
     }
     return is_verified;
@@ -404,7 +409,7 @@ unsigned int ecall_cross_create_all_commit_req_msg_temp_w(unsigned int payment_n
 	ret = ecall_cross_create_all_commit_req_msg_temp(global_eid, payment_num, sender, middleMan, receiver, sender_payment_size, sender_channel_ids, middleMan_payment_size, middleMan_channel_ids, receiver_payment_size, receiver_channel_ids, sender_amount, middleMan_amount, receiver_amount, req_msg, req_sig, &result);
 		    
 	if (ret != SGX_SUCCESS) {
-		// print_error_message(ret);
+//		print_error_message(ret);
 		return 1;
 	}
 
@@ -438,7 +443,7 @@ unsigned int ecall_cross_verify_all_committed_res_msg_w(unsigned char *res_msg, 
     ret = ecall_cross_verify_all_committed_res_msg(global_eid, res_msg, res_sig, &is_verified);
 
     if (ret != SGX_SUCCESS) {
-//	    print_error_message(ret);
+	    print_error_message(ret);
 	    return 1;
     }
 
@@ -449,7 +454,14 @@ unsigned int ecall_cross_verify_all_committed_res_msg_temp_w(unsigned char *res_
 {
     unsigned int is_verified;
 
-    ecall_cross_verify_all_committed_res_msg_temp(global_eid, res_msg, res_sig, &is_verified);
+    sgx_status_t ret = SGX_ERROR_UNEXPECTED;    
+
+    ret = ecall_cross_verify_all_committed_res_msg_temp(global_eid, res_msg, res_sig, &is_verified);
+    if (ret != SGX_SUCCESS) {
+//	    print_error_message(ret);
+	    return 1;
+    }
+
     return is_verified;
 }
 
@@ -480,7 +492,7 @@ unsigned int ecall_cross_create_all_confirm_req_msg_temp_w(unsigned int payment_
 	ret = ecall_cross_create_all_confirm_req_msg_temp(global_eid, payment_num, sender, middleMan, receiver, sender_payment_size, sender_channel_ids, middleMan_payment_size, middleMan_channel_ids, receiver_payment_size, receiver_channel_ids, sender_amount, middleMan_amount, receiver_amount, req_msg, req_sig, &result);
 		    
 	if (ret != SGX_SUCCESS) {
-		// print_error_message(ret);
+//		print_error_message(ret);
 		return 1;
 	}
 

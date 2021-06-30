@@ -152,6 +152,8 @@ unsigned int ecall_cross_create_all_confirm_req_msg_temp_w(unsigned int payment_
 
 void ecall_cross_create_all_refund_req_msg_w(unsigned int payment_num, unsigned char **original_msg, unsigned char **output);
 
+void ecall_initSecp256k1CTX_w();
+
 #if defined(__cplusplus)
 }
 #endif

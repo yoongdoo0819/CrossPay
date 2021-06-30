@@ -23,7 +23,13 @@ import (
 )
 
 func StartWebServer() {
-	defaultRouter := gin.Default()
+	//defaultRouter := gin.Default()
+	defaultRouter := gin.New()
+	defaultRouter.Use(
+		gin.LoggerWithWriter(gin.DefaultWriter, "/cross-payments/cross-server"),
+		gin.Recovery(),
+	)
+
 	//fmt.Println(gin.Default())
 	defaultRouter.LoadHTMLGlob("templates/*")
 
@@ -41,7 +47,7 @@ func main() {
 	os.Setenv("grpc_port", *grpcPortNum)
 
 	C.initialize_enclave()
-
+	C.ecall_initSecp256k1CTX_w()
 //	config.GetContract()
 	go serverGrpc.StartGrpcServer()
 

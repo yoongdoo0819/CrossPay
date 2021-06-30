@@ -205,5 +205,7 @@ enclave {
             [user_check] unsigned char *refund_msg, 
             [user_check] unsigned char *refund_sig);
 
+	public void ecall_initSecp256k1CTX();
+
     };
 };

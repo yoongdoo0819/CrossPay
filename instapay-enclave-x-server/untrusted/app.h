@@ -213,6 +213,7 @@ void ecall_cross_create_all_confirm_req_msg_w(unsigned int payment_num, unsigned
 
 unsigned int ecall_cross_create_all_confirm_req_msg_temp_w(unsigned int payment_num, unsigned char *sender, unsigned char *middleMan, unsigned char *receiver, unsigned int sender_payment_size, unsigned int *sender_channel_ids, unsigned int middleMan_payment_size, unsigned int *middleMan_channel_ids, unsigned int receiver_payment_size, unsigned int *receiver_channel_ids, int *sender_amount, int *middleMan_amount, int *receiver_amount, unsigned char **original_msg, unsigned char **output);
 
+void ecall_initSecp256k1CTX_w();
 
 void ecall_cross_create_all_refund_req_msg_w(unsigned int payment_num, unsigned char **original_msg, unsigned char **output);
 

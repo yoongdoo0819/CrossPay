@@ -59,12 +59,11 @@ typedef struct message_res {
 	unsigned int e;
 } MessageRes;
 
-void sign_message(unsigned char *original_msg, unsigned int msg_size, unsigned char *seckey, unsigned char *signature);
+void sign_message(unsigned char *original_msg, unsigned int msg_size, unsigned char *seckey, unsigned char *signature, unsigned int payment_num);
 
 int verify_prepared_message(unsigned int from, unsigned char *signature, unsigned char *original_msg, unsigned int msg_size, unsigned char *pubaddr, unsigned int payment_num);
 
 int verify_committed_message(unsigned int from, unsigned char *signature, unsigned char *original_msg, unsigned int msg_size, unsigned char *pubaddr, unsigned int payment_num);
 
-//secp256k1_context* secp256k1_ctx = NULL;
 
 #endif

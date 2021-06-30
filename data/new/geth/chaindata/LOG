@@ -2014,3 +2014,6 @@
 23:51:25.710943 table@remove removed @676
 23:51:25.711094 table@remove removed @677
 23:51:25.711212 table@remove removed @678
+=============== Jun 24, 2021 (KST) ===============
+21:07:36.646100 db@close closing
+21:07:36.646301 db@close done T·196.854µs

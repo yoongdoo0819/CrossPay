@@ -42,6 +42,12 @@ type ServerGrpc struct {
 	pbXServer.UnimplementedCross_ServerServer
 }
 
+var tempClient = make(map[string][100]*grpc.ClientConn) //map[int]*grpc.ClientConn)
+
+var connection, err = grpc.Dial("141.223.121.164:50009", grpc.WithInsecure())
+var Client [10000]pbXServer.Cross_ServerClient
+var ClientContext [10000]context.Context
+
 var connectionForServer = make(map[string]*grpc.ClientConn)
 
 var Ch [1000000]chan bool
@@ -127,9 +133,10 @@ func SendCrossPaymentPrepareRequest(i interface{}) {
 	originalMessageByte := i.(AG).originalMessageByte
 	signatureByte := i.(AG).signatureByte
 
-	rwMutex.Lock()
-	client := pbClient.NewClientClient(connectionForClient[clientAddr[address]])
-	rwMutex.Unlock()
+//	client := pbClient.NewClientClient(connectionForClient[clientAddr[address]])
+//	var connection, err = grpc.Dial(clientAddr[address], grpc.WithInsecure())
+//	client := pbClient.NewClientClient(connection)
+	client := pbClient.NewClientClient(tempClient[clientAddr[address]][int(pn)%100])
 //	client1Context, cancel := context.WithTimeout(context.Background(), time.Second*180)
 //	defer cancel()
 
@@ -139,18 +146,25 @@ func SendCrossPaymentPrepareRequest(i interface{}) {
 /*
 	r, err := client.AgreementRequest(context.Background(), &pbClient.AgreeRequestsMessage{PaymentNumber: int64(pn), OriginalMessage: originalMessageByte, Signature: signatureByte})
 */
+
 	r, err := client.CrossPaymentPrepareClientRequest(context.Background(), &pbClient.CrossPaymentPrepareReqClientMessage{PaymentNumber: int64(pn), OriginalMessage: originalMessageByte, Signature: signatureByte})
 
 	if err != nil {
 		log.Println("client AgreementRequest err : ", err, clientAddr[address])
 	}
 
+	if r.Result{
 
-	if r.Result {
+		Ch[pn] <- true
+		return
+
 		agreementOriginalMessage, signature := convertMsgResByteToPointer(r.OriginalMessage, r.Signature)
 
 		for ; ; {
+//			StartTime := time.Now()
 			result := C.ecall_cross_verify_all_prepared_res_msg_temp_w(agreementOriginalMessage, signature)
+//			elapsedTime1 := time.Since(StartTime)
+//			fmt.Printf("execution time : %s \n", elapsedTime1)
 
 			if result == 9999 {
 				break
@@ -177,11 +191,8 @@ func SendCrossPaymentCommitRequest(i interface{}) {
 	originalMessageByteArray := i.(UD).originalMessageByteArray
 	signatureByteArray := i.(UD).signatureByteArray
 
-	rwMutex.Lock()
-	client := pbClient.NewClientClient(connectionForClient[clientAddr[address]])
-	rwMutex.Unlock()
-//	client1Context, cancel := context.WithTimeout(context.Background(), time.Second*180)
-//	defer cancel()
+//	client := pbClient.NewClientClient(connectionForClient[clientAddr[address]])
+	client := pbClient.NewClientClient(tempClient[clientAddr[address]][int(pn)%100])
 
 	if client == nil {
 		log.Fatal("client conn err")
@@ -198,10 +209,12 @@ func SendCrossPaymentCommitRequest(i interface{}) {
 
 
 	if r.Result {
+
 		updateOriginalMessage, signature := convertMsgResByteToPointer(r.OriginalMessage, r.Signature)
 		//C.ecall_cross_verify_all_committed_res_msg_temp_w(updateOriginalMessage, signature)
 		for ; ; {
 			result := C.ecall_cross_verify_all_committed_res_msg_temp_w(updateOriginalMessage, signature)
+
 			if result == 9999 {
 				break
 			}
@@ -230,12 +243,9 @@ func SendCrossPaymentConfirmRequest(i interface{}) {
 	originalMessageByteArray := i.(UD).originalMessageByteArray
 	signatureByteArray := i.(UD).signatureByteArray
 
-	rwMutex.Lock()
-	client := pbClient.NewClientClient(connectionForClient[clientAddr[address]])
-	rwMutex.Unlock()
-	//client1Context, cancel := context.WithTimeout(context.Background(), time.Second*180)
-	//defer cancel()
+	//client := pbClient.NewClientClient(connectionForClient[clientAddr[address]])
 
+	client := pbClient.NewClientClient(tempClient[clientAddr[address]][int(pn)%100])
 	if client == nil {
 		log.Fatal("client conn err")
 	}
@@ -409,8 +419,8 @@ func SearchPath(pn int64, amount int64, firstTempChId int, secondTempChId int) (
 
 func (s *ServerGrpc) CrossPaymentRequest(ctx context.Context, rs *pbXServer.CrossPaymentMessage) (*pbXServer.CrossResult, error) {
 
+
 //	C.ecall_cross_verify_all_prepared_res_msg_temp_w(nil, nil)
-//	return &pbXServer.CrossResult{Result: true}, nil
 
 /*
 	sendera := []C.uchar("sender")
@@ -445,6 +455,10 @@ func (s *ServerGrpc) CrossPaymentRequest(ctx context.Context, rs *pbXServer.Cros
 	secondTempChId := channelId+1
 
 	channelId+=2
+	if channelId > 3000 {
+		channelId = 1
+	}
+
 	rwMutex.Unlock()
 
 	p, p2, paymentInformation, _paymentInformation = SearchPath(int64(rs.Pn), 1, firstTempChId, secondTempChId)
@@ -502,7 +516,8 @@ func (s *ServerGrpc) CrossPaymentRequest(ctx context.Context, rs *pbXServer.Cros
 			C.free(unsafe.Pointer(signatureForPrepare))
 		}
 	}
-//	return &pbXServer.CrossResult{Result: true}, nil
+
+
 
 	for ; ; {
 		result := C.ecall_cross_create_all_prepare_req_msg_temp_w(C.uint(rs.Pn), &sender2[0], &middleMan2[0], &receiver2[0], C.uint(len(channelSlice1)), &channelSlice1[0], C.uint(len(channelSlice2)), &channelSlice2[0], C.uint(len(channelSlice3)), &channelSlice3[0], &amountSlice1[0], &amountSlice2[0], &amountSlice3[0], &originalMessageForPrepare2, &signatureForPrepare2)
@@ -514,19 +529,21 @@ func (s *ServerGrpc) CrossPaymentRequest(ctx context.Context, rs *pbXServer.Cros
 		}
 	}
 
+
+
         originalMessageByteForPrepare, signatureByteForPrepare := convertPointerToByte(originalMessageForPrepare, signatureForPrepare)
         originalMessageByteForPrepare2, signatureByteForPrepare2 := convertPointerToByte(originalMessageForPrepare2, signatureForPrepare2)
 
 
-//	for i := 1; i<=1; i++ {
-		go WrapperCrossPaymentPrepareRequest(rs.Pn, p, paymentInformation, originalMessageByteForPrepare, signatureByteForPrepare)
+/*	originalMessageByteForPrepare := []byte{1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 102, 53, 53, 98, 97, 57, 51, 55, 54, 100, 98, 57, 53, 57, 102, 97, 98, 50, 97, 102, 56, 54, 100, 53, 54, 53, 51, 50, 53, 56, 50, 57, 98, 48, 56, 101, 97, 51, 99, 52, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 255, 255, 255, 255, 0, 0, 0, 0, 99, 54, 48, 102, 54, 52, 48, 99, 52, 53, 48, 53, 100, 49, 53, 98, 57, 55, 50, 101, 54, 102, 99, 50, 97, 50, 97, 55, 99, 98, 97, 48, 57, 100, 48, 53, 100, 57, 102, 55, 0, 0, 0, 0, 2, 0, 0, 0, 1, 0, 0, 0, 2, 0, 0, 0, 1, 0, 0, 0, 255, 255, 255, 255, 55, 48, 54, 48, 51, 102, 49, 49, 56, 57, 55, 57, 48, 102, 99, 100, 48, 102, 100, 55, 53, 51, 97, 55, 102, 101, 102, 52, 54, 52, 98, 100, 99, 50, 99, 50, 97, 100, 51, 54, 0, 0, 0, 0, 1, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
+	signatureByteForPrepare := []byte{243, 100, 136, 27, 252, 100, 231, 160, 29, 187, 97, 104, 191, 235, 65, 49, 121, 91, 150, 220, 16, 110, 203, 56, 89, 117, 30, 110, 117, 51, 154, 249, 102, 236, 31, 140, 199, 245, 195, 51, 28, 25, 30, 193, 61, 198, 129, 83, 141, 78, 81, 110, 92, 203, 124, 59, 80, 137, 152, 138, 89, 13, 16, 238, 1}
+*/
 
-		go WrapperCrossPaymentPrepareRequest(rs.Pn, p2, _paymentInformation, originalMessageByteForPrepare2, signatureByteForPrepare2)
+	go WrapperCrossPaymentPrepareRequest(rs.Pn, p, paymentInformation, originalMessageByteForPrepare, signatureByteForPrepare)
 
+	go WrapperCrossPaymentPrepareRequest(rs.Pn, p2, _paymentInformation, originalMessageByteForPrepare2, signatureByteForPrepare2)
 
-//	}
-
-	for i:= 1; i<=6; i++ {
+	for i:= 1; i<=2; i++ {
 
 		var data = <-Ch[int(rs.Pn)]
 
@@ -535,13 +552,15 @@ func (s *ServerGrpc) CrossPaymentRequest(ctx context.Context, rs *pbXServer.Cros
 		}
 
 		prepared := chprepared[rs.Pn]
-		if prepared == 6 {
+		if prepared == 2 {
 			break
 		} else {
 			//return &pbXServer.CrossResult{Result: true}, nil
 		}
 
 	}
+
+	return &pbXServer.CrossResult{Result: true}, nil
 
 	for ; ; {
 		result := C.ecall_cross_create_all_commit_req_msg_temp_w(C.uint(rs.Pn), &sender[0], &middleMan[0], &receiver[0], C.uint(len(channelSlice1)), &channelSlice1[0], C.uint(len(channelSlice2)), &channelSlice2[0], C.uint(len(channelSlice3)), &channelSlice3[0], &amountSlice1[0], &amountSlice2[0], &amountSlice3[0], &originalMessageForCommit, &signatureForCommit)
@@ -580,6 +599,7 @@ func (s *ServerGrpc) CrossPaymentRequest(ctx context.Context, rs *pbXServer.Cros
 		rwMutex.Unlock()
 	}
 
+
 	var originalMessageByteArray2 [][]byte
 	var signatureByteArray2 [][]byte
 
@@ -596,11 +616,9 @@ func (s *ServerGrpc) CrossPaymentRequest(ctx context.Context, rs *pbXServer.Cros
 	}
 
 
-//	for i := 1; i<=1; i++ {
-		go WrapperCrossPaymentCommitRequest(rs.Pn, p, paymentInformation, originalMessageByteArray, signatureByteArray)
+	go WrapperCrossPaymentCommitRequest(rs.Pn, p, paymentInformation, originalMessageByteArray, signatureByteArray)
 
-		go WrapperCrossPaymentCommitRequest(rs.Pn, p2, _paymentInformation, originalMessageByteArray2, signatureByteArray2)
-//	}
+	go WrapperCrossPaymentCommitRequest(rs.Pn, p2, _paymentInformation, originalMessageByteArray2, signatureByteArray2)
 
 	for i:= 1; i<=6; i++ {
 
@@ -618,6 +636,9 @@ func (s *ServerGrpc) CrossPaymentRequest(ctx context.Context, rs *pbXServer.Cros
 		}
 	}
 
+//	return &pbXServer.CrossResult{Result: true}, nil
+
+
 	for ; ; {
 		result := C.ecall_cross_create_all_confirm_req_msg_temp_w(C.uint(rs.Pn), &sender[0], &middleMan[0], &receiver[0], C.uint(len(channelSlice1)), &channelSlice1[0], C.uint(len(channelSlice2)), &channelSlice2[0], C.uint(len(channelSlice3)), &channelSlice3[0], &amountSlice1[0], &amountSlice2[0], &amountSlice3[0], &originalMessageForConfirm, &signatureForConfirm)
 
@@ -629,6 +650,7 @@ func (s *ServerGrpc) CrossPaymentRequest(ctx context.Context, rs *pbXServer.Cros
 			C.free(unsafe.Pointer(signatureForConfirm))
 		}
 	}
+
 
 	for ; ; {
 		result := C.ecall_cross_create_all_confirm_req_msg_temp_w(C.uint(rs.Pn), &sender2[0], &middleMan2[0], &receiver2[0], C.uint(len(channelSlice1)), &channelSlice1[0], C.uint(len(channelSlice2)), &channelSlice2[0], C.uint(len(channelSlice3)), &channelSlice3[0], &amountSlice1[0], &amountSlice2[0], &amountSlice3[0], &originalMessageForConfirm2, &signatureForConfirm2)
@@ -655,6 +677,7 @@ func (s *ServerGrpc) CrossPaymentRequest(ctx context.Context, rs *pbXServer.Cros
 		rwMutex.Unlock()
 	}
 
+
 	var originalMessageByteArrayForConfirm2 [][]byte
 	var signatureByteArrayForConfirm2 [][]byte
 
@@ -669,14 +692,33 @@ func (s *ServerGrpc) CrossPaymentRequest(ctx context.Context, rs *pbXServer.Cros
 		rwMutex.Unlock()
 	}
 
-	for i := 1; i<=1; i++ {
-		go WrapperCrossPaymentConfirmRequest(rs.Pn, p, paymentInformation, originalMessageByteArrayForConfirm, signatureByteArrayForConfirm)
+	go WrapperCrossPaymentConfirmRequest(rs.Pn, p, paymentInformation, originalMessageByteArrayForConfirm, signatureByteArrayForConfirm)
 
-		go WrapperCrossPaymentConfirmRequest(rs.Pn, p2, _paymentInformation, originalMessageByteArrayForConfirm2, signatureByteArrayForConfirm2)
+	go WrapperCrossPaymentConfirmRequest(rs.Pn, p2, _paymentInformation, originalMessageByteArrayForConfirm2, signatureByteArrayForConfirm2)
 
+//	et := time.Since(StartTime)
+//	fmt.Printf("et : %s \n", et)
+	//fmt.Println("END")
+	return &pbXServer.CrossResult{Result: true}, nil
+
+	for i:= 1; i<=6; i++ {
+
+		var data = <-Ch[int(rs.Pn)]
+
+		if data == true {
+			chCommitted[rs.Pn]++
+		}
+
+		committed := chCommitted[rs.Pn]
+		if committed == 12 {
+			break
+		} else {
+			//return &pbXServer.CrossResult{Result: true}, nil
+		}
 	}
 
-	fmt.Println("END")
+//	fmt.Println("END")
+
 	return &pbXServer.CrossResult{Result: true}, nil
 }
 
@@ -908,7 +950,7 @@ func ChanCreate() {
 			ChComplete[i] = make(chan bool)
 		}
 	} else {
-		return 
+		return
 	}
 
 	chanCreateCheck = 1
@@ -929,14 +971,14 @@ func WrapperCrossPaymentPrepareRequest(pn int64, p []string, paymentInformation 
 
 	var AG = AG{}
 	AG.paymentInformation = make(map[string]PaymentInformation)
-	for _, address := range p {
+	for _, address := range p[0:1] {
 		AG.pn = pn
 		AG.address = address
 		AG.originalMessageByte = originalMessageByte
 		AG.signatureByte = signatureByte
 
 		wg.Add(1)
-		go sendCrossPaymentPrepareRequestPool.Invoke(AG)
+		sendCrossPaymentPrepareRequestPool.Invoke(AG)
 	}
 	return true
 }
@@ -1001,6 +1043,42 @@ func GrpcConnection() {
 
 	connectionForServer = tempConn
 */
+//	str := []string{"141.223.121.167:50001", "141.223.121.167:50001", "141.223.121.167:50001"}
+
+//	tempClient := make(map[string]map[int]*grpc.ClientConn)
+
+	var tempConnC1 [100]*grpc.ClientConn// make(map[int]*grpc.ClientConn)
+	var tempConnC2 [100]*grpc.ClientConn
+	var tempConnC3 [100]*grpc.ClientConn
+	var tempConnC4 [100]*grpc.ClientConn
+	var tempConnC5 [100]*grpc.ClientConn
+	var tempConnC6 [100]*grpc.ClientConn
+
+	for i:=0; i<100; i++ {
+
+//		tempConn := []*grpc.ClientConn// make(map[int]*grpc.ClientConn)
+//		tempClient1[i] = tempConn
+
+		tempConnC1[i], err = grpc.Dial("141.223.121.167:50001", grpc.WithInsecure())
+		if err != nil {
+			log.Fatal("conn err ", err)
+		}
+
+		tempConnC2[i], err = grpc.Dial("141.223.121.168:50002", grpc.WithInsecure())
+		tempConnC3[i], err = grpc.Dial("141.223.121.251:50003", grpc.WithInsecure())
+		tempConnC4[i], err = grpc.Dial("141.223.121.165:50001", grpc.WithInsecure())
+		tempConnC5[i], err = grpc.Dial("141.223.121.166:50002", grpc.WithInsecure())
+		tempConnC6[i], err = grpc.Dial("141.223.121.169:50003", grpc.WithInsecure())
+	}
+
+	tempClient["141.223.121.167:50001"] = tempConnC1
+	tempClient["141.223.121.168:50002"] = tempConnC2
+	tempClient["141.223.121.251:50003"] = tempConnC3
+	tempClient["141.223.121.165:50001"] = tempConnC4
+	tempClient["141.223.121.166:50002"] = tempConnC5
+	tempClient["141.223.121.169:50003"] = tempConnC6
+
+/*
 	tempConn := make(map[string]*grpc.ClientConn)
 	tempConn["141.223.121.167:50001"], err = grpc.Dial("141.223.121.167:50001", grpc.WithInsecure())
 	if err != nil {
@@ -1020,7 +1098,7 @@ func GrpcConnection() {
 		return
 	}
 
-	tempConn["141.223.121.166:50001"], err = grpc.Dial("141.223.121.166:50001", grpc.WithInsecure())
+	tempConn["141.223.121.165:50001"], err = grpc.Dial("141.223.121.165:50001", grpc.WithInsecure())
 	if err != nil {
 		log.Fatal("conn err : ", err)
 		return
@@ -1032,14 +1110,19 @@ func GrpcConnection() {
 		return
 	}
 
-	tempConn["141.223.121.166:50003"], err = grpc.Dial("141.223.121.166:50003", grpc.WithInsecure())
+	tempConn["141.223.121.169:50003"], err = grpc.Dial("141.223.121.169:50003", grpc.WithInsecure())
 	if err != nil {
 		log.Fatal("conn err : ", err)
 		return
 	}
 
 	connectionForClient = tempConn
-//	p, p2, paymentInformation, _paymentInformation = SearchPath(1, 1, 1, 2)
+*/
+
+	for i:=0; i<10000; i++ {
+		Client[i] = pbXServer.NewCross_ServerClient(connection)
+		ClientContext[i], _ = context.WithTimeout(context.Background(), time.Second*180)
+	}
 
 	fmt.Println("Grpc Connection !!")
 }
@@ -1058,9 +1141,9 @@ func GetClientInfo() {
 	clientAddr["c60f640c4505d15b972e6fc2a2a7cba09d05d9f7"] = "141.223.121.168:50002"
 	clientAddr["70603f1189790fcd0fd753a7fef464bdc2c2ad36"] = "141.223.121.251:50003"
 
-	clientAddr["f4444529d6221122d1712c52623ba119a60609e3"] = "141.223.121.166:50001"
+	clientAddr["f4444529d6221122d1712c52623ba119a60609e3"] = "141.223.121.165:50001"
 	clientAddr["d95da40bbd2001abf1a558c0b1dffd75940b8fd9"] = "141.223.121.166:50002"
-	clientAddr["73d8e5475278f7593b5293beaa45fb53f34c9ad2"] = "141.223.121.166:50003"
+	clientAddr["73d8e5475278f7593b5293beaa45fb53f34c9ad2"] = "141.223.121.169:50003"
 
 }
 
