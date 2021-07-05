@@ -36,6 +36,8 @@ import (
 
 )
 
+var numOfChannels = 3000
+
 func main() {
 	C.initialize_enclave()
 
@@ -293,10 +295,10 @@ func createPaymentChannelsPrev(sender string, receiver string) {
 
 	_sender := []C.uchar(sender)
 	_receiver := []C.uchar(receiver)
-	deposit := C.uint(100)
+	deposit := C.uint(50000)
 
 	fmt.Println("start")
-	for i:=1; i<=50; i+=2 {
+	for i:=1; i<=numOfChannels; i+=2 {
 		C.ecall_receive_create_channel_w(C.uint(uint32(i)), &_sender[0], &_receiver[0], deposit)
 	}
 
@@ -310,10 +312,10 @@ func createPaymentChannelsForAlice(sender string, receiver string) {
 
 	_sender := []C.uchar(sender)
 	_receiver := []C.uchar(receiver)
-	deposit := C.uint(100)
+	deposit := C.uint(50000)
 
 	fmt.Println("start")
-	for i:=1; i<=50; i+=2 {
+	for i:=1; i<=numOfChannels; i+=2 {
 		C.ecall_receive_create_channel_w(C.uint(uint32(i)), &_sender[0], &_receiver[0], deposit)
 	}
 
@@ -328,10 +330,10 @@ func createPaymentChannelsForBob(sender string, receiver string) {
 
 	_sender := []C.uchar(sender)
 	_receiver := []C.uchar(receiver)
-	deposit := C.uint(100)
+	deposit := C.uint(50000)
 
 	fmt.Println("start")
-	for i:=2; i<=50; i+=2 {
+	for i:=2; i<=numOfChannels; i+=2 {
 		C.ecall_receive_create_channel_w(C.uint(uint32(i)), &_sender[0], &_receiver[0], deposit)
 	}
 
@@ -345,10 +347,10 @@ func createPaymentChannelsForCarol(sender string, receiver string) {
 
 	_sender := []C.uchar(sender)
 	_receiver := []C.uchar(receiver)
-	deposit := C.uint(100)
+	deposit := C.uint(50000)
 
 	fmt.Println("start")
-	for i:=2; i<=50; i+=2 {
+	for i:=2; i<=numOfChannels; i+=2 {
 		C.ecall_receive_create_channel_w(C.uint(uint32(i)), &_sender[0], &_receiver[0], deposit)
 	}
 

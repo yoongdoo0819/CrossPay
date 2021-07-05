@@ -331,7 +331,7 @@ void ecall_cross_create_all_commit_req_msg_temp(unsigned int payment_num, unsign
 		&& cross_payments.find(payment_num)->second.m_chain1MiddleMan_prepared == 1
 		&& cross_payments.find(payment_num)->second.m_chain1Receiver_prepared == 1 && cross_payments.find(payment_num)->second.m_chain2Sender_prepared == 1
 		&& cross_payments.find(payment_num)->second.m_chain2MiddleMan_prepared == 1		&& cross_payments.find(payment_num)->second.m_chain2Receiver_prepared == 1) {
-		printf("verification complete \n");
+//		printf("verification complete : PREPARED ! \n");
 		cross_payments.find(payment_num)->second.m_cross_status = PREPARED;
 	}		
 
@@ -406,7 +406,7 @@ void ecall_cross_create_all_confirm_req_msg_temp(unsigned int payment_num, unsig
 		&& cross_payments.find(payment_num)->second.m_chain1MiddleMan_committed == 1
 		&& cross_payments.find(payment_num)->second.m_chain1Receiver_committed == 1 && cross_payments.find(payment_num)->second.m_chain2Sender_prepared == 1
 		&& cross_payments.find(payment_num)->second.m_chain2MiddleMan_committed == 1		&& cross_payments.find(payment_num)->second.m_chain2Receiver_committed == 1) {
-		printf("verification complete \n");
+//		printf("verification complete : COMMITTED ! \n");
 		cross_payments.find(payment_num)->second.m_cross_status = COMMITTED;
 	}		
 

@@ -2017,3 +2017,71 @@
 =============== Jun 24, 2021 (KST) ===============
 21:07:36.646100 db@close closing
 21:07:36.646301 db@close done T·196.854µs
+=============== Jul 5, 2021 (KST) ===============
+02:09:31.011807 log@legend F·NumFile S·FileSize N·Entry C·BadEntry B·BadBlock Ke·KeyError D·DroppedEntry L·Level Q·SeqNum T·TimeElapsed
+02:09:31.012501 version@stat F·[0 26] S·54MiB[0B 54MiB] Sc·[0.00 0.54]
+02:09:31.012524 db@open opening
+02:09:31.012618 journal@recovery F·1
+02:09:31.015475 journal@recovery recovering @683
+02:09:31.018811 memdb@flush created L0@711 N·225 S·15KiB "\n\xd4\xe9..]qT,v1478780":"\xfa/D..\x16~\xb9,v1478772"
+02:09:31.021318 version@stat F·[1 26] S·54MiB[15KiB 54MiB] Sc·[0.25 0.54]
+02:09:31.030519 db@janitor F·30 G·1
+02:09:31.030540 db@janitor removing table-682
+02:09:31.030577 db@open done T·18.046544ms
+02:09:34.913527 table@compaction L0·1 -> L1·26 S·54MiB Q·1478795
+02:09:34.972201 table@build created L1@714 N·84487 S·2MiB "\x00$4..J\x19\xd1,v1470183":"H\x13\xa3..\xb1\xa3\x91,v921375"
+02:09:35.001138 table@build created L1@715 N·47951 S·2MiB "H\x13\xa4..\xb2\xc6A,v220923":"HbA..\xb7s\x83,v170261"
+02:09:35.033994 table@build created L1@716 N·47946 S·2MiB "HbA..le\xc4,v1169443":"H\xb1P..\xeaw\xd9,v1351555"
+02:09:35.062284 table@build created L1@717 N·47691 S·2MiB "H\xb1P..k:\xd4,v1109597":"O(\xab..\x1a\xc0\x15,v744356"
+02:09:35.122237 table@build created L1@718 N·48981 S·2MiB "Oc\x98..\x98/\xd2,v781452":"b\x00\x00..Q\x1f#,v461250"
+02:09:35.154833 table@build created L1@719 N·48930 S·2MiB "b\x00\x00..\xf4\xd2q,v461259":"b\x00\x00..\x8a\x1f\x86,v888377"
+02:09:35.196099 table@build created L1@720 N·51933 S·2MiB "b\x00\x00..\xb6\x01\x1d,v888386":"b\x00\x00..\xec'\x19,v1419362"
+02:09:35.222601 table@build created L1@721 N·25368 S·2MiB "b\x00\x00..\xe2~\xe6,v1419371":"h\x00\x00..\xd4\x0f&,v130665"
+02:09:35.247013 table@build created L1@722 N·24284 S·2MiB "h\x00\x00..\x0f&t,v130662":"h\x00\x00..\xe62:,v169065"
+02:09:35.272294 table@build created L1@723 N·27663 S·2MiB "h\x00\x00..2:t,v169062":"h\x00\x00..\xa6\x11\xae,v266470"
+02:09:35.298444 table@build created L1@724 N·30491 S·2MiB "h\x00\x00..\x11\xaet,v266467":"h\x00\x00..\xf4ŧ,v364355"
+02:09:35.326275 table@build created L1@725 N·30535 S·2MiB "h\x00\x00..ŧt,v364352":"h\x00\x00..s\xfb\x95,v462107"
+02:09:35.354488 table@build created L1@726 N·30534 S·2MiB "h\x00\x00..\xfb\x95t,v462104":"h\x00\x00..\xae\a/,v557809"
+02:09:35.379427 table@build created L1@727 N·26316 S·2MiB "h\x00\x00..\a/t,v557806":"h\x00\x00..\xa0\x8ee,v639473"
+02:09:35.406510 table@build created L1@728 N·26592 S·2MiB "h\x00\x00..\x8eet,v639470":"h\x00\x00..$?Q,v752899"
+02:09:35.432104 table@build created L1@729 N·28369 S·2MiB "h\x00\x00..?Qt,v752896":"h\x00\x00..Pn\x0f,v842703"
+02:09:35.456104 table@build created L1@730 N·24879 S·2MiB "h\x00\x00..n\x0ft,v842700":"h\x00\x00..\x04sc,v937016"
+02:09:35.482933 table@build created L1@731 N·30062 S·2MiB "h\x00\x00..sct,v937013":"h\x00\x00..g\x05~,v1033228"
+02:09:35.508108 table@build created L1@732 N·30198 S·2MiB "h\x00\x00..\x05~t,v1033225":"h\x00\x00..\x93\xbc\xfa,v1129972"
+02:09:35.533865 table@build created L1@733 N·30199 S·2MiB "h\x00\x00..\xbc\xfat,v1129969":"h\x00\x00..e\x9b\xfd,v1224666"
+02:09:35.559687 table@build created L1@734 N·30197 S·2MiB "h\x00\x00..\x9b\xfdt,v1224663":"h\x00\x00..\x88r\xb2,v1321422"
+02:09:35.585495 table@build created L1@735 N·30198 S·2MiB "h\x00\x00..r\xb2t,v1321419":"h\x00\x00..\u007f\xf4 ,v1416124"
+02:09:35.610713 table@build created L1@736 N·37362 S·2MiB "h\x00\x00..\xf4 t,v1416121":"r\x00\x00..\xaa\xb7T,v99819"
+02:09:35.636832 table@build created L1@737 N·52353 S·2MiB "r\x00\x00..\xdf\u007fv,v152232":"r\x00\x00..;D\xd1,v616502"
+02:09:35.665243 table@build created L1@738 N·51479 S·2MiB "r\x00\x00..5\xd9\xc5,v635910":"r\x00\x00..\x15\a\xb0,v1131746"
+02:09:35.685353 table@build created L1@739 N·37871 S·1MiB "r\x00\x00..u\xa1',v1131755":"\xff\xd6\x0f..#\xd3\x19,v744319"
+02:09:35.685403 version@stat F·[0 26] S·54MiB[0B 54MiB] Sc·[0.00 0.54]
+02:09:35.687382 table@compaction committed F-1 S+437B Ke·0 D·70 T·773.831853ms
+02:09:35.687537 table@remove removed @685
+02:09:35.687640 table@remove removed @686
+02:09:35.687739 table@remove removed @687
+02:09:35.687838 table@remove removed @688
+02:09:35.687934 table@remove removed @689
+02:09:35.688039 table@remove removed @690
+02:09:35.688137 table@remove removed @691
+02:09:35.688234 table@remove removed @692
+02:09:35.688330 table@remove removed @693
+02:09:35.688428 table@remove removed @694
+02:09:35.688526 table@remove removed @695
+02:09:35.688621 table@remove removed @696
+02:09:35.688719 table@remove removed @697
+02:09:35.688814 table@remove removed @698
+02:09:35.688911 table@remove removed @699
+02:09:35.689010 table@remove removed @700
+02:09:35.689106 table@remove removed @701
+02:09:35.689204 table@remove removed @702
+02:09:35.689301 table@remove removed @703
+02:09:35.689397 table@remove removed @704
+02:09:35.689492 table@remove removed @705
+02:09:35.689590 table@remove removed @706
+02:09:35.689686 table@remove removed @707
+02:09:35.689782 table@remove removed @708
+02:09:35.689877 table@remove removed @709
+02:09:35.689954 table@remove removed @710
+02:10:26.779673 db@close closing
+02:10:26.779917 db@close done T·237.268µs

@@ -113,63 +113,38 @@ func GetChannelListHandler(context *gin.Context){
 */
 func CrossPaymentToServerChannelHandler(ctx *gin.Context) {
 
-//	serverGrpc.StartTime = time.Now()
-//	serverGrpc.ChainFrom = /*ctx.PostForm("chain1_sender")*/ append(serverGrpc.ChainFrom, ctx.PostForm("chain1_sender"))
-//	serverGrpc.ChainTo = /*ctx.PostForm("chain1_receiver")*/append(serverGrpc.ChainTo, ctx.PostForm("chain1_receiver"))
-//	val, err :=  strconv.Atoi(ctx.PostForm("chain1_sender_val"))
-//	serverGrpc.ChainVal = /*int64(val)*/ append(serverGrpc.ChainVal, int64(val))
-/*
-	serverGrpc.ChainFrom = append(serverGrpc.ChainFrom, ctx.PostForm("chain2_sender"))
-	serverGrpc.ChainTo = append(serverGrpc.ChainTo, ctx.PostForm("chain2_receiver"))
-	val, err = strconv.Atoi(ctx.PostForm("chain2_sender_val"))
-	serverGrpc.ChainVal = append(serverGrpc.ChainVal, int64(val))
-
-	if err != nil {
-		log.Println(err)
-	}
-*/
 	serverGrpc.StartTime = time.Now()
 	chain1From := ctx.PostForm("chain1_sender")
-	chain1To := ctx.PostForm("chain1_receiver")
+/*	chain1To := ctx.PostForm("chain1_receiver")
 	chain1Val, err := strconv.Atoi(ctx.PostForm("chain1_sender_val"))
 	if err != nil {
 		log.Println(err)
 	}
-	chain2From := ctx.PostForm("chain2_sender")
-	chain2To := ctx.PostForm("chain2_receiver")
-	chain2Val, err := strconv.Atoi(ctx.PostForm("chain2_sender_val"))
-
-	chain1Sender := []C.uchar(chain1From)
-	chain1Receiver := []C.uchar(chain1To)
-	chain1Server := []C.uchar("c60f640c4505d15b972e6fc2a2a7cba09d05d9f7")
-
-	chain2Sender := []C.uchar(chain2From)//"f4444529d6221122d1712c52623ba119a60609e3")
-	chain2Server := []C.uchar("d95da40bbd2001abf1a558c0b1dffd75940b8fd9")
-	chain2Receiver := []C.uchar(chain2To)//"73d8e5475278f7593b5293beaa45fb53f34c9ad2")
-
-/*
-	chain1Sender := []C.uchar(serverGrpc.ChainFrom[0])
-	chain1Receiver := []C.uchar(serverGrpc.ChainTo[0])
-	chain1Server := []C.uchar(serverGrpc.ChainTo[0])
-
-	chain2Sender := []C.uchar(serverGrpc.ChainFrom[1])
-	chain2Server := []C.uchar(serverGrpc.ChainTo[1])
-	chain2Receiver := []C.uchar(serverGrpc.ChainTo[1])
 */
-	//chain2Sender := []C.uchar(chain2From)
-	//chain2Receiver := []C.uchar(chain2To)
-
+//	chain2From := ctx.PostForm("chain2_sender")
+/*	chain2To := ctx.PostForm("chain2_receiver")
+	chain2Val, err := strconv.Atoi(ctx.PostForm("chain2_sender_val"))
+*/
+	chain1Sender := []C.uchar(chain1From)
+/*	chain1Receiver := []C.uchar(chain1To)
+	chain1MiddleMan := []C.uchar("c60f640c4505d15b972e6fc2a2a7cba09d05d9f7")
+*/
+//	chain2Sender := []C.uchar(chain2From)//"f4444529d6221122d1712c52623ba119a60609e3")
+/*
+	chain2MiddleMan := []C.uchar("d95da40bbd2001abf1a558c0b1dffd75940b8fd9")
+	chain2Receiver := []C.uchar(chain2To)//"73d8e5475278f7593b5293beaa45fb53f34c9ad2")
+*/
 	var PaymentNum C.uint
 	for ; ; {
 		PaymentNum = C.ecall_cross_accept_request_w(
 			&chain1Sender[0],
-			&chain1Server[0],
-			&chain1Receiver[0],
-			C.uint(chain1Val),//serverGrpc.ChainVal[0]),
-			&chain2Sender[0],
-			&chain2Server[0],
-			&chain2Receiver[0],
-			C.uint(chain2Val),//serverGrpc.ChainVal[1]),
+			&chain1Sender[0],
+			&chain1Sender[0],
+			C.uint(0),//C.uint(chain1Val),//serverGrpc.ChainVal[0]),
+			&chain1Sender[0],
+			&chain1Sender[0],
+			&chain1Sender[0],
+			C.uint(0),//C.uint(chain2Val),//serverGrpc.ChainVal[1]),
 			nil,
 			nil,
 			nil,
@@ -183,6 +158,10 @@ func CrossPaymentToServerChannelHandler(ctx *gin.Context) {
 		}
 
 	}
+
+	et := time.Since(serverGrpc.StartTime)
+	fmt.Printf("et : %s \n", et)
+
 /*
 	var wg sync.WaitGroup
 	var cnt=0
