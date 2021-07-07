@@ -39,7 +39,7 @@ void ecall_go_pre_update(unsigned char *msg, unsigned char *signature, unsigned 
     Message *ag_req = (Message*)msg;
     MessageRes reply;
 
-    memset((unsigned char*)&reply, 0x00, sizeof(Message));
+    memset((unsigned char*)&reply, 0x00, sizeof(MessageRes));
 
 /*    
     printf("[FROM SERVER] msg: ");

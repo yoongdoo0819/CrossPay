@@ -19,7 +19,7 @@ import (
 	"os"
 	"github.com/gin-gonic/gin"
 	"github.com/sslab-instapay/instapay-tee-server/router"
-	"github.com/sslab-instapay/instapay-tee-server/config"
+	//"github.com/sslab-instapay/instapay-tee-server/config"
 	serverGrpc "github.com/sslab-instapay/instapay-tee-server/grpc"
 
 
@@ -101,7 +101,7 @@ func main() {
 
 	//C.initialize_enclave()
 
-	config.GetContract()
+	//config.GetContract()
 	go serverGrpc.StartGrpcServer()
 
 	StartWebServer()

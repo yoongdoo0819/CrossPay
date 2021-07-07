@@ -304,9 +304,10 @@ int secp256k1_ecdsa_verify(const secp256k1_context* ctx, const secp256k1_ecdsa_s
 
     secp256k1_scalar_set_b32(&m, msg32, NULL);
     secp256k1_ecdsa_signature_load(ctx, &r, &s, sig);
-    return (!secp256k1_scalar_is_high(&s) &&
-            secp256k1_pubkey_load(ctx, &q, pubkey) &&
-            secp256k1_ecdsa_sig_verify(&ctx->ecmult_ctx, &r, &s, &q, &m));
+    return (!secp256k1_scalar_is_high(&s)) &&
+	    secp256k1_pubkey_load(ctx, &q, pubkey) &&
+	    secp256k1_ecdsa_sig_verify(&ctx->ecmult_ctx, &r, &s, &q, &m);
+
 }
 
 static int nonce_function_rfc6979(unsigned char *nonce32, const unsigned char *msg32, const unsigned char *key32, const unsigned char *algo16, void *data, unsigned int counter) {
