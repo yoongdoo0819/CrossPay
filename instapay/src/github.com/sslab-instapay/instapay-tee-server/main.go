@@ -43,8 +43,14 @@ func demoFunc() {
 }
 
 func StartWebServer() {
-	defaultRouter := gin.Default()
+	//defaultRouter := gin.Default()
 	//fmt.Println(gin.Default())
+	defaultRouter := gin.New()
+	defaultRouter.Use(
+		gin.LoggerWithWriter(gin.DefaultWriter, "/payments/server"),
+		gin.Recovery(),
+	)
+
 	defaultRouter.LoadHTMLGlob("templates/*")
 
 	router.RegisterViewRouter(defaultRouter)

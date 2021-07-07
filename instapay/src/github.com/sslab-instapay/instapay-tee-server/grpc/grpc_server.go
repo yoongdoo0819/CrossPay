@@ -161,6 +161,7 @@ import (
 	//"crypto/ecdsa"
 	//"crypto/rand"
 	//"crypto/elliptic"
+	//"bytes"
 	"net"
 	"log"
 	"fmt"
@@ -282,6 +283,7 @@ var PaymentNum = 1
 var paymentInformation = make(map[string]PaymentInformation)
 var p []string
 var p2 []string
+var addrToPubKey = make(map[string]string)
 
 var connectionForClient = make(map[string]*grpc.ClientConn)
 var connectionForXServer *grpc.ClientConn
@@ -366,11 +368,20 @@ func _SendAgreementRequest(i interface{}) {
 		agreementOriginalMessage, _ := convertMsgResByteToPointer(r.OriginalMessage, r.Signature)
 
 		hash := crypto.Keccak256(r.OriginalMessage)
-		secp256k1.RecoverPubkey(hash[:], r.Signature)
+		pubKey, _ := secp256k1.RecoverPubkey(hash[:], r.Signature)
 /*		for i:=0; i<32; i++ {
 			fmt.Printf("%02x", pubKey[i])
 		}
 */
+		var addr string
+
+		for i:=0; i<32; i++ {
+			addr += fmt.Sprintf("%02x", pubKey[i])
+		}
+
+		if addrToPubKey[address] != addr {
+			fmt.Println("different pub")
+		}
 //		secp256k1.VerifySignature([]byte(address), r.OriginalMessage, r.Signature)
 
 		result := C.verify_ag_res_msg(agreementOriginalMessage)
@@ -428,15 +439,24 @@ func _SendUpdateRequest(i interface{}) {
 		agreementOriginalMessage, _ := convertMsgResByteToPointer(r.OriginalMessage, r.Signature)
 
 		hash := crypto.Keccak256(r.OriginalMessage)
-		secp256k1.RecoverPubkey(hash[:], r.Signature)
+		pubKey, _ := secp256k1.RecoverPubkey(hash[:], r.Signature)
 /*		for i:=0; i<32; i++ {
 			fmt.Printf("%02x", pubKey[i])
+		}
+*/
+		var addr string
+
+		for i:=0; i<32; i++ {
+			addr += fmt.Sprintf("%02x", pubKey[i])
+		}
+
+		if addrToPubKey[address] != addr {
+			fmt.Println("different pub")
 		}
 
 //		secp256k1.VerifySignature([]byte(address), r.OriginalMessage, r.Signature)
 
 		//fmt.Printf("Signature Verified? (from client) %v\n", verified)
-*/
 
 		result := C.verify_ud_res_msg(agreementOriginalMessage)
 		if result == 0 {
@@ -478,6 +498,7 @@ func _SendConfirmPayment(i interface{}) {
 	if err != nil {
 		log.Println(err)
 	}
+
 
 	ch[pn] <- true
 }
@@ -526,8 +547,8 @@ func WrapperAgreementRequest(pn int64, p []string, paymentInformation map[string
 		}
 	}
 
-
-	fmt.Println("ALL AG")
+	//return true
+//	fmt.Println("ALL AG")
 
 	var originalMessageByteArray [][]byte
 	var signatureByteArray [][]byte
@@ -586,7 +607,7 @@ func WrapperUpdateRequest(pn int64, p []string, paymentInformation map[string]Pa
 		}
 	}
 
-	fmt.Println("ALL UD")
+	//fmt.Println("ALL UD")
 
 	var originalMessageByteArrayForConfirm [][]byte
 	var signatureByteArrayForConfirm [][]byte
@@ -622,6 +643,7 @@ func WrapperUpdateRequest(pn int64, p []string, paymentInformation map[string]Pa
 		}
 	}
 
+//	fmt.Println("END!!")
 	return true
 }
 
@@ -926,6 +948,7 @@ func (s *ServerGrpc) PaymentRequest(ctx context.Context, rq *pbServer.PaymentReq
 */
 
 	originalMessageByte, signatureByte := createMsgAndSig(int64(tempPn), p, paymentInformation, 3)
+
 
 	if WrapperAgreementRequest(int64(tempPn), p, paymentInformation, originalMessageByte, signatureByte) {
 
@@ -1702,7 +1725,7 @@ func WrapperCrossAgreementRequest(pn int64, p []string, amount int64, paymentInf
 
 	//fmt.Println("ALL AG")
 
-	return true
+
 /*
 	elapsedTime := time.Since(StartTime)
 	fmt.Println("****************************************************************")
@@ -2136,6 +2159,10 @@ func GetClientInfo() {
 	clientAddr["f4444529d6221122d1712c52623ba119a60609e3"] = "141.223.121.165:50001"
 	clientAddr["d95da40bbd2001abf1a558c0b1dffd75940b8fd9"] = "141.223.121.166:50002"
 	clientAddr["73d8e5475278f7593b5293beaa45fb53f34c9ad2"] = "141.223.121.169:50003"
+
+	addrToPubKey["f55ba9376db959fab2af86d565325829b08ea3c4"] = "04c8f607a13d4cee66afcd652f08c80d04ac4198e987ff9c728c2baf70c63c8d"
+	addrToPubKey["c60f640c4505d15b972e6fc2a2a7cba09d05d9f7"] = "0451f651ffe3d92494082145398fc906dd4bcbc1311e731272519eccf99878b6"
+	addrToPubKey["70603f1189790fcd0fd753a7fef464bdc2c2ad36"] = "042c93312fad479d5f1bcea4be26fb3eae7024185d9da0cb540b0bf85a46a7c5"
 
 	p, paymentInformation = SearchPath(1, 1, 1, 2)
 	fmt.Println("Client Addr initialization !!")
