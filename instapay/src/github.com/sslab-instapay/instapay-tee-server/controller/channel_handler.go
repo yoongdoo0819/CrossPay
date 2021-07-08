@@ -19,10 +19,10 @@ import (
 //	"github.com/sslab-instapay/instapay-go-server/repository"
 	serverPb "github.com/sslab-instapay/instapay-tee-server/proto/server"
 	serverGrpc "github.com/sslab-instapay/instapay-tee-server/grpc"
-	"log"
-	//"time"
-	//"fmt"
-	"strconv"
+	//"log"
+	"time"
+	"fmt"
+	//"strconv"
 
 //	"github.com/sslab-instapay/instapay-tee-server/config"
 )
@@ -100,87 +100,45 @@ func PaymentToServerChannelHandler(ctx *gin.Context) {
 
 
 		myAddress := ctx.PostForm("myAddress")
-		otherAddress := ctx.PostForm("otherAddress")
+/*		otherAddress := ctx.PostForm("otherAddress")
 		amount, err := strconv.Atoi(ctx.PostForm("amount"))
 		if err != nil {
 			log.Println(err)
 		}
 
+		myAddress2 := ctx.PostForm("myAddress2")
+		otherAddress2 := ctx.PostForm("otherAddress2")
+		amount2, err := strconv.Atoi(ctx.PostForm("amount2"))
+		if err != nil {
+			log.Println(err)
+		}
+*/
 		rwMutex.Lock()
 		var tempPn = serverGrpc.PaymentNum
 		serverGrpc.PaymentNum++
 		rwMutex.Unlock()
 
 	//	serverGrpc.PaymentRequest[tempPn] = serverGrpc.Payment
-		serverGrpc.PaymentRequest[tempPn].Sender = myAddress
-		serverGrpc.PaymentRequest[tempPn].MiddleMan = myAddress
-		serverGrpc.PaymentRequest[tempPn].Receiver = otherAddress
-		serverGrpc.PaymentRequest[tempPn].Amount = int64(amount)
+		serverGrpc.PaymentRequest[tempPn].Sender = myAddress[2:]
+		serverGrpc.PaymentRequest[tempPn].MiddleMan = "c60f640c4505d15b972e6fc2a2a7cba09d05d9f7"
+		serverGrpc.PaymentRequest[tempPn].Receiver = myAddress[2:]
+		serverGrpc.PaymentRequest[tempPn].Amount = int64(1)
+
+		serverGrpc.PaymentRequest[tempPn].Sender2 = myAddress[2:]
+		serverGrpc.PaymentRequest[tempPn].MiddleMan2 = "c60f640c4505d15b972e6fc2a2a7cba09d05d9f7"
+		serverGrpc.PaymentRequest[tempPn].Receiver2 = myAddress[2:]
+		serverGrpc.PaymentRequest[tempPn].Amount2 = int64(1)
+
 		serverGrpc.PaymentRequest[tempPn].Status = "NONE"
 
-		/*
-		connection, err := grpc.Dial(config.EthereumConfig["serverGrpcHost"]+":"+config.EthereumConfig["serverGrpcPort"], grpc.WithInsecure())
 
-		if err != nil {
-			log.Println(err)
-			ctx.JSON(http.StatusBadRequest, gin.H{"message": err})
-			return
-		}
-		*/
-		//
-		//defer connection.Close()
-		//	client := serverPb.NewServerClient(connection)
+		r, _ := serverGrpc.Client[tempPaymentNum%100].PaymentRequest(serverGrpc.ClientContext[tempPaymentNum%100], &serverPb.PaymentRequestMessage{Pn: int64(tempPn)/*, From: myAddress, To: otherAddress, Amount: int64(1)*/})
 
-		//	clientContext, cancel := context.WithTimeout(context.Background(), time.Second)
-		//defer cancel()
-
-			//serverGrpc.StartTime = time.Now()
-		/*	r, err := client.PaymentRequest(clientContext, &serverPb.PaymentRequestMessage{From: myAddress, To: otherAddress, Amount: int64(amount)})
-		if err != nil {
-			log.Println(err)
-			ctx.JSON(http.StatusBadRequest, gin.H{"message": err})
-			return
-		}
-
-		log.Println(r.GetResult())
-		*/
-
-		serverGrpc.Client[tempPaymentNum%100].PaymentRequest(serverGrpc.ClientContext[tempPaymentNum%100], &serverPb.PaymentRequestMessage{Pn: int64(tempPn), From: myAddress, To: otherAddress, Amount: int64(amount)})
-/*
-		fmt.Println(r.GetResult())
 		if r.GetResult() == true {
 			ctx.JSON(http.StatusOK, gin.H{"message": "Payment"})
-
-		} else {
-			ctx.JSON(http.StatusBadRequest, gin.H{"message": "Payment"})
-
-		}
-*/
-		//	log.Println("tempPaymentNum >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>", tempPaymentNum)
-		//log.Println("END", myAddress, otherAddress, amount)
-		//	cancel()
-
-		//	elapsedTime := time.Since(serverGrpc.StartTime)
-		//	        fmt.Println("****************************************************************")
-		//	fmt.Println("execution time : ", elapsedTime.Seconds())	
-		//	fmt.Printf("execution time : %s", elapsedTime)
-
-//		ctx.JSON(http.StatusOK, gin.H{"message": "Payment"})
-
-		/*	var data = <- serverGrpc.ChComplete[int(tempPaymentNum)]
-		if data == true {
-			ctx.JSON(http.StatusOK, gin.H{"message": "Payment"})
-		}
-		*/
-		/*
-		if r.GetResult() {
-			//log.Println("start", myAddress, otherAddress, amount)
-			log.Println("SUCCESS >>>>>>>>>>>>>>>>>>>>>>>>>>", r.GetResult())
-			ctx.JSON(http.StatusOK, gin.H{"message": "Payment"})
 		} else {
 			ctx.JSON(http.StatusBadRequest, gin.H{"message": "Payment"})
 		}
-		*/
 
 }
 

@@ -329,6 +329,14 @@ var connectionForXServer *grpc.ClientConn
 
 var checkChFirstOrNot [10000]int
 var paymentNumToChId [500000]int
+
+var prepareMsgCreation [500000]chan bool
+var prepareMsgSuccess [100000]int
+var commitMsgCreation [500000]chan bool
+var commitMsgSuccess [100000]int
+var confirmMsgCreation [500000]chan bool
+var confirmMsgSuccess [100000]int
+
 var usingChannelIds [100000]chan bool
 var ChComplete [500000]chan bool
 var ch [500000]chan bool
@@ -408,8 +416,12 @@ func _SendAgreementRequest(i interface{}) {
 
 	if r.Result {
 
+	//	ch[pn] <- true
+	//	return
+
 		agreementOriginalMessage, _ := convertMsgResByteToPointer(r.OriginalMessage, r.Signature)
 
+		st := time.Now()
 		hash := crypto.Keccak256(r.OriginalMessage)
 		pubKey, _ := secp256k1.RecoverPubkey(hash[:], r.Signature)
 /*		for i:=0; i<32; i++ {
@@ -448,6 +460,9 @@ func _SendAgreementRequest(i interface{}) {
 			fmt.Println("Message verification failed")
 			return
 		}
+
+		et := time.Since(st)
+		fmt.Printf("et : %s \n", et)
 
 		var clientPrepareMsgRes = AG{}
 		clientPrepareMsgRes.originalMessageByte = r.OriginalMessage
@@ -495,8 +510,11 @@ func _SendUpdateRequest(i interface{}) {
 
 
 	if r.Result == true {
-		updateOriginalMessage, _ := convertMsgResByteToPointer(r.OriginalMessage, r.Signature)
 
+		//ch[pn] <- true
+		//return
+
+		updateOriginalMessage, _ := convertMsgResByteToPointer(r.OriginalMessage, r.Signature)
 		hash := crypto.Keccak256(r.OriginalMessage)
 		pubKey, _ := secp256k1.RecoverPubkey(hash[:], r.Signature)
 /*		for i:=0; i<32; i++ {
@@ -514,10 +532,13 @@ func _SendUpdateRequest(i interface{}) {
 		}
 
 		if PaymentRequest[pn].Sender == address {
+//			fmt.Println("s : ", address)
 			PaymentRequest[pn].CommittedSender = 1
 		} else if PaymentRequest[pn].MiddleMan == address {
+//			fmt.Println("m : ", address)
 			PaymentRequest[pn].CommittedMiddleMan = 1
 		} else if PaymentRequest[pn].Receiver == address {
+//			fmt.Println("r : ", address)
 			PaymentRequest[pn].CommittedReceiver = 1
 		} else if PaymentRequest[pn].Sender2 == address {
 			PaymentRequest[pn].CommittedSender2 = 1
@@ -614,7 +635,7 @@ func WrapperAgreementRequest(pn int64, p []string, paymentInformation map[string
 */
 
 	return true
-
+/*
 	var originalMessageByteArray [][]byte
 	var signatureByteArray [][]byte
 
@@ -640,6 +661,7 @@ func WrapperAgreementRequest(pn int64, p []string, paymentInformation map[string
 	} else {
 		return false
 	}
+*/
 }
 
 func WrapperUpdateRequest(pn int64, p []string, paymentInformation map[string]PaymentInformation, originalMessageByteArray [][]byte, signatureByteArray [][]byte) bool {
@@ -659,7 +681,7 @@ func WrapperUpdateRequest(pn int64, p []string, paymentInformation map[string]Pa
 	}
 
 	return true
-
+/*
 	for i:= 1; i<=6; i++ {
 		var data = <- ch[pn]
 		//fmt.Printf("%d UD response %d \n", pn, i)
@@ -722,6 +744,7 @@ func WrapperUpdateRequest(pn int64, p []string, paymentInformation map[string]Pa
 	paymentEndEvent[pn] <- true
 	//fmt.Println("END!!")
 	return true
+*/
 }
 
 func WrapperConfirmPayment(pn int, p []string, paymentInformation map[string]PaymentInformation, originalMessageByteArray [][]byte, signatureByteArray [][]byte) bool {
@@ -826,6 +849,7 @@ func SearchPath(pn int64, amount int64, firstTempChId int, secondTempChId int) (
 
 func (s *ServerGrpc) PaymentRequest(ctx context.Context, rq *pbServer.PaymentRequestMessage) (*pbServer.Result, error) {
 
+
 	//log.Println("===== Payment Request Start =====")
 
 	//from := rq.From
@@ -862,78 +886,6 @@ func (s *ServerGrpc) PaymentRequest(ctx context.Context, rq *pbServer.PaymentReq
 	rwMutex.Unlock()
 
         p, p2, paymentInformation, _paymentInformation = SearchPath(int64(rq.Pn), amount, firstTempChId, secondTempChId)
-
-//	p, paymentInformation := SearchPath(int64(tempPn), amount, firstTempChId, secondTempChId)
-/*
-	var originalMessage *C.uchar// = (*C.uchar)(unsafe.Pointer(&uOriginal[0]))
-	var __signature[65] C.uchar
-	var signature *C.uchar
-*/
-/*
-	_sender := []C.uchar(p[0])
-	_middleMan := []C.uchar(p[1])
-	_receiver := []C.uchar(p[2])
-*/
-	
-/*
-	for ; ; {
-		result =  C.ecall_create_ag_req_msg_temp_w(C.uint(tempPn), &_sender[0], &_middleMan[0], &_receiver[0] , C.uint(len(channelSlice1)), &channelSlice1[0], C.uint(len(channelSlice2)), &channelSlice2[0], C.uint(len(channelSlice3)), &channelSlice3[0], &amountSlice1[0], &amountSlice2[0], &amountSlice3[0], &originalMessage, &signature)
-
-		if result == 9999 {
-			break
-		} else if result != 9999 {
-			return &pbServer.Result{Result: false}, nil
-		}
-	}
-*/
-/*
-	var Message = Message{}
-	Message.messageType = 3	// AG_REQ
-
-	//Message.channel_id = 1
-	Message.amount = 1
-	//Message.counter =0
-
-	Message.payment_num = C.uint(tempPn)
-	//var party = "f55ba9376db959fab2af86d565325829b08ea3c4"
-
-	var Participant1 = Participant{}
-	var Participant2 = Participant{}
-	var Participant3 = Participant{}
-
-	//      C.memcpy(Participant.party, []C.uchar(&_sender[0]), 41)
-	for i := 0; i < 40; i++ {
-		Participant1.party[i] = C.uchar(p[0][i])
-	}
-
-	for i := 0; i < 40; i++ {
-		Participant2.party[i] = C.uchar(p[1][i])
-	}
-
-	for i := 0; i < 40; i++ {
-		Participant3.party[i] = C.uchar(p[2][i])
-	}
-
-	Participant1.payment_size = C.uint(len(channelSlice1))
-	Participant1.channel_ids[0] = channelSlice1[0]
-	Participant1.payment_amount[0] = amountSlice1[0]
-
-	Participant2.payment_size = C.uint(len(channelSlice2))
-	Participant2.channel_ids[0] = channelSlice2[0]
-	Participant2.payment_amount[0] = amountSlice2[0]
-	Participant2.channel_ids[1] = channelSlice2[1]
-	Participant2.payment_amount[1] = amountSlice2[1]
-
-	Participant3.payment_size = C.uint(len(channelSlice3))
-	Participant3.channel_ids[0] = channelSlice3[0]
-	Participant3.payment_amount[0] = amountSlice3[0]
-
-	Message.participant[0] = Participant1
-	Message.participant[1] = Participant2
-	Message.participant[2] = Participant3
-
-	//Message.e = 1
-*/
 
 /*
 	pkBytes, err := hex.DecodeString("5a5e2194e0639fd017158793812dd5f5668f5bfc9a146f93f39237a4b4ed7dd5")
@@ -1027,15 +979,7 @@ func (s *ServerGrpc) PaymentRequest(ctx context.Context, rq *pbServer.PaymentReq
 	//verified := signature.Verify(messageHash, pubkey)
 	fmt.Printf("Signature Verified? %v\n", verified)
 */
-	//fmt.Printf(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> PN : %d \n", int(PaymentNum))
 
-
-/*
-	for i := 0; i < len(p); i++ {
-		C.ecall_add_participant_w(PaymentNum, &([]C.uchar(p[i]))[0])
-	}
-	C.ecall_update_sentagr_list_w(PaymentNum, &([]C.uchar(p[2]))[0])
-*/
 
 	var originalMessageByteForPrepare, signatureByteForPrepare []byte
 	var originalMessageByteForPrepare2, signatureByteForPrepare2 []byte
@@ -1046,13 +990,28 @@ func (s *ServerGrpc) PaymentRequest(ctx context.Context, rq *pbServer.PaymentReq
 	var originalMessageByteForConfirm, signatureByteForConfirm []byte
 	var originalMessageByteForConfirm2, signatureByteForConfirm2 []byte
 
-	originalMessageByteForPrepare, signatureByteForPrepare = createMsgAndSig(rq.Pn, p, paymentInformation, 3)
+	go func() {
+		originalMessageByteForPrepare, signatureByteForPrepare = createMsgAndSig(rq.Pn, p, paymentInformation, 3)
+		prepareMsgCreation[rq.Pn] <- true
+	}()
 
-	originalMessageByteForPrepare2, signatureByteForPrepare2 = createMsgAndSig(rq.Pn, p2, _paymentInformation, 3)
+	go func() {
+		originalMessageByteForPrepare2, signatureByteForPrepare2 = createMsgAndSig(rq.Pn, p2, _paymentInformation, 3)
+		prepareMsgCreation[rq.Pn] <- true
+	}()
 
-	go WrapperAgreementRequest(rq.Pn, p, paymentInformation, originalMessageByteForPrepare, signatureByteForPrepare) 
+	for i:=1; ; i++ {
+		if <-prepareMsgCreation[rq.Pn] == true {
+			prepareMsgSuccess[rq.Pn]++
+		}
 
-	go WrapperAgreementRequest(rq.Pn, p2, _paymentInformation, originalMessageByteForPrepare2, signatureByteForPrepare2) 
+		if prepareMsgSuccess[rq.Pn] == 2 {
+			break
+		}
+	}
+
+	go WrapperAgreementRequest(rq.Pn, p, paymentInformation, originalMessageByteForPrepare, signatureByteForPrepare)
+	go WrapperAgreementRequest(rq.Pn, p2, _paymentInformation, originalMessageByteForPrepare2, signatureByteForPrepare2)
 
 	for i:= 1; ; i++ {
 		var data = <- ch[rq.Pn]
@@ -1066,20 +1025,42 @@ func (s *ServerGrpc) PaymentRequest(ctx context.Context, rq *pbServer.PaymentReq
 		}
 	}
 
+
+/*
 	if PaymentRequest[rq.Pn].PreparedSender == 1 &&
 		PaymentRequest[rq.Pn].PreparedMiddleMan == 1 &&
 		PaymentRequest[rq.Pn].PreparedReceiver == 1 {
 			PaymentRequest[rq.Pn].Status = "PREPARED"
+		} else {
+			fmt.Println("NOT ALL AG")
+			return &pbServer.Result{Result: true}, nil
 		}
-
+*/
 	//fmt.Println("ALL AG")
-	//return &pbServer.Result{Result: true}, nil
+	return &pbServer.Result{Result: true}, nil
 
 	var originalMessageByteArrayForCommit [][]byte
 	var signatureByteArrayForCommit [][]byte
 
-	originalMessageByteForCommit, signatureByteForCommit = createMsgAndSig(int64(rq.Pn), p, paymentInformation, 5)
-	originalMessageByteForCommit2, signatureByteForCommit2 = createMsgAndSig(int64(rq.Pn), p2, _paymentInformation, 5)
+	go func() {
+		originalMessageByteForCommit, signatureByteForCommit = createMsgAndSig(int64(rq.Pn), p, paymentInformation, 5)
+		commitMsgCreation[rq.Pn] <- true
+	}()
+
+	go func() {
+		originalMessageByteForCommit2, signatureByteForCommit2 = createMsgAndSig(int64(rq.Pn), p2, _paymentInformation, 5)
+		commitMsgCreation[rq.Pn] <- true
+	}()
+
+	for i:=1; ; i++ {
+		if <-commitMsgCreation[rq.Pn] == true {
+			commitMsgSuccess[rq.Pn]++
+		}
+
+		if commitMsgSuccess[rq.Pn] == 2 {
+			break
+		}
+	}
 
 	originalMessageByteArrayForCommit = append(originalMessageByteArrayForCommit, originalMessageByteForCommit)
 	signatureByteArrayForCommit = append(signatureByteArrayForCommit, signatureByteForCommit)
@@ -1132,20 +1113,40 @@ func (s *ServerGrpc) PaymentRequest(ctx context.Context, rq *pbServer.PaymentReq
 		}
 	}
 
+/*
 	if PaymentRequest[rq.Pn].CommittedSender == 1 &&
 		PaymentRequest[rq.Pn].CommittedMiddleMan == 1 &&
 		PaymentRequest[rq.Pn].CommittedReceiver == 1 {
 			PaymentRequest[rq.Pn].Status = "COMMITTED"
+		} else {
+			fmt.Println("NOT ALL UD")
+			return &pbServer.Result{Result: true}, nil
 		}
-
-	//fmt.Println("ALL UD")
+*/
+//	fmt.Println("ALL UD")
 //	return &pbServer.Result{Result: true}, nil
 
 	var originalMessageByteArrayForConfirm [][]byte
 	var signatureByteArrayForConfirm [][]byte
 
-	originalMessageByteForConfirm, signatureByteForConfirm = createMsgAndSig(int64(rq.Pn), p, paymentInformation, 7)
-	originalMessageByteForConfirm2, signatureByteForConfirm2 = createMsgAndSig(int64(rq.Pn), p2, _paymentInformation, 7)
+	go func() {
+		originalMessageByteForConfirm, signatureByteForConfirm = createMsgAndSig(int64(rq.Pn), p, paymentInformation, 7)
+		confirmMsgCreation[rq.Pn] <- true
+	}()
+	go func() {
+		originalMessageByteForConfirm2, signatureByteForConfirm2 = createMsgAndSig(int64(rq.Pn), p2, _paymentInformation, 7)
+		confirmMsgCreation[rq.Pn] <- true
+	}()
+
+	for i:=1; ; i++ {
+		if <-confirmMsgCreation[rq.Pn] == true {
+			confirmMsgSuccess[rq.Pn]++
+		}
+
+		if confirmMsgSuccess[rq.Pn] == 2 {
+			break
+		}
+	}
 
 	originalMessageByteArrayForConfirm = append(originalMessageByteArrayForConfirm, originalMessageByteForConfirm)
 	signatureByteArrayForConfirm = append(signatureByteArrayForConfirm, signatureByteForConfirm)
@@ -1214,7 +1215,7 @@ func (s *ServerGrpc) PaymentRequest(ctx context.Context, rq *pbServer.PaymentReq
 	}
 */
 
-	//fmt.Println("END!!")
+//	fmt.Println("END!!")
 	return &pbServer.Result{Result: true}, nil
 }
 
@@ -2313,6 +2314,19 @@ func ChanCreate() {
 		for i = range firstReq {
 			firstReq[i] = true
 		}
+
+		for i:= range prepareMsgCreation {
+			prepareMsgCreation[i] = make(chan bool)
+		}
+
+		for i:= range commitMsgCreation {
+			commitMsgCreation[i] = make(chan bool)
+		}
+
+		for i:= range confirmMsgCreation {
+			confirmMsgCreation[i] = make(chan bool)
+		}
+
 	} else {
 		return
 	}

@@ -1158,7 +1158,7 @@ func GrpcConnection() {
 		}
 
 		tempConnC2[i], err = grpc.Dial("141.223.121.168:50002", grpc.WithInsecure())
-		tempConnC3[i], err = grpc.Dial("141.223.121.167:50003", grpc.WithInsecure())
+		tempConnC3[i], err = grpc.Dial("141.223.121.251:50003", grpc.WithInsecure())
 		tempConnC4[i], err = grpc.Dial("141.223.121.165:50001", grpc.WithInsecure())
 		tempConnC5[i], err = grpc.Dial("141.223.121.166:50002", grpc.WithInsecure())
 		tempConnC6[i], err = grpc.Dial("141.223.121.169:50003", grpc.WithInsecure())
@@ -1232,7 +1232,7 @@ func GetClientInfo() {
 
 	clientAddr["f55ba9376db959fab2af86d565325829b08ea3c4"] = "141.223.121.167:50001"
 	clientAddr["c60f640c4505d15b972e6fc2a2a7cba09d05d9f7"] = "141.223.121.168:50002"
-	clientAddr["70603f1189790fcd0fd753a7fef464bdc2c2ad36"] = "141.223.121.167:50003"
+	clientAddr["70603f1189790fcd0fd753a7fef464bdc2c2ad36"] = "141.223.121.251:50003"
 
 	clientAddr["f4444529d6221122d1712c52623ba119a60609e3"] = "141.223.121.165:50001"
 	clientAddr["d95da40bbd2001abf1a558c0b1dffd75940b8fd9"] = "141.223.121.166:50002"

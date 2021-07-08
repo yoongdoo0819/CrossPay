@@ -113,7 +113,6 @@ func GetChannelListHandler(context *gin.Context){
 */
 func CrossPaymentToServerChannelHandler(ctx *gin.Context) {
 
-	serverGrpc.StartTime = time.Now()
 	chain1From := ctx.PostForm("chain1_sender")
 /*	chain1To := ctx.PostForm("chain1_receiver")
 	chain1Val, err := strconv.Atoi(ctx.PostForm("chain1_sender_val"))
@@ -134,6 +133,8 @@ func CrossPaymentToServerChannelHandler(ctx *gin.Context) {
 	chain2MiddleMan := []C.uchar("d95da40bbd2001abf1a558c0b1dffd75940b8fd9")
 	chain2Receiver := []C.uchar(chain2To)//"73d8e5475278f7593b5293beaa45fb53f34c9ad2")
 */
+	serverGrpc.StartTime = time.Now()
+
 	var PaymentNum C.uint
 	for ; ; {
 		PaymentNum = C.ecall_cross_accept_request_w(
@@ -161,40 +162,6 @@ func CrossPaymentToServerChannelHandler(ctx *gin.Context) {
 
 	et := time.Since(serverGrpc.StartTime)
 	fmt.Printf("et : %s \n", et)
-
-/*
-	var wg sync.WaitGroup
-	var cnt=0
-
-	for i:=0; i<6; i++ {
-		wg.Add(1)
-		go func() {
-			//client := pbClient.NewClientClient(connectionForClient[clientAddr[address]])
-		//	var connection, err = grpc.Dial("141.223.121.167:50001", grpc.WithInsecure())
-			client := pbClient.NewClientClient(connection)
-			if client == nil {
-				log.Fatal("client conn err")
-
-			}
-
-			_, err := client.CrossPaymentPrepareClientRequest(context.Background(), &pbClient.CrossPaymentPrepareReqClientMessage{PaymentNumber: int64(pn), OriginalMessage : []byte("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa") })
-
-			if err != nil {
-				log.Println("client AgreementRequest err : ", err)// clientAddr[address])
-			}
-			rwMutex.Lock()
-			cnt++
-			rwMutex.Unlock()
-		}()
-		wg.Done()
-//		fmt.Println(i)
-}
-
-*/
-
-	//client := xServerPb.NewCross_ServerClient(connection)
-//	for i:=0; i<6; i++ {
-//		wg.Add(1)
 
 	r, err := serverGrpc.Client[PaymentNum%10000].CrossPaymentRequest(serverGrpc.ClientContext[PaymentNum%10000], &xServerPb.CrossPaymentMessage{Pn: int64(PaymentNum), ChainTo: serverGrpc.ChainTo, ChainFrom: serverGrpc.ChainFrom, ChainVal: serverGrpc.ChainVal})
 	if err != nil {
