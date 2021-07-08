@@ -98,14 +98,25 @@ func PaymentToServerChannelHandler(ctx *gin.Context) {
 		rwMutex.Unlock()
 		*/
 
-		
+
 		myAddress := ctx.PostForm("myAddress")
 		otherAddress := ctx.PostForm("otherAddress")
 		amount, err := strconv.Atoi(ctx.PostForm("amount"))
 		if err != nil {
 			log.Println(err)
 		}
-		
+
+		rwMutex.Lock()
+		var tempPn = serverGrpc.PaymentNum
+		serverGrpc.PaymentNum++
+		rwMutex.Unlock()
+
+	//	serverGrpc.PaymentRequest[tempPn] = serverGrpc.Payment
+		serverGrpc.PaymentRequest[tempPn].Sender = myAddress
+		serverGrpc.PaymentRequest[tempPn].MiddleMan = myAddress
+		serverGrpc.PaymentRequest[tempPn].Receiver = otherAddress
+		serverGrpc.PaymentRequest[tempPn].Amount = int64(amount)
+		serverGrpc.PaymentRequest[tempPn].Status = "NONE"
 
 		/*
 		connection, err := grpc.Dial(config.EthereumConfig["serverGrpcHost"]+":"+config.EthereumConfig["serverGrpcPort"], grpc.WithInsecure())
@@ -134,7 +145,7 @@ func PaymentToServerChannelHandler(ctx *gin.Context) {
 		log.Println(r.GetResult())
 		*/
 
-		serverGrpc.Client[tempPaymentNum%100].PaymentRequest(serverGrpc.ClientContext[tempPaymentNum%100], &serverPb.PaymentRequestMessage{From: myAddress, To: otherAddress, Amount: int64(amount)})
+		serverGrpc.Client[tempPaymentNum%100].PaymentRequest(serverGrpc.ClientContext[tempPaymentNum%100], &serverPb.PaymentRequestMessage{Pn: int64(tempPn), From: myAddress, To: otherAddress, Amount: int64(amount)})
 /*
 		fmt.Println(r.GetResult())
 		if r.GetResult() == true {

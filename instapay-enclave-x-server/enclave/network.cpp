@@ -333,7 +333,9 @@ void ecall_cross_create_all_commit_req_msg_temp(unsigned int payment_num, unsign
 		&& cross_payments.find(payment_num)->second.m_chain2MiddleMan_prepared == 1		&& cross_payments.find(payment_num)->second.m_chain2Receiver_prepared == 1) {
 //		printf("verification complete : PREPARED ! \n");
 		cross_payments.find(payment_num)->second.m_cross_status = PREPARED;
-	}		
+	}else { 
+		return;
+	}
 
 //	request.type = CROSS_ALL_PREPARE_REQ;
 	request.type = CROSS_COMMIT_REQ;
@@ -408,7 +410,9 @@ void ecall_cross_create_all_confirm_req_msg_temp(unsigned int payment_num, unsig
 		&& cross_payments.find(payment_num)->second.m_chain2MiddleMan_committed == 1		&& cross_payments.find(payment_num)->second.m_chain2Receiver_committed == 1) {
 //		printf("verification complete : COMMITTED ! \n");
 		cross_payments.find(payment_num)->second.m_cross_status = COMMITTED;
-	}		
+	} else {
+		return;
+	}
 
 //	request.type = CROSS_ALL_PREPARE_REQ;
 	request.type = CROSS_CONFIRM_REQ;
