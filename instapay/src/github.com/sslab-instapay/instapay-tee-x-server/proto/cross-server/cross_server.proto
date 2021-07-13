@@ -38,8 +38,8 @@ message crossPaymentCommitReqMessage {
 */
 message crossPaymentMessage {
     int64 pn = 1;
-    repeated string chainTo = 2;
-    repeated string chainFrom = 3;
+    repeated string chainFrom = 2;
+    repeated string chainTo = 3;
     repeated int64 chainVal = 4;
     bool result = 5;
 }

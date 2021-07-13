@@ -313,6 +313,10 @@ var ClientContext [100]context.Context// : {context.WithTimeout(context.Backgrou
 
 var connClient = make(map[string][1000]*grpc.ClientConn)
 
+var connection2, _ = grpc.Dial("141.223.121.170:50004", grpc.WithInsecure())
+var Client2 [100]pbServer.ServerClient //= pbServer.NewServerClient(connection)
+var ClientContext2 [100]context.Context// : {context.WithTimeout(context.Background(), time.Second*180), }
+
 var channelId = 1
 var PaymentNum = 1
 var PaymentRequest [100000]Payment
@@ -392,7 +396,7 @@ func _SendAgreementRequest(i interface{}) {
 	signatureByte := i.(AG).signatureByte
 
 
-	client := pbClient.NewClientClient(connClient[clientAddr[address]][int(pn)%1000])
+	client := pbClient.NewClientClient(connClient[clientAddr[address]][int(pn)%10])
 	if client == nil {
 		log.Fatal("client conn err")
 	}
@@ -421,7 +425,6 @@ func _SendAgreementRequest(i interface{}) {
 
 		agreementOriginalMessage, _ := convertMsgResByteToPointer(r.OriginalMessage, r.Signature)
 
-		st := time.Now()
 		hash := crypto.Keccak256(r.OriginalMessage)
 		pubKey, _ := secp256k1.RecoverPubkey(hash[:], r.Signature)
 /*		for i:=0; i<32; i++ {
@@ -461,9 +464,6 @@ func _SendAgreementRequest(i interface{}) {
 			return
 		}
 
-		et := time.Since(st)
-		fmt.Printf("et : %s \n", et)
-
 		var clientPrepareMsgRes = AG{}
 		clientPrepareMsgRes.originalMessageByte = r.OriginalMessage
 		clientPrepareMsgRes.signatureByte = r.Signature
@@ -492,7 +492,7 @@ func _SendUpdateRequest(i interface{}) {
 	originalMessageByteArray := i.(UD).originalMessageByteArray
 	signatureByteArray := i.(UD).signatureByteArray
 
-	client := pbClient.NewClientClient(connClient[clientAddr[address]][int(pn)%1000])
+	client := pbClient.NewClientClient(connClient[clientAddr[address]][int(pn)%10])
 	if client == nil {
 		log.Fatal("client conn err")
 	}
@@ -583,7 +583,7 @@ func _SendConfirmPayment(i interface{}) {
 	originalMessageByteArray := i.(UD).originalMessageByteArray
 	signatureByteArray := i.(UD).signatureByteArray
 
-	client := pbClient.NewClientClient(connClient[clientAddr[address]][int(pn)%1000])
+	client := pbClient.NewClientClient(connClient[clientAddr[address]][int(pn)%10])
 	if client == nil {
 		log.Fatal("client conn err")
 	}
@@ -864,7 +864,7 @@ func (s *ServerGrpc) PaymentRequest(ctx context.Context, rq *pbServer.PaymentReq
 
 	firstTempChId := channelId
 	secondTempChId := channelId+1
-
+/*
 	go func() {
 		paymentNumToChId[rq.Pn] = channelId
 		if checkChFirstOrNot[paymentNumToChId[rq.Pn]] == 0 {    // if channel ID is used first,
@@ -873,7 +873,7 @@ func (s *ServerGrpc) PaymentRequest(ctx context.Context, rq *pbServer.PaymentReq
 			if <-ChComplete[paymentNumToChId[rq.Pn]] == true {} // else, wait
 		}
 	}()
-
+*/
 	//tempPn := PaymentNum
 	//pnToChannelId[int64(tempPn)] = channelId
 	//PaymentNum++
@@ -886,6 +886,18 @@ func (s *ServerGrpc) PaymentRequest(ctx context.Context, rq *pbServer.PaymentReq
 	rwMutex.Unlock()
 
         p, p2, paymentInformation, _paymentInformation = SearchPath(int64(rq.Pn), amount, firstTempChId, secondTempChId)
+
+	PaymentRequest[rq.Pn].Sender = rq.From
+	PaymentRequest[rq.Pn].MiddleMan = "c60f640c4505d15b972e6fc2a2a7cba09d05d9f7"
+	PaymentRequest[rq.Pn].Receiver = rq.To
+	PaymentRequest[rq.Pn].Amount = int64(rq.Amount)
+/*
+	PaymentRequest[rq.Pn].Sender2 = myAddress2[2:]
+	PaymentRequest[rq.Pn].MiddleMan2 = "d95da40bbd2001abf1a558c0b1dffd75940b8fd9"
+	PaymentRequest[rq.Pn].Receiver2 = otherAddress2[2:]
+	PaymentRequest[rq.Pn].Amount2 = int64(amount2)
+*/
+	PaymentRequest[rq.Pn].Status = "NONE"
 
 /*
 	pkBytes, err := hex.DecodeString("5a5e2194e0639fd017158793812dd5f5668f5bfc9a146f93f39237a4b4ed7dd5")
@@ -982,36 +994,36 @@ func (s *ServerGrpc) PaymentRequest(ctx context.Context, rq *pbServer.PaymentReq
 
 
 	var originalMessageByteForPrepare, signatureByteForPrepare []byte
-	var originalMessageByteForPrepare2, signatureByteForPrepare2 []byte
+	//var originalMessageByteForPrepare2, signatureByteForPrepare2 []byte
 
 	var originalMessageByteForCommit, signatureByteForCommit []byte
-	var originalMessageByteForCommit2, signatureByteForCommit2 []byte
+	//var originalMessageByteForCommit2, signatureByteForCommit2 []byte
 
 	var originalMessageByteForConfirm, signatureByteForConfirm []byte
-	var originalMessageByteForConfirm2, signatureByteForConfirm2 []byte
+	//var originalMessageByteForConfirm2, signatureByteForConfirm2 []byte
 
 	go func() {
 		originalMessageByteForPrepare, signatureByteForPrepare = createMsgAndSig(rq.Pn, p, paymentInformation, 3)
 		prepareMsgCreation[rq.Pn] <- true
 	}()
-
+/*
 	go func() {
 		originalMessageByteForPrepare2, signatureByteForPrepare2 = createMsgAndSig(rq.Pn, p2, _paymentInformation, 3)
 		prepareMsgCreation[rq.Pn] <- true
 	}()
-
+*/
 	for i:=1; ; i++ {
 		if <-prepareMsgCreation[rq.Pn] == true {
 			prepareMsgSuccess[rq.Pn]++
 		}
 
-		if prepareMsgSuccess[rq.Pn] == 2 {
+		if prepareMsgSuccess[rq.Pn] == 1 {
 			break
 		}
 	}
 
 	go WrapperAgreementRequest(rq.Pn, p, paymentInformation, originalMessageByteForPrepare, signatureByteForPrepare)
-	go WrapperAgreementRequest(rq.Pn, p2, _paymentInformation, originalMessageByteForPrepare2, signatureByteForPrepare2)
+//	go WrapperAgreementRequest(rq.Pn, p2, _paymentInformation, originalMessageByteForPrepare2, signatureByteForPrepare2)
 
 	for i:= 1; ; i++ {
 		var data = <- ch[rq.Pn]
@@ -1020,7 +1032,7 @@ func (s *ServerGrpc) PaymentRequest(ctx context.Context, rq *pbServer.PaymentReq
 			chPrepared[rq.Pn]++
 		}
 
-		if chPrepared[rq.Pn] == 6 {
+		if chPrepared[rq.Pn] == 3 {
 			break
 		}
 	}
@@ -1036,8 +1048,8 @@ func (s *ServerGrpc) PaymentRequest(ctx context.Context, rq *pbServer.PaymentReq
 			return &pbServer.Result{Result: true}, nil
 		}
 */
-	//fmt.Println("ALL AG")
-	return &pbServer.Result{Result: true}, nil
+//	fmt.Println("ALL AG")
+//	return &pbServer.Result{Result: true}, nil
 
 	var originalMessageByteArrayForCommit [][]byte
 	var signatureByteArrayForCommit [][]byte
@@ -1046,18 +1058,18 @@ func (s *ServerGrpc) PaymentRequest(ctx context.Context, rq *pbServer.PaymentReq
 		originalMessageByteForCommit, signatureByteForCommit = createMsgAndSig(int64(rq.Pn), p, paymentInformation, 5)
 		commitMsgCreation[rq.Pn] <- true
 	}()
-
+/*
 	go func() {
 		originalMessageByteForCommit2, signatureByteForCommit2 = createMsgAndSig(int64(rq.Pn), p2, _paymentInformation, 5)
 		commitMsgCreation[rq.Pn] <- true
 	}()
-
+*/
 	for i:=1; ; i++ {
 		if <-commitMsgCreation[rq.Pn] == true {
 			commitMsgSuccess[rq.Pn]++
 		}
 
-		if commitMsgSuccess[rq.Pn] == 2 {
+		if commitMsgSuccess[rq.Pn] == 1 {
 			break
 		}
 	}
@@ -1076,7 +1088,7 @@ func (s *ServerGrpc) PaymentRequest(ctx context.Context, rq *pbServer.PaymentReq
 		rwMutex.Unlock()
 
 	}
-
+/*
 	var originalMessageByteArrayForCommit2 [][]byte
 	var signatureByteArrayForCommit2 [][]byte
 
@@ -1094,10 +1106,10 @@ func (s *ServerGrpc) PaymentRequest(ctx context.Context, rq *pbServer.PaymentReq
 		rwMutex.Unlock()
 
 	}
-
+*/
 	go WrapperUpdateRequest(rq.Pn, p, paymentInformation, originalMessageByteArrayForCommit, signatureByteArrayForCommit)
 
-	go WrapperUpdateRequest(rq.Pn, p2, _paymentInformation, originalMessageByteArrayForCommit2, signatureByteArrayForCommit2)
+//	go WrapperUpdateRequest(rq.Pn, p2, _paymentInformation, originalMessageByteArrayForCommit2, signatureByteArrayForCommit2)
 
 
 	for i:= 1; ; i++ {
@@ -1108,7 +1120,7 @@ func (s *ServerGrpc) PaymentRequest(ctx context.Context, rq *pbServer.PaymentReq
 			chCommitted[rq.Pn]++
 		}
 
-		if chCommitted[rq.Pn] == 6 {
+		if chCommitted[rq.Pn] == 3 {
 			break
 		}
 	}
@@ -1133,17 +1145,18 @@ func (s *ServerGrpc) PaymentRequest(ctx context.Context, rq *pbServer.PaymentReq
 		originalMessageByteForConfirm, signatureByteForConfirm = createMsgAndSig(int64(rq.Pn), p, paymentInformation, 7)
 		confirmMsgCreation[rq.Pn] <- true
 	}()
+/*
 	go func() {
 		originalMessageByteForConfirm2, signatureByteForConfirm2 = createMsgAndSig(int64(rq.Pn), p2, _paymentInformation, 7)
 		confirmMsgCreation[rq.Pn] <- true
 	}()
-
+*/
 	for i:=1; ; i++ {
 		if <-confirmMsgCreation[rq.Pn] == true {
 			confirmMsgSuccess[rq.Pn]++
 		}
 
-		if confirmMsgSuccess[rq.Pn] == 2 {
+		if confirmMsgSuccess[rq.Pn] == 1 {
 			break
 		}
 	}
@@ -1161,7 +1174,7 @@ func (s *ServerGrpc) PaymentRequest(ctx context.Context, rq *pbServer.PaymentReq
 		rwMutex.Unlock()
 
 	}
-
+/*
 	var originalMessageByteArrayForConfirm2 [][]byte
 	var signatureByteArrayForConfirm2 [][]byte
 
@@ -1178,10 +1191,10 @@ func (s *ServerGrpc) PaymentRequest(ctx context.Context, rq *pbServer.PaymentReq
 		rwMutex.Unlock()
 
 	}
-
+*/
 	go WrapperConfirmPayment(int(rq.Pn), p, paymentInformation, originalMessageByteArrayForConfirm, signatureByteArrayForConfirm)
 
-	go WrapperConfirmPayment(int(rq.Pn), p2, _paymentInformation, originalMessageByteArrayForConfirm2, signatureByteArrayForConfirm2)
+//	go WrapperConfirmPayment(int(rq.Pn), p2, _paymentInformation, originalMessageByteArrayForConfirm2, signatureByteArrayForConfirm2)
 
 	for i:= 1; ; i++ {
 		var data = <- ch[rq.Pn]
@@ -1191,15 +1204,15 @@ func (s *ServerGrpc) PaymentRequest(ctx context.Context, rq *pbServer.PaymentReq
 			chConfirmed[rq.Pn]++
 		}
 
-		if chConfirmed[rq.Pn] == 6 {
+		if chConfirmed[rq.Pn] == 3 {
 			break
 		}
 	}
-
+/*
 	go func() {
 		ChComplete[paymentNumToChId[rq.Pn]] <- true
 	}()
-
+*/
 /*
 	for i:= 1; ; i++ {
 		var data = <- paymentEndEvent[rq.Pn]
@@ -2373,7 +2386,7 @@ func GrpcConnection() {
 	var tempConnC5 [1000]*grpc.ClientConn
 	var tempConnC6 [1000]*grpc.ClientConn
 
-	for i:=0; i<1000; i++ {
+	for i:=0; i<10; i++ {
 
 		//              tempConn := []*grpc.ClientConn// make(map[int]*grpc.ClientConn)
 		//              tempClient1[i] = tempConn
@@ -2401,6 +2414,10 @@ func GrpcConnection() {
 	for i=0; i<100; i++ {
 		Client[i] = pbServer.NewServerClient(connection)
 		ClientContext[i], _ = context.WithTimeout(context.Background(), time.Second*180)
+
+		Client2[i] = pbServer.NewServerClient(connection2)
+		ClientContext2[i], _ = context.WithTimeout(context.Background(), time.Second*180)
+
 	}
 
 	fmt.Println("Grpc Connection !!")

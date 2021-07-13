@@ -12,17 +12,18 @@ import (
 //	"context"
 	"net/http"
 	"github.com/gin-gonic/gin"
-//	"google.golang.org/grpc"
+	//"google.golang.org/grpc"
 	"sync"
 	//"reflect"
 
 //	"github.com/sslab-instapay/instapay-go-server/repository"
 	serverPb "github.com/sslab-instapay/instapay-tee-server/proto/server"
 	serverGrpc "github.com/sslab-instapay/instapay-tee-server/grpc"
-	//"log"
-	"time"
-	"fmt"
-	//"strconv"
+	"log"
+	//"time"
+	//"fmt"
+	"strconv"
+	"math/rand"
 
 //	"github.com/sslab-instapay/instapay-tee-server/config"
 )
@@ -98,9 +99,10 @@ func PaymentToServerChannelHandler(ctx *gin.Context) {
 		rwMutex.Unlock()
 		*/
 
+		randVal := rand.Intn(10)
 
 		myAddress := ctx.PostForm("myAddress")
-/*		otherAddress := ctx.PostForm("otherAddress")
+		otherAddress := ctx.PostForm("otherAddress")
 		amount, err := strconv.Atoi(ctx.PostForm("amount"))
 		if err != nil {
 			log.Println(err)
@@ -112,7 +114,7 @@ func PaymentToServerChannelHandler(ctx *gin.Context) {
 		if err != nil {
 			log.Println(err)
 		}
-*/
+
 		rwMutex.Lock()
 		var tempPn = serverGrpc.PaymentNum
 		serverGrpc.PaymentNum++
@@ -121,23 +123,42 @@ func PaymentToServerChannelHandler(ctx *gin.Context) {
 	//	serverGrpc.PaymentRequest[tempPn] = serverGrpc.Payment
 		serverGrpc.PaymentRequest[tempPn].Sender = myAddress[2:]
 		serverGrpc.PaymentRequest[tempPn].MiddleMan = "c60f640c4505d15b972e6fc2a2a7cba09d05d9f7"
-		serverGrpc.PaymentRequest[tempPn].Receiver = myAddress[2:]
-		serverGrpc.PaymentRequest[tempPn].Amount = int64(1)
+		serverGrpc.PaymentRequest[tempPn].Receiver = otherAddress[2:]
+		serverGrpc.PaymentRequest[tempPn].Amount = int64(amount)
 
-		serverGrpc.PaymentRequest[tempPn].Sender2 = myAddress[2:]
-		serverGrpc.PaymentRequest[tempPn].MiddleMan2 = "c60f640c4505d15b972e6fc2a2a7cba09d05d9f7"
-		serverGrpc.PaymentRequest[tempPn].Receiver2 = myAddress[2:]
-		serverGrpc.PaymentRequest[tempPn].Amount2 = int64(1)
+		serverGrpc.PaymentRequest[tempPn].Sender2 = myAddress2[2:]
+		serverGrpc.PaymentRequest[tempPn].MiddleMan2 = "d95da40bbd2001abf1a558c0b1dffd75940b8fd9"
+		serverGrpc.PaymentRequest[tempPn].Receiver2 = otherAddress2[2:]
+		serverGrpc.PaymentRequest[tempPn].Amount2 = int64(amount2)
 
 		serverGrpc.PaymentRequest[tempPn].Status = "NONE"
 
 
-		r, _ := serverGrpc.Client[tempPaymentNum%100].PaymentRequest(serverGrpc.ClientContext[tempPaymentNum%100], &serverPb.PaymentRequestMessage{Pn: int64(tempPn)/*, From: myAddress, To: otherAddress, Amount: int64(1)*/})
+		if randVal >= 1 {
 
-		if r.GetResult() == true {
-			ctx.JSON(http.StatusOK, gin.H{"message": "Payment"})
+//			fmt.Println("1")
+			r, _ := serverGrpc.Client[tempPn%100].PaymentRequest(serverGrpc.ClientContext[tempPn%100], &serverPb.PaymentRequestMessage{Pn: int64(tempPn)})//, From: myAddress, To: otherAddress, Amount: int64(1)})
+
+			if r.GetResult() == true {
+				ctx.JSON(http.StatusOK, gin.H{"message": "Payment"})
+//				fmt.Println("return1")
+
+			} else {
+				ctx.JSON(http.StatusBadRequest, gin.H{"message": "Payment"})
+			}
+
 		} else {
-			ctx.JSON(http.StatusBadRequest, gin.H{"message": "Payment"})
+//			fmt.Println("2")
+
+			r, _ := serverGrpc.Client2[tempPn%100].PaymentRequest(serverGrpc.ClientContext[tempPn%100], &serverPb.PaymentRequestMessage{Pn: int64(tempPn)})//, From: myAddress, To: otherAddress, Amount: int64(1)})
+
+			if r.GetResult() == true {
+				ctx.JSON(http.StatusOK, gin.H{"message": "Payment"})
+//				fmt.Println("return2")
+			} else {
+				ctx.JSON(http.StatusBadRequest, gin.H{"message": "Payment"})
+			}
+
 		}
 
 }

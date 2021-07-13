@@ -203,11 +203,12 @@ int verify_prepared_message(unsigned int from, unsigned char *signature, unsigne
     sha3_Update(&sha3_ctx, original_msg, msg_size);
     msg32 = (unsigned char*)sha3_Finalize(&sha3_ctx);
 
+/*
     for(int i=0; i<16; i++) {
 	    printf("%02x", msg32[i]);
     }
     printf("\n");
-
+*/
     secp256k1_pubkey raw_pubkey;
     if(!secp256k1_ecdsa_recover(secp256k1_ctx, &raw_pubkey, &raw_sig, msg32))
         return -1;
@@ -217,12 +218,12 @@ int verify_prepared_message(unsigned int from, unsigned char *signature, unsigne
 
     secp256k1_ec_pubkey_serialize(secp256k1_ctx, pubkey, &pubkey_len, &raw_pubkey, SECP256K1_EC_UNCOMPRESSED);
 
-    
+/*    
     for(int i=0; i<32; i++) {
 	    printf("%02x", pubkey[i]);
     }
     printf("\n");
-
+*/
     return 0;
     sha3_Init256(&sha3_ctx);
     sha3_SetFlags(&sha3_ctx, SHA3_FLAGS_KECCAK);
