@@ -180,8 +180,10 @@ func SendCrossPaymentPrepareRequest(i interface{}) {
 
 		agreementOriginalMessage, signature := convertMsgResByteToPointer(r.OriginalMessage, r.Signature)
 
+		addr := []C.uchar(address)
+
 		for ; ; {
-			result := C.ecall_cross_verify_all_prepared_res_msg_temp_w(agreementOriginalMessage, signature)
+			result := C.ecall_cross_verify_all_prepared_res_msg_w(agreementOriginalMessage, signature, &addr[0])
 
 			if result == EnclaveFailure {
 				break
@@ -229,8 +231,11 @@ func SendCrossPaymentCommitRequest(i interface{}) {
 
 		updateOriginalMessage, signature := convertMsgResByteToPointer(r.OriginalMessage, r.Signature)
 		//C.ecall_cross_verify_all_committed_res_msg_temp_w(updateOriginalMessage, signature)
+
+		addr := []C.uchar(address)
+
 		for ; ; {
-			result := C.ecall_cross_verify_all_committed_res_msg_temp_w(updateOriginalMessage, signature)
+			result := C.ecall_cross_verify_all_committed_res_msg_w(updateOriginalMessage, signature, &addr[0])
 
 			if result == EnclaveFailure {
 				break
@@ -551,7 +556,7 @@ func (s *ServerGrpc) CrossPaymentRequest(ctx context.Context, rs *pbXServer.Cros
 //	st := time.Now()
 	go func(){
 		for ; ; {
-			result := C.ecall_cross_create_all_prepare_req_msg_temp_w(C.uint(rs.Pn), &sender[0], &middleMan[0], &receiver[0], C.uint(len(channelSlice1)), &channelSlice1[0], C.uint(len(channelSlice2)), &channelSlice2[0], C.uint(len(channelSlice3)), &channelSlice3[0], &amountSlice1[0], &amountSlice2[0], &amountSlice3[0], &originalMessageForPrepare, &signatureForPrepare)
+			result := C.ecall_cross_create_all_prepare_req_msg_w(C.uint(rs.Pn), &sender[0], &middleMan[0], &receiver[0], C.uint(len(channelSlice1)), &channelSlice1[0], C.uint(len(channelSlice2)), &channelSlice2[0], C.uint(len(channelSlice3)), &channelSlice3[0], &amountSlice1[0], &amountSlice2[0], &amountSlice3[0], &originalMessageForPrepare, &signatureForPrepare)
 
 			if result == EnclaveFailure {
 				prepareMsgCreation[rs.Pn] <- true
@@ -566,7 +571,7 @@ func (s *ServerGrpc) CrossPaymentRequest(ctx context.Context, rs *pbXServer.Cros
 	go func() {
 
 		for ; ; {
-			result := C.ecall_cross_create_all_prepare_req_msg_temp_w(C.uint(rs.Pn), &sender2[0], &middleMan2[0], &receiver2[0], C.uint(len(channelSlice1)), &channelSlice1[0], C.uint(len(channelSlice2)), &channelSlice2[0], C.uint(len(channelSlice3)), &channelSlice3[0], &amountSlice1[0], &amountSlice2[0], &amountSlice3[0], &originalMessageForPrepare2, &signatureForPrepare2)
+			result := C.ecall_cross_create_all_prepare_req_msg_w(C.uint(rs.Pn), &sender2[0], &middleMan2[0], &receiver2[0], C.uint(len(channelSlice1)), &channelSlice1[0], C.uint(len(channelSlice2)), &channelSlice2[0], C.uint(len(channelSlice3)), &channelSlice3[0], &amountSlice1[0], &amountSlice2[0], &amountSlice3[0], &originalMessageForPrepare2, &signatureForPrepare2)
 			if result == EnclaveFailure {
 				prepareMsgCreation[rs.Pn] <- true
 				break
@@ -613,7 +618,7 @@ func (s *ServerGrpc) CrossPaymentRequest(ctx context.Context, rs *pbXServer.Cros
 
 	go func() {
 		for ; ; {
-			result := C.ecall_cross_create_all_commit_req_msg_temp_w(C.uint(rs.Pn), &sender[0], &middleMan[0], &receiver[0], C.uint(len(channelSlice1)), &channelSlice1[0], C.uint(len(channelSlice2)), &channelSlice2[0], C.uint(len(channelSlice3)), &channelSlice3[0], &amountSlice1[0], &amountSlice2[0], &amountSlice3[0], &originalMessageForCommit, &signatureForCommit)
+			result := C.ecall_cross_create_all_commit_req_msg_w(C.uint(rs.Pn), &sender[0], &middleMan[0], &receiver[0], C.uint(len(channelSlice1)), &channelSlice1[0], C.uint(len(channelSlice2)), &channelSlice2[0], C.uint(len(channelSlice3)), &channelSlice3[0], &amountSlice1[0], &amountSlice2[0], &amountSlice3[0], &originalMessageForCommit, &signatureForCommit)
 
 			if result == EnclaveFailure {
 				commitMsgCreation[rs.Pn] <- true
@@ -627,7 +632,7 @@ func (s *ServerGrpc) CrossPaymentRequest(ctx context.Context, rs *pbXServer.Cros
 
 	go func() {
 		for ; ; {
-			result := C.ecall_cross_create_all_commit_req_msg_temp_w(C.uint(rs.Pn), &sender2[0], &middleMan2[0], &receiver2[0], C.uint(len(channelSlice1)), &channelSlice1[0], C.uint(len(channelSlice2)), &channelSlice2[0], C.uint(len(channelSlice3)), &channelSlice3[0], &amountSlice1[0], &amountSlice2[0], &amountSlice3[0], &originalMessageForCommit2, &signatureForCommit2)
+			result := C.ecall_cross_create_all_commit_req_msg_w(C.uint(rs.Pn), &sender2[0], &middleMan2[0], &receiver2[0], C.uint(len(channelSlice1)), &channelSlice1[0], C.uint(len(channelSlice2)), &channelSlice2[0], C.uint(len(channelSlice3)), &channelSlice3[0], &amountSlice1[0], &amountSlice2[0], &amountSlice3[0], &originalMessageForCommit2, &signatureForCommit2)
 			if result == EnclaveFailure {
 				commitMsgCreation[rs.Pn] <- true
 				break
@@ -705,7 +710,7 @@ func (s *ServerGrpc) CrossPaymentRequest(ctx context.Context, rs *pbXServer.Cros
 
 	go func() {
 		for ; ; {
-			result := C.ecall_cross_create_all_confirm_req_msg_temp_w(C.uint(rs.Pn), &sender[0], &middleMan[0], &receiver[0], C.uint(len(channelSlice1)), &channelSlice1[0], C.uint(len(channelSlice2)), &channelSlice2[0], C.uint(len(channelSlice3)), &channelSlice3[0], &amountSlice1[0], &amountSlice2[0], &amountSlice3[0], &originalMessageForConfirm, &signatureForConfirm)
+			result := C.ecall_cross_create_all_confirm_req_msg_w(C.uint(rs.Pn), &sender[0], &middleMan[0], &receiver[0], C.uint(len(channelSlice1)), &channelSlice1[0], C.uint(len(channelSlice2)), &channelSlice2[0], C.uint(len(channelSlice3)), &channelSlice3[0], &amountSlice1[0], &amountSlice2[0], &amountSlice3[0], &originalMessageForConfirm, &signatureForConfirm)
 
 			if result == EnclaveFailure {
 				confirmMsgCreation[rs.Pn] <- true
@@ -720,7 +725,7 @@ func (s *ServerGrpc) CrossPaymentRequest(ctx context.Context, rs *pbXServer.Cros
 
 	go func() {
 		for ; ; {
-			result := C.ecall_cross_create_all_confirm_req_msg_temp_w(C.uint(rs.Pn), &sender2[0], &middleMan2[0], &receiver2[0], C.uint(len(channelSlice1)), &channelSlice1[0], C.uint(len(channelSlice2)), &channelSlice2[0], C.uint(len(channelSlice3)), &channelSlice3[0], &amountSlice1[0], &amountSlice2[0], &amountSlice3[0], &originalMessageForConfirm2, &signatureForConfirm2)
+			result := C.ecall_cross_create_all_confirm_req_msg_w(C.uint(rs.Pn), &sender2[0], &middleMan2[0], &receiver2[0], C.uint(len(channelSlice1)), &channelSlice1[0], C.uint(len(channelSlice2)), &channelSlice2[0], C.uint(len(channelSlice3)), &channelSlice3[0], &amountSlice1[0], &amountSlice2[0], &amountSlice3[0], &originalMessageForConfirm2, &signatureForConfirm2)
 			if result == EnclaveFailure {
 				confirmMsgCreation[rs.Pn] <- true
 				break
@@ -788,7 +793,7 @@ func (s *ServerGrpc) CrossPaymentRequest(ctx context.Context, rs *pbXServer.Cros
 		}
 	}
 
-//	fmt.Println("END!!")
+	fmt.Println("END!!")
 
 	go func() {
 		emptyChannel[chIdToPaymentNum[firstTempChId]] <- true

@@ -195,24 +195,16 @@ void ecall_cross_update_committedServer_list_w(unsigned int payment_num, unsigne
 unsigned int ecall_cross_check_prepared_unanimity_w(unsigned int payment_num, int which_list);
 unsigned int ecall_cross_check_committed_unanimity_w(unsigned int payment_num, int which_list);
 
-void ecall_cross_create_all_prepare_req_msg_w(unsigned int payment_num,/* unsigned int payment_size, unsigned int *channel_ids, int *amount,*/ unsigned char **req_msg, unsigned char **req_sig);
-unsigned int ecall_cross_verify_all_prepared_res_msg_w(unsigned char *res_msg, unsigned char *res_sig);
 
-unsigned int ecall_cross_create_all_prepare_req_msg_temp_w(unsigned int payment_num, unsigned char *sender, unsigned char *middleMan, unsigned char *receiver, unsigned int sender_payment_size, unsigned int *sender_channel_ids, unsigned int middleMan_payment_size, unsigned int *middleMan_channel_ids, unsigned int receiver_payment_size, unsigned int *receiver_channel_ids, int *sender_amount, int *middleMan_amount, int *receiver_amount, unsigned char **original_msg, unsigned char **output);
+unsigned int ecall_cross_create_all_prepare_req_msg_w(unsigned int payment_num, unsigned char *sender, unsigned char *middleMan, unsigned char *receiver, unsigned int sender_payment_size, unsigned int *sender_channel_ids, unsigned int middleMan_payment_size, unsigned int *middleMan_channel_ids, unsigned int receiver_payment_size, unsigned int *receiver_channel_ids, int *sender_amount, int *middleMan_amount, int *receiver_amount, unsigned char **original_msg, unsigned char **output);
 
-unsigned int ecall_cross_verify_all_prepared_res_msg_temp_w(unsigned char *res_msg, unsigned char *res_sig);
+unsigned int ecall_cross_verify_all_prepared_res_msg_w(unsigned char *res_msg, unsigned char *res_sig, unsigned char *address);
 
-void ecall_cross_create_all_commit_req_msg_w(unsigned int payment_num, unsigned char **req_msg, unsigned char **req_sig);
+unsigned int ecall_cross_create_all_commit_req_msg_w(unsigned int payment_num, unsigned char *sender, unsigned char *middleMan, unsigned char *receiver, unsigned int sender_payment_size, unsigned int *sender_channel_ids, unsigned int middleMan_payment_size, unsigned int *middleMan_channel_ids, unsigned int receiver_payment_size, unsigned int *receiver_channel_ids, int *sender_amount, int *middleMan_amount, int *receiver_amount, unsigned char **original_msg, unsigned char **output);
 
-unsigned int ecall_cross_create_all_commit_req_msg_temp_w(unsigned int payment_num, unsigned char *sender, unsigned char *middleMan, unsigned char *receiver, unsigned int sender_payment_size, unsigned int *sender_channel_ids, unsigned int middleMan_payment_size, unsigned int *middleMan_channel_ids, unsigned int receiver_payment_size, unsigned int *receiver_channel_ids, int *sender_amount, int *middleMan_amount, int *receiver_amount, unsigned char **original_msg, unsigned char **output);
+unsigned int ecall_cross_verify_all_committed_res_msg_w(unsigned char *res_msg, unsigned char *res_sig, unsigned char *address);
 
-unsigned int ecall_cross_verify_all_committed_res_msg_w(unsigned char *res_msg, unsigned char *res_sig);
-
-unsigned int ecall_cross_verify_all_committed_res_msg_temp_w(unsigned char *res_msg, unsigned char *res_sig);
-
-void ecall_cross_create_all_confirm_req_msg_w(unsigned int payment_num, unsigned char **req_msg, unsigned char **req_sig);
-
-unsigned int ecall_cross_create_all_confirm_req_msg_temp_w(unsigned int payment_num, unsigned char *sender, unsigned char *middleMan, unsigned char *receiver, unsigned int sender_payment_size, unsigned int *sender_channel_ids, unsigned int middleMan_payment_size, unsigned int *middleMan_channel_ids, unsigned int receiver_payment_size, unsigned int *receiver_channel_ids, int *sender_amount, int *middleMan_amount, int *receiver_amount, unsigned char **original_msg, unsigned char **output);
+unsigned int ecall_cross_create_all_confirm_req_msg_w(unsigned int payment_num, unsigned char *sender, unsigned char *middleMan, unsigned char *receiver, unsigned int sender_payment_size, unsigned int *sender_channel_ids, unsigned int middleMan_payment_size, unsigned int *middleMan_channel_ids, unsigned int receiver_payment_size, unsigned int *receiver_channel_ids, int *sender_amount, int *middleMan_amount, int *receiver_amount, unsigned char **original_msg, unsigned char **output);
 
 void ecall_initSecp256k1CTX_w();
 

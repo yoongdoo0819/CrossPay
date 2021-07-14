@@ -84,12 +84,7 @@ enclave {
             [user_check] unsigned char *chain2MiddleMan,
             [user_check] unsigned char *chain2Receiver,
             unsigned int chain2Amount,
-/*  
-            [user_check] unsigned char *chain3Sender,
-            [user_check] unsigned char *chain3MiddleMan,
-            [user_check] unsigned char *chain3Receiver,
-            unsigned int chain3Amount,
-*/
+
             unsigned int numOfParticipants,
             [user_check] unsigned int *payment_num);
 
@@ -115,12 +110,7 @@ enclave {
             int which_list,
             [user_check] unsigned int *unanimous);
 
-        public void ecall_cross_create_all_prepare_req_msg(
-            unsigned int payment_num, 
-            [user_check] unsigned char *req_msg, 
-            [user_check] unsigned char *req_sig);
-
-	public void ecall_cross_create_all_prepare_req_msg_temp(
+	public void ecall_cross_create_all_prepare_req_msg(
             unsigned int payment_num, 
             [user_check] unsigned char *sender, 
             [user_check] unsigned char *middleMan, 
@@ -138,17 +128,7 @@ enclave {
             [user_check] unsigned char *req_sig,
 	    [user_check] unsigned int *result);
 
-        public void ecall_cross_verify_all_prepared_res_msg(
-            [user_check] unsigned char *res_msg, 
-            [user_check] unsigned char *res_sig,
-            [user_check] unsigned int *is_verified);
-
-        public void ecall_cross_create_all_commit_req_msg(
-            unsigned int payment_num,
-            [user_check] unsigned char *req_msg,
-            [user_check] unsigned char *req_sig);
-
-	public void ecall_cross_create_all_commit_req_msg_temp(
+	public void ecall_cross_create_all_commit_req_msg(
             unsigned int payment_num, 
             [user_check] unsigned char *sender, 
             [user_check] unsigned char *middleMan, 
@@ -166,27 +146,19 @@ enclave {
             [user_check] unsigned char *req_sig,
 	    [user_check] unsigned int *result);
 
-	public void ecall_cross_verify_all_prepared_res_msg_temp(
+	public void ecall_cross_verify_all_prepared_res_msg(
 	    [user_check] unsigned char *res_msg, 
             [user_check] unsigned char *res_sig, 
+	    [user_check] unsigned char *address,
             [user_check] unsigned int *is_verified);
 
-        public void ecall_cross_verify_all_committed_res_msg(
-            [user_check] unsigned char *res_msg, 
+	public void ecall_cross_verify_all_committed_res_msg(
+	    [user_check] unsigned char *res_msg, 
             [user_check] unsigned char *res_sig,
+	    [user_check] unsigned char *address, 
             [user_check] unsigned int *is_verified);
 
-	public void ecall_cross_verify_all_committed_res_msg_temp(
-	    [user_check] unsigned char *res_msg, 
-            [user_check] unsigned char *res_sig, 
-            [user_check] unsigned int *is_verified);
-
-        public void ecall_cross_create_all_confirm_req_msg(
-            unsigned int payment_num,
-            [user_check] unsigned char *confirm_msg,
-            [user_check] unsigned char *confirm_sig);
-
-	public void ecall_cross_create_all_confirm_req_msg_temp(
+	public void ecall_cross_create_all_confirm_req_msg(
             unsigned int payment_num, 
             [user_check] unsigned char *sender, 
             [user_check] unsigned char *middleMan, 

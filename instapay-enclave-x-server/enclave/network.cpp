@@ -245,11 +245,7 @@ void ecall_cross_check_committed_unanimity(unsigned int payment_num, int which_l
 {
 }
 
-void ecall_cross_create_all_prepare_req_msg(unsigned int payment_num, unsigned char *req_msg, unsigned char *req_sig)
-{
-}
-
-void ecall_cross_create_all_prepare_req_msg_temp(unsigned int payment_num, unsigned char *sender, unsigned char *middleMan, unsigned char *receiver, unsigned int sender_payment_size, unsigned int *sender_channel_ids, unsigned int middleMan_payment_size, unsigned int *middleMan_channel_ids, unsigned int receiver_payment_size, unsigned int *receiver_channel_ids, int *sender_amount, int *middleMan_amount, int *receiver_amount, unsigned char *req_msg, unsigned char *req_sig, unsigned int *result)
+void ecall_cross_create_all_prepare_req_msg(unsigned int payment_num, unsigned char *sender, unsigned char *middleMan, unsigned char *receiver, unsigned int sender_payment_size, unsigned int *sender_channel_ids, unsigned int middleMan_payment_size, unsigned int *middleMan_channel_ids, unsigned int receiver_payment_size, unsigned int *receiver_channel_ids, int *sender_amount, int *middleMan_amount, int *receiver_amount, unsigned char *req_msg, unsigned char *req_sig, unsigned int *result)
 {
 	unsigned char req_signature[65] = {0, };
    	unsigned char *seckey_arr = (unsigned char*)"5a5e2194e0639fd017158793812dd5f5668f5bfc9a146f93f39237a4b4ed7dd5";
@@ -289,16 +285,11 @@ void ecall_cross_create_all_prepare_req_msg_temp(unsigned int payment_num, unsig
 	return;
 }
 
-
-void ecall_cross_verify_all_prepared_res_msg(unsigned char *res_msg, unsigned char *res_sig, unsigned int *is_verified)
-{
-}
-
-void ecall_cross_verify_all_prepared_res_msg_temp(unsigned char *res_msg, unsigned char *res_sig, unsigned int *is_verified)
+void ecall_cross_verify_all_prepared_res_msg(unsigned char *res_msg, unsigned char *res_sig, unsigned char *address,  unsigned int *is_verified)
 {
     MessageRes *res = (MessageRes*)res_msg;
 
-    verify_prepared_message(1, res_sig, res_msg, sizeof(MessageRes), NULL, res->payment_num);
+    verify_prepared_message(0, res_sig, res_msg, sizeof(MessageRes), address, res->payment_num);
 //	    printf("verification failure \n");
 //	    return;
 //    }
@@ -316,11 +307,8 @@ void ecall_cross_verify_all_prepared_res_msg_temp(unsigned char *res_msg, unsign
     return;
 }
 
-void ecall_cross_create_all_commit_req_msg(unsigned int payment_num, unsigned char *req_msg, unsigned char *req_sig)
-{
-}
 
-void ecall_cross_create_all_commit_req_msg_temp(unsigned int payment_num, unsigned char *sender, unsigned char *middleMan, unsigned char *receiver, unsigned int sender_payment_size, unsigned int *sender_channel_ids, unsigned int middleMan_payment_size, unsigned int *middleMan_channel_ids, unsigned int receiver_payment_size, unsigned int *receiver_channel_ids, int *sender_amount, int *middleMan_amount, int *receiver_amount, unsigned char *req_msg, unsigned char *req_sig, unsigned int *result)
+void ecall_cross_create_all_commit_req_msg(unsigned int payment_num, unsigned char *sender, unsigned char *middleMan, unsigned char *receiver, unsigned int sender_payment_size, unsigned int *sender_channel_ids, unsigned int middleMan_payment_size, unsigned int *middleMan_channel_ids, unsigned int receiver_payment_size, unsigned int *receiver_channel_ids, int *sender_amount, int *middleMan_amount, int *receiver_amount, unsigned char *req_msg, unsigned char *req_sig, unsigned int *result)
 {
 	unsigned char req_signature[65] = {0, };
    	unsigned char *seckey_arr = (unsigned char*)"5a5e2194e0639fd017158793812dd5f5668f5bfc9a146f93f39237a4b4ed7dd5";
@@ -372,15 +360,11 @@ void ecall_cross_create_all_commit_req_msg_temp(unsigned int payment_num, unsign
 	return;
 }
 
-void ecall_cross_verify_all_committed_res_msg(unsigned char *res_msg, unsigned char *res_sig, unsigned int *is_verified)
-{
-}
-
-void ecall_cross_verify_all_committed_res_msg_temp(unsigned char *res_msg, unsigned char *res_sig, unsigned int *is_verified)
+void ecall_cross_verify_all_committed_res_msg(unsigned char *res_msg, unsigned char *res_sig, unsigned char *address, unsigned int *is_verified)
 {
     MessageRes *res = (MessageRes*)res_msg;
 
-    verify_committed_message(1, res_sig, res_msg, sizeof(MessageRes), NULL, res->payment_num);
+    verify_committed_message(0, res_sig, res_msg, sizeof(MessageRes), address, res->payment_num);
 
     /* step 2. check that message type is 'AG_RES' */
 
@@ -394,11 +378,8 @@ void ecall_cross_verify_all_committed_res_msg_temp(unsigned char *res_msg, unsig
     *is_verified = 9999;
     return;
 }
-void ecall_cross_create_all_confirm_req_msg(unsigned int payment_num, unsigned char *confirm_msg, unsigned char *confirm_sig)
-{
-}
 
-void ecall_cross_create_all_confirm_req_msg_temp(unsigned int payment_num, unsigned char *sender, unsigned char *middleMan, unsigned char *receiver, unsigned int sender_payment_size, unsigned int *sender_channel_ids, unsigned int middleMan_payment_size, unsigned int *middleMan_channel_ids, unsigned int receiver_payment_size, unsigned int *receiver_channel_ids, int *sender_amount, int *middleMan_amount, int *receiver_amount, unsigned char *req_msg, unsigned char *req_sig, unsigned int *result)
+void ecall_cross_create_all_confirm_req_msg(unsigned int payment_num, unsigned char *sender, unsigned char *middleMan, unsigned char *receiver, unsigned int sender_payment_size, unsigned int *sender_channel_ids, unsigned int middleMan_payment_size, unsigned int *middleMan_channel_ids, unsigned int receiver_payment_size, unsigned int *receiver_channel_ids, int *sender_amount, int *middleMan_amount, int *receiver_amount, unsigned char *req_msg, unsigned char *req_sig, unsigned int *result)
 {
 	unsigned char req_signature[65] = {0, };
    	unsigned char *seckey_arr = (unsigned char*)"5a5e2194e0639fd017158793812dd5f5668f5bfc9a146f93f39237a4b4ed7dd5";
