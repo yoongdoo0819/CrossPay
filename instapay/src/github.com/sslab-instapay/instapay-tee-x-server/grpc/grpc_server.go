@@ -37,6 +37,22 @@ import (
 
 )
 
+var clientIP1 = "141.223.121.167:50001"
+var clientIP2 = "141.223.121.168:50002"
+var clientIP3 = "141.223.121.251:50003"
+
+var clientIP4 = "141.223.121.165:50001"
+var clientIP5 = "141.223.121.166:50002"
+var clientIP6 = "141.223.121.169:50003"
+
+var clientAddr1ForChain1 = "f55ba9376db959fab2af86d565325829b08ea3c4"
+var clientAddr2ForChain1 = "c60f640c4505d15b972e6fc2a2a7cba09d05d9f7"
+var clientAddr3ForChain1 = "70603f1189790fcd0fd753a7fef464bdc2c2ad36"
+
+var clientAddr1ForChain2 = "f4444529d6221122d1712c52623ba119a60609e3"
+var clientAddr2ForChain2 = "d95da40bbd2001abf1a558c0b1dffd75940b8fd9"
+var clientAddr3ForChain2 = "73d8e5475278f7593b5293beaa45fb53f34c9ad2"
+
 const (
 	NumOfParticipants = 6
 	EnclaveFailure = 9999
@@ -1131,24 +1147,24 @@ func GrpcConnection() {
 //		tempConn := []*grpc.ClientConn// make(map[int]*grpc.ClientConn)
 //		tempClient1[i] = tempConn
 
-		tempConnC1[i], err = grpc.Dial("141.223.121.167:50001", grpc.WithInsecure())
+		tempConnC1[i], err = grpc.Dial(clientIP1, grpc.WithInsecure())
 		if err != nil {
 			log.Fatal("conn err ", err)
 		}
 
-		tempConnC2[i], err = grpc.Dial("141.223.121.168:50002", grpc.WithInsecure())
-		tempConnC3[i], err = grpc.Dial("141.223.121.251:50003", grpc.WithInsecure())
-		tempConnC4[i], err = grpc.Dial("141.223.121.165:50001", grpc.WithInsecure())
-		tempConnC5[i], err = grpc.Dial("141.223.121.166:50002", grpc.WithInsecure())
-		tempConnC6[i], err = grpc.Dial("141.223.121.169:50003", grpc.WithInsecure())
+		tempConnC2[i], err = grpc.Dial(clientIP2, grpc.WithInsecure())
+		tempConnC3[i], err = grpc.Dial(clientIP3, grpc.WithInsecure())
+		tempConnC4[i], err = grpc.Dial(clientIP4, grpc.WithInsecure())
+		tempConnC5[i], err = grpc.Dial(clientIP5, grpc.WithInsecure())
+		tempConnC6[i], err = grpc.Dial(clientIP6, grpc.WithInsecure())
 	}
 
-	connClient["141.223.121.167:50001"] = tempConnC1
-	connClient["141.223.121.168:50002"] = tempConnC2
-	connClient["141.223.121.251:50003"] = tempConnC3
-	connClient["141.223.121.165:50001"] = tempConnC4
-	connClient["141.223.121.166:50002"] = tempConnC5
-	connClient["141.223.121.169:50003"] = tempConnC6
+	connClient[clientIP1] = tempConnC1
+	connClient[clientIP2] = tempConnC2
+	connClient[clientIP3] = tempConnC3
+	connClient[clientIP4] = tempConnC4
+	connClient[clientIP5] = tempConnC5
+	connClient[clientIP6] = tempConnC6
 
 /*
 	tempConn := make(map[string]*grpc.ClientConn)
@@ -1204,7 +1220,7 @@ func GrpcConnection() {
 }
 
 func GetClientInfo() {
-
+/*
 	participantsForChain1 = append(participantsForChain1, "f55ba9376db959fab2af86d565325829b08ea3c4")
 	participantsForChain1 = append(participantsForChain1, "c60f640c4505d15b972e6fc2a2a7cba09d05d9f7")
 	participantsForChain1 = append(participantsForChain1, "70603f1189790fcd0fd753a7fef464bdc2c2ad36")
@@ -1220,6 +1236,20 @@ func GetClientInfo() {
 	clientAddr["f4444529d6221122d1712c52623ba119a60609e3"] = "141.223.121.165:50001"
 	clientAddr["d95da40bbd2001abf1a558c0b1dffd75940b8fd9"] = "141.223.121.166:50002"
 	clientAddr["73d8e5475278f7593b5293beaa45fb53f34c9ad2"] = "141.223.121.169:50003"
+*/
+	participantsForChain1 = append(participantsForChain1, clientAddr1ForChain1)
+	participantsForChain1 = append(participantsForChain1, clientAddr2ForChain1)
+	participantsForChain1 = append(participantsForChain1, clientAddr3ForChain1)
 
+	participantsForChain2 = append(participantsForChain2, clientAddr1ForChain2)
+	participantsForChain2 = append(participantsForChain2, clientAddr2ForChain2)
+	participantsForChain2 = append(participantsForChain2, clientAddr3ForChain2)
+
+	clientAddr[clientAddr1ForChain1] = clientIP1
+	clientAddr[clientAddr2ForChain1] = clientIP2
+	clientAddr[clientAddr3ForChain1] = clientIP3
+
+	clientAddr[clientAddr1ForChain2] = clientIP4
+	clientAddr[clientAddr2ForChain2] = clientIP5
+	clientAddr[clientAddr3ForChain2] = clientIP6
 }
-
