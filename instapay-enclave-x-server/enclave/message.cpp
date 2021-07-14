@@ -4,6 +4,9 @@
 #include "sgx_tcrypto.h"
 #include <message.h>
 #include <cross_payment.h>
+#include <mutex>
+
+//std::mutex rwMutex;
 
 secp256k1_context* secp256k1_ctx = NULL;
 
@@ -255,6 +258,11 @@ int verify_prepared_message(unsigned int from, unsigned char *signature, unsigne
     else if(from == 1) {
        // unsigned char *server_pubaddr = ::arr_to_bytes(SERVER_PUBADDR, 40);
 
+//	rwMutex.lock();	
+	cross_payments.find(payment_num)->second.m_count++;
+//	printf(">> %d , %d \n", payment_num, cross_payments.find(payment_num)->second.m_count);
+
+//	rwMutex.unlock();
 /*	
 	printf("server_pubaddr :");
 	for(int i=0; i<20; i++)

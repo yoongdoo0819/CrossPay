@@ -8,7 +8,7 @@
 #include <mutex>
 
 //std::mutex rwMutex;
-
+//sgx_thread_mutex_t g_mutex = SGX_THREAD_MUTEX_INITIALIZER;
 
 unsigned int Payment::acc_payment_num = 1;
 unsigned int Cross_Payment::acc_cross_payment_num = 1;
@@ -187,35 +187,38 @@ void ecall_verify_ud_res_msg(unsigned char *pubaddr, unsigned char *res_msg, uns
 
 void ecall_cross_accept_request( 
             unsigned char *chain1Sender,
-            unsigned char *chain1Server, 
+            unsigned char *chain1MiddleMan, 
             unsigned char *chain1Receiver, 
             unsigned int chain1Amount,
 
 	    unsigned char *chain2Sender,
-            unsigned char *chain2Server, 
+            unsigned char *chain2MiddleMan, 
             unsigned char *chain2Receiver, 
             unsigned int chain2Amount,
-
-            unsigned char *chain3Server,
-            unsigned char *chain3Sender, 
+/*
+            unsigned char *chain3Sender,
+            unsigned char *chain3MiddleMan, 
             unsigned char *chain3Receiver, 
             unsigned int chain3Amount,
-
+*/
+	    unsigned int numOfParticipants,
             unsigned int *payment_num)
 {
 
-    //Cross_Payment a = Cross_Payment();
 
-    Cross_Payment cross_payment = Cross_Payment(Cross_Payment::acc_cross_payment_num, chain1Sender, chain1Server, chain1Receiver, chain1Amount, chain2Sender, chain2Server, chain2Receiver, chain2Amount);
+    Cross_Payment cross_payment = Cross_Payment(Cross_Payment::acc_cross_payment_num, chain1Sender, chain1MiddleMan, chain1Receiver, chain1Amount, chain2Sender, chain2MiddleMan, chain2Receiver, chain2Amount, numOfParticipants);
 
-
-    //rwMutex.lock();
+//    sgx_thread_mutex_lock(&g_mutex);
+//    rwMutex.lock();
     cross_payments.insert(map_cross_payment_value(Cross_Payment::acc_cross_payment_num, cross_payment));
     *payment_num = Cross_Payment::acc_cross_payment_num;
+  
+//    printf("created pn %d, %d, %d \n", cross_payments.find(Cross_Payment::acc_cross_payment_num)->second.m_cross_payment_num, cross_payments.find(Cross_Payment::acc_cross_payment_num)->second.m_numOfParticipants, cross_payments.find(Cross_Payment::acc_cross_payment_num)->second.m_count);
 
     Cross_Payment::acc_cross_payment_num++;
 //    printf("cross accept request \n");
-    //rwMutex.unlock();
+//    rwMutex.unlock();
+//    sgx_thread_mutex_unlock(&g_mutex);
 }       
 
 void ecall_cross_add_participant(unsigned int payment_num, unsigned char *addr)
@@ -327,6 +330,7 @@ void ecall_cross_create_all_commit_req_msg_temp(unsigned int payment_num, unsign
 	
 	memset((unsigned char*)&request, 0x00, sizeof(Cross_Message));
 
+//	printf("%d, %d \n", payment_num, cross_payments.find(payment_num)->second.m_count);
 	if (cross_payments.find(payment_num)->second.m_chain1Sender_prepared == 1
 		&& cross_payments.find(payment_num)->second.m_chain1MiddleMan_prepared == 1
 		&& cross_payments.find(payment_num)->second.m_chain1Receiver_prepared == 1 && cross_payments.find(payment_num)->second.m_chain2Sender_prepared == 1

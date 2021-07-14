@@ -263,29 +263,30 @@ unsigned int ecall_verify_ud_res_msg_w(unsigned char *pubaddr, unsigned char *re
  */
 
 unsigned int ecall_cross_accept_request_w(
-		unsigned char *chain1Server, 
 		unsigned char *chain1Sender, 
+		unsigned char *chain1MiddleMan, 
 		unsigned char *chain1Receiver, 
 		unsigned int chain1Amount, 
-		unsigned char *chain2Server, 
 		unsigned char *chain2Sender, 
+		unsigned char *chain2MiddleMan, 
 		unsigned char *chain2Receiver, 
 		unsigned int chain2Amount,
-		unsigned char *chain3Server, 
 		unsigned char *chain3Sender, 
+		unsigned char *chain3MiddleMan, 
 		unsigned char *chain3Receiver, 
-		unsigned int chain3Amount)
+		unsigned int chain3Amount,
+		unsigned int numOfParticipants)
 
 {
     unsigned int payment_num;
 
     rwMutex.lock();
     sgx_status_t ret = SGX_ERROR_UNEXPECTED;    
-    ret =    ecall_cross_accept_request(global_eid, chain1Server, chain1Sender, chain1Receiver, chain1Amount, chain2Server, chain2Sender, chain2Receiver, chain2Amount, chain3Server, chain3Sender, chain3Receiver, chain3Amount, &payment_num);
+    ret =    ecall_cross_accept_request(global_eid, chain1Sender, chain1MiddleMan, chain1Receiver, chain1Amount, chain2Sender, chain2MiddleMan, chain2Receiver, chain2Amount, numOfParticipants, &payment_num);
     rwMutex.unlock();
 
     if (ret != SGX_SUCCESS) {
-		// print_error_message(ret);
+	 print_error_message(ret);
 	 return 999999;
     }
 

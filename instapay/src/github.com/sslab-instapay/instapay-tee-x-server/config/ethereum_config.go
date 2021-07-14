@@ -24,6 +24,9 @@ var EthereumConfig = map[string]string{
 	"contractAddr":     "0x58CD83F2ae9d11628bE3753e70564049c435c148",
 
 	/* grpc configuration */
+	"crossServerGrpcHost":   "141.223.121.164",
+	"crossServerGrpcPort":   "50009",
+
 	"serverGrpcHost":   "141.223.121.164",
 	"serverGrpcPort":   "50004",
 

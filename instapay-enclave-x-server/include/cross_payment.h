@@ -28,7 +28,8 @@ class Cross_Payment {
 			unsigned char *chain2Sender, 
 			unsigned char *chain2MiddleMan, 
 			unsigned char *chain2Receiver, 
-			unsigned int chain2Amount)
+			unsigned int chain2Amount,
+			unsigned int numOfParticipants)
 
 		: m_cross_payment_num(t_payment_num)
         {
@@ -43,6 +44,8 @@ class Cross_Payment {
 		m_chain2Receiver = ::arr_to_bytes(chain2Receiver, 40);
 		m_chain2Amount = chain2Amount;
 	
+		m_numOfParticipants = numOfParticipants;
+		m_count = 0;
 		m_cross_status = NONE;
         };
 
@@ -72,7 +75,8 @@ class Cross_Payment {
 	unsigned int m_chain2MiddleMan_committed;
 	unsigned int m_chain2Receiver_committed;
 
-
+	unsigned int m_numOfParticipants;
+	unsigned int m_count;
 //    private:
         unsigned int m_cross_payment_num;
 

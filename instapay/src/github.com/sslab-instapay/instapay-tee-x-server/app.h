@@ -123,7 +123,8 @@ unsigned int ecall_cross_accept_request_w(
 		unsigned char *chain3Server,
 		unsigned char *chain3Sender,
 		unsigned char *chain3Receiver,
-		unsigned int chain3Amount);
+		unsigned int chain3Amount,
+		unsigned int numOfParticipants);
 
 void ecall_cross_add_participant_w(unsigned int payment_num, unsigned char *addr);
 void ecall_cross_update_preparedServer_list_w(unsigned int payment_num, unsigned char *addr);
