@@ -131,7 +131,7 @@ func PaymentToServerChannelHandler(ctx *gin.Context) {
 		serverGrpc.PaymentRequest[tempPn].Receiver2 = otherAddress2[2:]
 		serverGrpc.PaymentRequest[tempPn].Amount2 = int64(amount2)
 
-		serverGrpc.PaymentRequest[tempPn].Status = "NONE"
+		serverGrpc.PaymentRequest[tempPn].Status = 1 
 
 
 		if randVal >= 1 {
