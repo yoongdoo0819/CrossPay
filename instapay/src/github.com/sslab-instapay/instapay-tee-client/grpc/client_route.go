@@ -688,10 +688,10 @@ func (s *ClientGrpc) UpdateRequest(ctx context.Context, in *clientPb.UpdateReque
 
 
 	convertedOriginalMsg, convertedSignatureMsg := convertByteToPointer(in.OriginalMessage[0], in.Signature[0])
-	convertedSenderMsg, convertedSenderSig := convertMsgResByteToPointer(in.OriginalMessage[1], in.Signature[1])
+/*	convertedSenderMsg, convertedSenderSig := convertMsgResByteToPointer(in.OriginalMessage[1], in.Signature[1])
 	convertedMiddleManMsg, convertedMiddleManSig := convertMsgResByteToPointer(in.OriginalMessage[2], in.Signature[2])
 	convertedReceiverMsg, convertedReceiverSig := convertMsgResByteToPointer(in.OriginalMessage[3], in.Signature[3])
-
+*/
 
 /*
 	var convertedCrossPaymentMsg, convertedCrossPaymentSig *C.uchar
@@ -704,7 +704,7 @@ func (s *ClientGrpc) UpdateRequest(ctx context.Context, in *clientPb.UpdateReque
 
 //	C.ecall_go_post_update_w(convertedOriginalMsg, convertedSignatureMsg, &originalMsg, &signature)
 
-	for i:=1; i<=3; i++ {
+	for i:=1; i<int(in.NumOfParticipants); i++ {
 		go VerifyClientAgreeMsg(in.OriginalMessage[i], in.Signature[i], address[i], in.PaymentNumber)
 	}
 
@@ -720,7 +720,7 @@ func (s *ClientGrpc) UpdateRequest(ctx context.Context, in *clientPb.UpdateReque
 	}
 
 	for ; ; {
-		result := C.ecall_go_post_update_w(convertedOriginalMsg, convertedSignatureMsg, convertedSenderMsg, convertedSenderSig, convertedMiddleManMsg, convertedMiddleManSig, convertedReceiverMsg, convertedReceiverSig, nil, nil, &originalMsg, &signature)
+		result := C.ecall_go_post_update_w(convertedOriginalMsg, convertedSignatureMsg, nil, nil, nil, nil, nil, nil,/*convertedSenderMsg, convertedSenderSig, convertedMiddleManMsg, convertedMiddleManSig, convertedReceiverMsg, convertedReceiverSig,*/ nil, nil, &originalMsg, &signature)
 
 		if result == C.uint(1) {
 			fmt.Println("UD result failure!")
@@ -783,10 +783,10 @@ func (s *ClientGrpc) ConfirmPayment(ctx context.Context, in *clientPb.ConfirmReq
 //	return &clientPb.ConfirmResult{Result: true}, nil
 
 	convertedOriginalMsg, convertedSignatureMsg := convertByteToPointer(in.OriginalMessage[0], in.Signature[0])
-	convertedSenderMsg, convertedSenderSig := convertMsgResByteToPointer(in.OriginalMessage[1], in.Signature[1])
+/*	convertedSenderMsg, convertedSenderSig := convertMsgResByteToPointer(in.OriginalMessage[1], in.Signature[1])
 	convertedMiddleManMsg, convertedMiddleManSig := convertMsgResByteToPointer(in.OriginalMessage[2], in.Signature[2])
 	convertedReceiverMsg, convertedReceiverSig := convertMsgResByteToPointer(in.OriginalMessage[3], in.Signature[3])
-
+*/
 //	fmt.Println(convertedSenderMsg, convertedSenderSig)
 //	fmt.Println(convertedMiddleManMsg, convertedMiddleManSig)
 //	fmt.Println(convertedReceiverMsg, convertedReceiverSig)
@@ -807,7 +807,7 @@ func (s *ClientGrpc) ConfirmPayment(ctx context.Context, in *clientPb.ConfirmReq
  * Using SGX
  */
 
-	for i:=1; i<=3; i++ {
+	for i:=1; i<int(in.NumOfParticipants); i++ {
 		go VerifyClientUdMsg(in.OriginalMessage[i], in.Signature[i], address[i], in.PaymentNumber)
 	}
 
@@ -823,7 +823,7 @@ func (s *ClientGrpc) ConfirmPayment(ctx context.Context, in *clientPb.ConfirmReq
 	}
 
 	for ; ; {
-		result := C.ecall_go_idle_w(convertedOriginalMsg, convertedSignatureMsg, convertedSenderMsg, convertedSenderSig, convertedMiddleManMsg, convertedMiddleManSig, convertedReceiverMsg, convertedReceiverSig, nil, nil)
+		result := C.ecall_go_idle_w(convertedOriginalMsg, convertedSignatureMsg, nil, nil, nil, nil, nil, nil, /* convertedSenderMsg, convertedSenderSig, convertedMiddleManMsg, convertedMiddleManSig, convertedReceiverMsg, convertedReceiverSig,*/ nil, nil)
 
 
 		if result == 1 {
@@ -1201,10 +1201,10 @@ func (s *ClientGrpc) CrossPaymentCommitClientRequest(ctx context.Context, in *cl
 //	return &clientPb.CommitResult{Result: true}, nil
 
 	convertedOriginalMsg, convertedSignatureMsg := convertByteToPointer(in.OriginalMessage[0], in.Signature[0])
-	convertedSenderMsg, convertedSenderSig := convertMsgResByteToPointer(in.OriginalMessage[1], in.Signature[1])
+/*	convertedSenderMsg, convertedSenderSig := convertMsgResByteToPointer(in.OriginalMessage[1], in.Signature[1])
 	convertedMiddleManMsg, convertedMiddleManSig := convertMsgResByteToPointer(in.OriginalMessage[2], in.Signature[2])
 	convertedReceiverMsg, convertedReceiverSig := convertMsgResByteToPointer(in.OriginalMessage[3], in.Signature[3])
-
+*/
 	var originalMsg *C.uchar
 	//var __signature[65] C.uchar
 	var signature *C.uchar
@@ -1215,7 +1215,7 @@ func (s *ClientGrpc) CrossPaymentCommitClientRequest(ctx context.Context, in *cl
 	 * Using SGX
 	 ***/
 
-	 for i:=1; i<=3; i++ {
+	 for i:=1; i<int(in.NumOfParticipants); i++ {
 		go VerifyClientPrepareMsg(in.OriginalMessage[i], in.Signature[i], address[i], in.PaymentNumber)
 	}
 
@@ -1231,7 +1231,7 @@ func (s *ClientGrpc) CrossPaymentCommitClientRequest(ctx context.Context, in *cl
 	}
 
 	for ; ; {
-		result := C.ecall_cross_go_post_update_w(convertedOriginalMsg, convertedSignatureMsg, convertedSenderMsg, convertedSenderSig, convertedMiddleManMsg, convertedMiddleManSig, convertedReceiverMsg, convertedReceiverSig, nil, nil, &originalMsg, &signature)
+		result := C.ecall_cross_go_post_update_w(convertedOriginalMsg, convertedSignatureMsg, nil, nil, nil, nil, nil, nil, /*convertedSenderMsg, convertedSenderSig, convertedMiddleManMsg, convertedMiddleManSig, convertedReceiverMsg, convertedReceiverSig,*/ nil, nil, &originalMsg, &signature)
 
 		if result == 1 {
 			fmt.Println("COMMIT result failure!")
@@ -1328,16 +1328,16 @@ func (s *ClientGrpc) CrossPaymentConfirmClientRequest(ctx context.Context, in *c
 //	return &clientPb.ConfirmResult{Result: true}, nil
 
 	convertedOriginalMsg, convertedSignatureMsg := convertByteToPointer(in.OriginalMessage[0], in.Signature[0])
-	convertedSenderMsg, convertedSenderSig := convertMsgResByteToPointer(in.OriginalMessage[1], in.Signature[1])
+/*	convertedSenderMsg, convertedSenderSig := convertMsgResByteToPointer(in.OriginalMessage[1], in.Signature[1])
 	convertedMiddleManMsg, convertedMiddleManSig := convertMsgResByteToPointer(in.OriginalMessage[2], in.Signature[2])
 	convertedReceiverMsg, convertedReceiverSig := convertMsgResByteToPointer(in.OriginalMessage[3], in.Signature[3])
-
+*/
 	/*
 	 *
 	 * Using SGX
 	 ***/
 
-	 for i:=1; i<=3; i++ {
+	 for i:=1; i<int(in.NumOfParticipants); i++ {
 		go VerifyClientCommitMsg(in.OriginalMessage[i], in.Signature[i], address[i], in.PaymentNumber)
 	}
 
@@ -1353,7 +1353,7 @@ func (s *ClientGrpc) CrossPaymentConfirmClientRequest(ctx context.Context, in *c
 	}
 
 	for ; ; {
-		result := C.ecall_cross_go_idle_w(convertedOriginalMsg, convertedSignatureMsg, convertedSenderMsg, convertedSenderSig, convertedMiddleManMsg, convertedMiddleManSig, convertedReceiverMsg, convertedReceiverSig, nil, nil)
+		result := C.ecall_cross_go_idle_w(convertedOriginalMsg, convertedSignatureMsg, nil, nil, nil, nil, nil, nil, /* convertedSenderMsg, convertedSenderSig, convertedMiddleManMsg, convertedMiddleManSig, convertedReceiverMsg, convertedReceiverSig,*/ nil, nil)
 
 		if result == 1 {
 			fmt.Println("CONFIRM result failure!")

@@ -25,12 +25,14 @@ message UpdateRequestsMessage{
     ChannelPayments channelPayments = 2;
     repeated bytes originalMessage = 3;
     repeated bytes signature = 4;
+    int64 numOfParticipants = 5;
 }
 
 message ConfirmRequestsMessage{
     int64 paymentNumber = 1;
     repeated bytes originalMessage = 2;
     repeated bytes signature = 3;
+    int64 numOfParticipants = 4;
 }
 
 message ChannelPayment{
@@ -94,20 +96,22 @@ message crossPaymentCommitReqClientMessage{
     ChannelPayments channelPayments = 2;
     repeated string addr = 3;
     int64 amount = 4;
-    bytes originalMessage = 5;
-    bytes signature = 6;
+    repeated bytes originalMessage = 5;
+    repeated bytes signature = 6;
+    int64 numOfParticipants = 7;
 }
 
 message crossPaymentConfirmReqClientMessage{
     int64 paymentNumber = 1;
-    bytes originalMessage = 2;
-    bytes signature = 3;
+    repeated bytes originalMessage = 2;
+    repeated bytes signature = 3;
+    int64 numOfParticipants = 4;
 }
 
 message crossPaymentRefundReqClientMessage{
     int64 paymentNumber = 1;
-    bytes originalMessage = 2;
-    bytes signature = 3;
+    repeated bytes originalMessage = 2;
+    repeated bytes signature = 3;
 }
 
 message PrepareResult{

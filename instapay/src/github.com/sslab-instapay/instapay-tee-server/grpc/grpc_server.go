@@ -457,7 +457,10 @@ func SendUpdateRequest(i interface{}) {
 		PaymentNumber:   pn,
 		OriginalMessage: originalMessageByteArray,
 		Signature:       signatureByteArray,
+		NumOfParticipants : int64(len(originalMessageByteArray)),
 	}
+
+	fmt.Println(int64(len(originalMessageByteArray)))
 
 	r, err := client.UpdateRequest(context.Background(), &rqm)
 	if err != nil {
@@ -545,7 +548,7 @@ func SendConfirmPayment(i interface{}) {
 		log.Fatal("client conn err")
 	}
 
-	_, err = client.ConfirmPayment(context.Background(), &pbClient.ConfirmRequestsMessage{PaymentNumber: int64(pn), OriginalMessage: originalMessageByteArray, Signature: signatureByteArray}, )
+	_, err = client.ConfirmPayment(context.Background(), &pbClient.ConfirmRequestsMessage{PaymentNumber: int64(pn), OriginalMessage: originalMessageByteArray, Signature: signatureByteArray, NumOfParticipants: int64(len(originalMessageByteArray))}, )
 	if err != nil {
 		log.Println(err)
 	}
@@ -1588,8 +1591,8 @@ func SendCrossUpdateRequest(pn int64, address string, paymentInformation Payment
 
 	channelSlice := paymentInformation.ChannelInform
 	amountSlice := paymentInformation.AmountInform
-	var originalMessage *C.uchar
-	var signature *C.uchar
+	//var originalMessage *C.uchar
+	//var signature *C.uchar
 	fmt.Println(channelSlice, amountSlice)
 
 	//log.Println("===== SendCrossUpdateRequest =====")
@@ -1610,12 +1613,12 @@ func SendCrossUpdateRequest(pn int64, address string, paymentInformation Payment
 	//rwMutex.Unlock()
 	log.Println("===== CREATE UD REQ MSG END IN ENCLAVE =====")
 
-	originalMessageByte, signatureByte := convertPointerToByte(originalMessage, signature)
+	//originalMessageByte, signatureByte := convertPointerToByte(originalMessage, signature)
 
 	rqm := pbClient.CrossPaymentCommitReqClientMessage{ /* convert AgreeRequestsMessage to UpdateRequestsMessage */
 		PaymentNumber:   pn,
-		OriginalMessage: originalMessageByte,
-		Signature:       signatureByte,
+		//OriginalMessage: originalMessageByte,
+		//Signature:       signatureByte,
 	}
 
 	r, err := client.CrossPaymentCommitClientRequest(context.Background(), &rqm)
@@ -1678,8 +1681,8 @@ func SendCrossConfirmPayment(pn int, address string, paymentInformation PaymentI
 
 	channelSlice := paymentInformation.ChannelInform
 	amountSlice := paymentInformation.AmountInform
-	var originalMessage *C.uchar
-	var signature *C.uchar
+	//var originalMessage *C.uchar
+	//var signature *C.uchar
 	fmt.Println(channelSlice, amountSlice)
 	log.Println("===== CREATE CONFIRM MSG START IN ENCLAVE =====")
 	//rwMutex.Lock()
@@ -1687,9 +1690,9 @@ func SendCrossConfirmPayment(pn int, address string, paymentInformation PaymentI
 	//rwMutex.Unlock()
 	log.Println("===== CREATE CONFIRM MSG END IN ENCLAVE =====")
 
-	originalMessageByte, signatureByte := convertPointerToByte(originalMessage, signature)
+	//originalMessageByte, signatureByte := convertPointerToByte(originalMessage, signature)
 
-	_, err = client.CrossPaymentConfirmClientRequest(context.Background(), &pbClient.CrossPaymentConfirmReqClientMessage{PaymentNumber: int64(pn), OriginalMessage: originalMessageByte, Signature: signatureByte}, )
+	_, err = client.CrossPaymentConfirmClientRequest(context.Background(), &pbClient.CrossPaymentConfirmReqClientMessage{PaymentNumber: int64(pn), /*OriginalMessage: originalMessageByte, Signature: signatureByte*/}, )
 	if err != nil {
 		log.Println(err)
 		return 
@@ -1717,15 +1720,15 @@ func SendCrossRefundPayment(pn int, address string, paymentInformation PaymentIn
 
 	channelSlice := paymentInformation.ChannelInform
 	amountSlice := paymentInformation.AmountInform
-	var originalMessage *C.uchar
-	var signature *C.uchar
+	//var originalMessage *C.uchar
+	//var signature *C.uchar
         fmt.Println(channelSlice, amountSlice)
 
 	//C.ecall_cross_create_refund_msg_w(C.uint(int32(pn)), C.uint(len(channelSlice)), &channelSlice[0], &amountSlice[0], &originalMessage, &signature)
 
-	originalMessageByte, signatureByte := convertPointerToByte(originalMessage, signature)
+	//originalMessageByte, signatureByte := convertPointerToByte(originalMessage, signature)
 
-	_, err = client.CrossPaymentRefundClientRequest(context.Background(), &pbClient.CrossPaymentRefundReqClientMessage{PaymentNumber: int64(pn), OriginalMessage: originalMessageByte, Signature: signatureByte}, )
+	_, err = client.CrossPaymentRefundClientRequest(context.Background(), &pbClient.CrossPaymentRefundReqClientMessage{PaymentNumber: int64(pn), /*OriginalMessage: originalMessageByte, Signature: signatureByte*/}, )
 	if err != nil {
 		log.Println(err)
 	}
