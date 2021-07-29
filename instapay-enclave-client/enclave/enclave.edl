@@ -126,6 +126,18 @@ enclave {
         public void ecall_accept_payments(
             unsigned int payment_num);
 
+	public void ecall_verify_client_ag_msg(
+	    [user_check] unsigned char *msg,
+	    [user_check] unsigned char *sig,
+	    [user_check] unsigned char *address,
+            [user_check] unsigned int *is_verified);
+
+	public void ecall_verify_client_ud_msg(
+	    [user_check] unsigned char *msg,
+	    [user_check] unsigned char *sig,
+	    [user_check] unsigned char *address,
+            [user_check] unsigned int *is_verified);
+
         public void ecall_go_pre_update(
             [user_check] unsigned char *msg,
             [user_check] unsigned char *signature,
@@ -194,6 +206,18 @@ enclave {
          *
          **/
 
+	public void ecall_verify_client_prepare_msg(
+	    [user_check] unsigned char *msg,
+	    [user_check] unsigned char *sig,
+	    [user_check] unsigned char *address,
+            [user_check] unsigned int *is_verified);
+
+	public void ecall_verify_client_commit_msg(
+	    [user_check] unsigned char *msg,
+	    [user_check] unsigned char *sig,
+	    [user_check] unsigned char *address,
+            [user_check] unsigned int *is_verified);
+
         public void ecall_cross_go_pre_update(
             [user_check] unsigned char *msg,
             [user_check] unsigned char *signature,
@@ -244,7 +268,6 @@ enclave {
         public void ecall_cross_refund(
             [user_check] unsigned char *msg,
             [user_check] unsigned char *signature);
-
 
     };
 };

@@ -48,8 +48,10 @@ func main() {
 
 	C.initialize_enclave()
 	C.ecall_initSecp256k1CTX_w()
+
 //	config.GetContract()
 	go serverGrpc.StartGrpcServer()
 
 	StartWebServer()
 }
+

@@ -6,10 +6,82 @@
 
 std::mutex rwMutex;
 
-void ecall_accpet_payments_w(unsigned int payment_num)
+unsigned int ecall_accept_payments_w(unsigned int payment_num)
 {
-    ecall_accept_payments(global_eid, payment_num);
+    //ecall_accept_payments(global_eid, payment_num);
     //ecall_go_pre_update_two(global_eid, payment_num);
+
+    sgx_status_t ret = SGX_ERROR_UNEXPECTED;
+    rwMutex.lock();
+    ret = ecall_accept_payments(global_eid, payment_num);
+    rwMutex.unlock();
+
+    if (ret != SGX_SUCCESS) {
+//	    printf("AG SGX FAILURE \n");
+	    return 1;
+    }
+
+    return 9999;
+}
+
+unsigned int ecall_verify_client_ag_msg_w(unsigned char *msg, unsigned char *sig, unsigned char *pubaddr)
+{
+	unsigned int is_verified;
+
+	sgx_status_t ret = SGX_ERROR_UNEXPECTED;
+
+	ret = ecall_verify_client_ag_msg(global_eid, msg, sig, pubaddr, &is_verified);
+	if (ret != SGX_SUCCESS) {
+//		print_error_message(ret);
+		return 1;
+	}
+
+	return is_verified;		
+}
+
+unsigned int ecall_verify_client_ud_msg_w(unsigned char *msg, unsigned char *sig, unsigned char *pubaddr)
+{
+	unsigned int is_verified;
+
+	sgx_status_t ret = SGX_ERROR_UNEXPECTED;
+
+	ret = ecall_verify_client_ud_msg(global_eid, msg, sig, pubaddr, &is_verified);
+	if (ret != SGX_SUCCESS) {
+//		print_error_message(ret);
+		return 1;
+	}
+
+	return is_verified;		
+}
+
+unsigned int ecall_verify_client_prepare_msg_w(unsigned char *msg, unsigned char *sig, unsigned char *pubaddr)
+{
+	unsigned int is_verified;
+
+	sgx_status_t ret = SGX_ERROR_UNEXPECTED;
+
+	ret = ecall_verify_client_prepare_msg(global_eid, msg, sig, pubaddr, &is_verified);
+	if (ret != SGX_SUCCESS) {
+//		print_error_message(ret);
+		return 1;
+	}
+
+	return is_verified;		
+}
+
+unsigned int ecall_verify_client_commit_msg_w(unsigned char *msg, unsigned char *sig, unsigned char *pubaddr)
+{
+	unsigned int is_verified;
+
+	sgx_status_t ret = SGX_ERROR_UNEXPECTED;
+
+	ret = ecall_verify_client_commit_msg(global_eid, msg, sig, pubaddr, &is_verified);
+	if (ret != SGX_SUCCESS) {
+//		print_error_message(ret);
+		return 1;
+	}
+
+	return is_verified;		
 }
 
 unsigned int ecall_go_pre_update_w(unsigned char *msg, unsigned char *signature, unsigned char **original_msg, unsigned char **output)

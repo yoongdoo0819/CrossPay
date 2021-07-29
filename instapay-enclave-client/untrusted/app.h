@@ -173,7 +173,11 @@ void ecall_store_channel_data_w(char *chfile);
 void ecall_load_account_data_w(char *keyfile);
 void ecall_load_channel_data_w(char *chfile);
 
-void ecall_accpet_payments_w(unsigned int payment_num);
+unsigned int ecall_accept_payments_w(unsigned int payment_num);
+unsigned int ecall_verify_client_ag_msg_w(unsigned char *msg, unsigned char *sig, unsigned char *pubaddr);
+unsigned int ecall_verify_client_ud_msg_w(unsigned char *msg, unsigned char *sig, unsigned char *pubaddr);
+unsigned int ecall_verify_client_prepare_msg_w(unsigned char *msg, unsigned char *sig, unsigned char *pubaddr);
+unsigned int ecall_verify_client_commit_msg_w(unsigned char *msg, unsigned char *sig, unsigned char *pubaddr);
 
 
 /*

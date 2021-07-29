@@ -462,10 +462,10 @@ import (
 
         //"github.com/decred/dcrd/chaincfg/chainhash"
 //	SECP256K1 "github.com/decred/dcrd/dcrec/secp256k1"
-	"github.com/ethereum/go-ethereum/crypto/secp256k1"
-	"github.com/ethereum/go-ethereum/crypto"
+	//"github.com/ethereum/go-ethereum/crypto/secp256k1"
+	//"github.com/ethereum/go-ethereum/crypto"
 
-	"crypto/sha256"
+	//"crypto/sha256"
 )
 
 type MessageRes struct {
@@ -525,9 +525,44 @@ type ClientGrpc struct {
 	clientPb.UnimplementedClientServer
 }
 
+var verificationSuccess [500000]chan bool
+var address = [4]string{"" , "f55ba9376db959fab2af86d565325829b08ea3c4", "c60f640c4505d15b972e6fc2a2a7cba09d05d9f7", "70603f1189790fcd0fd753a7fef464bdc2c2ad36"}
+
+var AgreeMsgVerificationSuccess [500000]int64
+var UdMsgVerificationSuccess [500000]int64
+var PrepareMsgVerificationSuccess [500000]int64
+var CommitMsgVerificationSuccess [500000]int64
+
+func VerifyClientAgreeMsg(originalMsg, signature []byte, address string, pn int64) {
+
+	convertedOriginalMsg, convertedSignatureMsg := convertMsgResByteToPointer(originalMsg, signature)
+	addr := []C.uchar(address)
+	for ; ; {
+		result := C.ecall_verify_client_ag_msg_w(convertedOriginalMsg, convertedSignatureMsg, &addr[0])
+		if result == 9999 {
+			verificationSuccess[pn] <- true
+			break
+		}
+	}
+}
+
+func VerifyClientUdMsg(originalMsg, signature []byte, address string, pn int64) {
+
+	convertedOriginalMsg, convertedSignatureMsg := convertMsgResByteToPointer(originalMsg, signature)
+	addr := []C.uchar(address)
+	for ; ; {
+		result := C.ecall_verify_client_ud_msg_w(convertedOriginalMsg, convertedSignatureMsg, &addr[0])
+		if result == 9999 {
+			verificationSuccess[pn] <- true
+			break
+		}
+	}
+}
+
 func (s *ClientGrpc) AgreementRequest(ctx context.Context, in *clientPb.AgreeRequestsMessage) (*clientPb.AgreementResult, error) {
 //	log.Println("----Receive Aggreement Request----")
 
+//	return &clientPb.AgreementResult{Result: true}, nil
 
 	convertedOriginalMsg, convertedSignatureMsg := convertByteToPointer(in.OriginalMessage, in.Signature)
 
@@ -538,6 +573,14 @@ func (s *ClientGrpc) AgreementRequest(ctx context.Context, in *clientPb.AgreeReq
  *
  * Using SGX
  */
+
+	for ; ; {
+		result := C.ecall_accept_payments_w(C.uint(in.PaymentNumber))
+		if result == 9999 {
+			break
+		}
+	}
+
 	for ; ; {
 		result := C.ecall_go_pre_update_w(convertedOriginalMsg, convertedSignatureMsg, &originalMsg, &signature)
 
@@ -661,6 +704,21 @@ func (s *ClientGrpc) UpdateRequest(ctx context.Context, in *clientPb.UpdateReque
 
 //	C.ecall_go_post_update_w(convertedOriginalMsg, convertedSignatureMsg, &originalMsg, &signature)
 
+	for i:=1; i<=3; i++ {
+		go VerifyClientAgreeMsg(in.OriginalMessage[i], in.Signature[i], address[i], in.PaymentNumber)
+	}
+
+	for ; ; {
+		data := <- verificationSuccess[in.PaymentNumber]
+		if data == true {
+			AgreeMsgVerificationSuccess[in.PaymentNumber]++
+		}
+
+		if AgreeMsgVerificationSuccess[in.PaymentNumber] == 3 {
+			break
+		}
+	}
+
 	for ; ; {
 		result := C.ecall_go_post_update_w(convertedOriginalMsg, convertedSignatureMsg, convertedSenderMsg, convertedSenderSig, convertedMiddleManMsg, convertedMiddleManSig, convertedReceiverMsg, convertedReceiverSig, nil, nil, &originalMsg, &signature)
 
@@ -722,6 +780,8 @@ func (s *ClientGrpc) UpdateRequest(ctx context.Context, in *clientPb.UpdateReque
 func (s *ClientGrpc) ConfirmPayment(ctx context.Context, in *clientPb.ConfirmRequestsMessage) (*clientPb.ConfirmResult, error) {
 //	log.Println("----ConfirmPayment Request Receive----")
 
+//	return &clientPb.ConfirmResult{Result: true}, nil
+
 	convertedOriginalMsg, convertedSignatureMsg := convertByteToPointer(in.OriginalMessage[0], in.Signature[0])
 	convertedSenderMsg, convertedSenderSig := convertMsgResByteToPointer(in.OriginalMessage[1], in.Signature[1])
 	convertedMiddleManMsg, convertedMiddleManSig := convertMsgResByteToPointer(in.OriginalMessage[2], in.Signature[2])
@@ -746,6 +806,22 @@ func (s *ClientGrpc) ConfirmPayment(ctx context.Context, in *clientPb.ConfirmReq
  *
  * Using SGX
  */
+
+	for i:=1; i<=3; i++ {
+		go VerifyClientUdMsg(in.OriginalMessage[i], in.Signature[i], address[i], in.PaymentNumber)
+	}
+
+	for ; ; {
+		data := <- verificationSuccess[in.PaymentNumber]
+		if data == true {
+			UdMsgVerificationSuccess[in.PaymentNumber]++
+		}
+
+		if UdMsgVerificationSuccess[in.PaymentNumber] == 3 {
+			break
+		}
+	}
+
 	for ; ; {
 		result := C.ecall_go_idle_w(convertedOriginalMsg, convertedSignatureMsg, convertedSenderMsg, convertedSenderSig, convertedMiddleManMsg, convertedMiddleManSig, convertedReceiverMsg, convertedReceiverSig, nil, nil)
 
@@ -901,11 +977,37 @@ func convertMsgResPointerToByte(originalMsg *C.uchar, signature *C.uchar) ([]byt
  * InstaPay 3.0
  */
 
+func VerifyClientPrepareMsg(originalMsg, signature []byte, address string, pn int64) {
+
+	convertedOriginalMsg, convertedSignatureMsg := convertMsgResByteToPointer(originalMsg, signature)
+	addr := []C.uchar(address)
+	for ; ; {
+		result := C.ecall_verify_client_prepare_msg_w(convertedOriginalMsg, convertedSignatureMsg, &addr[0])
+		if result == 9999 {
+			verificationSuccess[pn] <- true
+			break
+		}
+	}
+}
+
+func VerifyClientCommitMsg(originalMsg, signature []byte, address string, pn int64) {
+
+	convertedOriginalMsg, convertedSignatureMsg := convertMsgResByteToPointer(originalMsg, signature)
+	addr := []C.uchar(address)
+	for ; ; {
+		result := C.ecall_verify_client_commit_msg_w(convertedOriginalMsg, convertedSignatureMsg, &addr[0])
+		if result == 9999 {
+			verificationSuccess[pn] <- true
+			break
+		}
+	}
+}
+
 func (s *ClientGrpc) CrossPaymentPrepareClientRequest(ctx context.Context, in *clientPb.CrossPaymentPrepareReqClientMessage) (*clientPb.PrepareResult, error) {
 	//log.Println("----CROSS PAYMENT PREPARE START IN CLIENT----")
 
-	//return &clientPb.PrepareResult{Result: true}, nil
-		hash := crypto.Keccak256(in.OriginalMessage)
+//	return &clientPb.PrepareResult{Result: true}, nil
+/*		hash := crypto.Keccak256(in.OriginalMessage)
 		for i:=0; i<16; i++ {
 			fmt.Printf("%02x", hash[i])
 		}
@@ -928,11 +1030,16 @@ func (s *ClientGrpc) CrossPaymentPrepareClientRequest(ctx context.Context, in *c
 		for i:=0; i<20; i++ {
 			fmt.Printf("%02x", addr[i])
 		}
-
+*/
 	convertedOriginalMsg, convertedSignatureMsg := convertByteToPointer(in.OriginalMessage, in.Signature)
 
 //	rwMutex.Lock()
-//	C.ecall_cross_go_pre_update_two_w(C.uint(in.PaymentNumber))
+	for ; ; {
+		result := C.ecall_accept_payments_w(C.uint(in.PaymentNumber))
+		if result == 9999 {
+			break
+		}
+	}
 //	rwMutex.Unlock()
 
 	var originalMsg *C.uchar
@@ -1108,6 +1215,21 @@ func (s *ClientGrpc) CrossPaymentCommitClientRequest(ctx context.Context, in *cl
 	 * Using SGX
 	 ***/
 
+	 for i:=1; i<=3; i++ {
+		go VerifyClientPrepareMsg(in.OriginalMessage[i], in.Signature[i], address[i], in.PaymentNumber)
+	}
+
+	for ; ; {
+		data := <- verificationSuccess[in.PaymentNumber]
+		if data == true {
+			PrepareMsgVerificationSuccess[in.PaymentNumber]++
+		}
+
+		if PrepareMsgVerificationSuccess[in.PaymentNumber] == 3 {
+			break
+		}
+	}
+
 	for ; ; {
 		result := C.ecall_cross_go_post_update_w(convertedOriginalMsg, convertedSignatureMsg, convertedSenderMsg, convertedSenderSig, convertedMiddleManMsg, convertedMiddleManSig, convertedReceiverMsg, convertedReceiverSig, nil, nil, &originalMsg, &signature)
 
@@ -1215,6 +1337,21 @@ func (s *ClientGrpc) CrossPaymentConfirmClientRequest(ctx context.Context, in *c
 	 * Using SGX
 	 ***/
 
+	 for i:=1; i<=3; i++ {
+		go VerifyClientCommitMsg(in.OriginalMessage[i], in.Signature[i], address[i], in.PaymentNumber)
+	}
+
+	for ; ; {
+		data := <- verificationSuccess[in.PaymentNumber]
+		if data == true {
+			CommitMsgVerificationSuccess[in.PaymentNumber]++
+		}
+
+		if CommitMsgVerificationSuccess[in.PaymentNumber] == 3 {
+			break
+		}
+	}
+
 	for ; ; {
 		result := C.ecall_cross_go_idle_w(convertedOriginalMsg, convertedSignatureMsg, convertedSenderMsg, convertedSenderSig, convertedMiddleManMsg, convertedMiddleManSig, convertedReceiverMsg, convertedReceiverSig, nil, nil)
 
@@ -1320,6 +1457,11 @@ func ChanCreate() {
 			//ch[i] = make(chan bool)
 			ChComplete[i] = make(chan bool)
 		}
+
+		for i = range verificationSuccess {
+			verificationSuccess[i] = make(chan bool)
+		}
+
 		fmt.Printf("%d ChanCreate! \n", i)
 	} else {
 		return

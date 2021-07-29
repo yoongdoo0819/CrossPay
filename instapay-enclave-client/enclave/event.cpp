@@ -32,7 +32,8 @@ void ecall_receive_create_channel(unsigned int channel_id, unsigned char *owner,
 
     channels.insert(map_channel_value(channel_id, *channel));
 
-    printf("CHANNEL CREATED ! \n");
+    free(owner_addr_bytes);
+    free(receiver_addr_bytes);
     return;
 }
 

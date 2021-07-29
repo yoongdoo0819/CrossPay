@@ -24,11 +24,42 @@ std::mutex rwMutex;
 void ecall_accept_payments(unsigned int payment_num)
 {
     payments.insert(map_payment_value(payment_num, Payment(payment_num)));
+
+    //printf("%d, %d \n", payment_num, payments.find(payment_num)->second.m_status);
+}
+
+void ecall_verify_client_ag_msg(unsigned char *msg, unsigned char *sig, unsigned char *address, unsigned int *is_verified)
+{
+    MessageRes *res = (MessageRes*)msg;
+    verify_client_message(0, sig, msg, sizeof(MessageRes), address, res->payment_num);
+
+    if(res->type != AG_RES || res->e != 1) {
+	    *is_verified = 0;
+	    printf("prepared msg type failure");
+	    return;
+    }
+
+    *is_verified = 9999;
+}
+
+void ecall_verify_client_ud_msg(unsigned char *msg, unsigned char *sig, unsigned char *address, unsigned int *is_verified)
+{
+    MessageRes *res = (MessageRes*)msg;
+    verify_client_message(0, sig, msg, sizeof(MessageRes), address, res->payment_num);
+
+    if(res->type != UD_RES || res->e != 1) {
+	    *is_verified = 0;
+	    printf("ud msg type failure");
+	    return;
+    }
+
+    *is_verified = 9999;
 }
 
 void ecall_go_pre_update(unsigned char *msg, unsigned char *signature, unsigned char *original_msg, unsigned char *output, unsigned int *result)
 {
 //    printf("PRE UPDATE START \n");
+
     unsigned char reply_signature[65] = {0, };
     unsigned char *my_addr;
 
@@ -74,6 +105,9 @@ void ecall_go_pre_update(unsigned char *msg, unsigned char *signature, unsigned 
     /* step 3. generate payment instance */
 
     payment_num = ag_req->payment_num;
+    if(payments.find(payment_num)->second.m_status == END) {
+	    printf("pn %d was finished \n", payment_num);
+    } 
     /*
     payment_size = ag_req->payment_size;
     channel_ids = ag_req->channel_ids;
@@ -211,7 +245,7 @@ void ecall_go_post_update(unsigned char *msg, unsigned char *signature, unsigned
     if(verify_message(1, signature, msg, sizeof(Message), NULL))
         return;
 */
-
+/*
     verify_message(1, senderSig, senderMSG, sizeof(MessageRes), NULL);
     verify_message(1, middleManSig, middleManMSG, sizeof(MessageRes), NULL);
     verify_message(1, receiverSig, receiverMSG, sizeof(MessageRes), NULL);
@@ -222,14 +256,13 @@ void ecall_go_post_update(unsigned char *msg, unsigned char *signature, unsigned
 //    printf("%d %d %d \n", senderMsg->amount, middleManMsg->amount, receiverMsg->amount);
 
     if(senderMsg->amount == middleManMsg->amount && 
-		    middleManMsg->amount == receiverMsg->amount) { /*printf("same amount !! \n");*/ }
+		    middleManMsg->amount == receiverMsg->amount) { printf("same amount !! \n"); }
     else { return; }
-
+*/
     verify_message(1, signature, msg, sizeof(Message), NULL);
 
     /* step 2. check that message type is 'UD_REQ' */
 
-//    printf("type : %d \n", ud_req->type);
 
     if(ud_req->type != UD_REQ) {
 	printf("NOT UD REQ \n");
@@ -241,6 +274,10 @@ void ecall_go_post_update(unsigned char *msg, unsigned char *signature, unsigned
     /* step 3. update channel state */
 
     payment_num = ud_req->payment_num;
+    if(payments.find(payment_num)->second.m_status == END) {
+	    printf("pn %d, %d was finished \n", payment_num, payments.find(payment_num)->second.m_status);
+    } 
+
     /*
     payment_size = ud_req->payment_size;
     channel_ids = ud_req->channel_ids;
@@ -263,7 +300,7 @@ void ecall_go_post_update(unsigned char *msg, unsigned char *signature, unsigned
 	    len += snprintf((char *)strpubaddr+len, 41, "%02x", pubAddr[i]);
 //	    printf("str>>>> : %s \n", strpubaddr);
 	    //if(!strcmp((char*)pubAddr[i], "f5"))
-	//	    printf("OK \n");
+//		    printf("OK \n");
 //	    sprintf_s(strpubaddr, "%02x", pubAddr[i]);
 //	    swprintf(strpubaddr, "%02x", (wchar_t)pubAddr[i]);
     }
@@ -331,7 +368,7 @@ void ecall_go_post_update(unsigned char *msg, unsigned char *signature, unsigned
     //rwMutex.lock();
     
     for(int i = 0; i < payment_size; i++) {
-//	printf("payment size : %d POST UPDATE PAYMENT SIZE \n", payment_size);
+	//printf("payment size : %d POST UPDATE PAYMENT SIZE \n", payment_size);
 
         value = (payment_amount[i] < 0) ? payment_amount[i] * -1 : payment_amount[i];
 
@@ -349,10 +386,8 @@ void ecall_go_post_update(unsigned char *msg, unsigned char *signature, unsigned
         }
 
         channels.find(channel_ids[i])->second.transition_to_post_update();
-//	printf("channel %d is post updated \n", channel_ids[i]);
+	//printf("channel %d is post updated \n", channel_ids[i]);
     }
-
-    //rwMutex.unlock();
 
     /* step 4. generate reply message */
 
@@ -371,8 +406,6 @@ void ecall_go_post_update(unsigned char *msg, unsigned char *signature, unsigned
     memcpy(original_msg, (unsigned char*)&reply, sizeof(MessageRes));
     memcpy(output, reply_signature, 65);
 
-    //free(pubkey);
-    //free(seckey);
 //    printf("%d POST UPDATED \n", payment_num);
     *result = 9999;
     return;    
@@ -395,7 +428,7 @@ void ecall_go_idle(unsigned char *msg, unsigned char *signature, unsigned char *
     if(verify_message(1, signature, msg, sizeof(Message), NULL))
         return;
 */
-
+/*
     verify_message(1, senderSig, senderMSG, sizeof(MessageRes), NULL);
     verify_message(1, middleManSig, middleManMSG, sizeof(MessageRes), NULL);
     verify_message(1, receiverSig, receiverMSG, sizeof(MessageRes), NULL);
@@ -405,9 +438,10 @@ void ecall_go_idle(unsigned char *msg, unsigned char *signature, unsigned char *
     Message *receiverMsg = (Message*)receiverMSG;
 
     if(senderMsg->amount == middleManMsg->amount && 
-		    middleManMsg->amount == receiverMsg->amount) { /*printf("same amount !! \n");*/ }
+	    middleManMsg->amount == receiverMsg->amount) { printf("same amount !! \n"); 
+    }
     else { return; }
-
+*/
     verify_message(1, signature, msg, sizeof(Message), NULL);
 
     /* step 2. check that message type is 'UD_REQ' */
@@ -420,6 +454,10 @@ void ecall_go_idle(unsigned char *msg, unsigned char *signature, unsigned char *
     }
 
     payment_num = confirm->payment_num;
+    if(payments.find(payment_num)->second.m_status == END) {
+	    printf("pn %d was finished \n", payment_num);
+    } 
+
     /*
     payment_size = ud_req->payment_size;
     channel_ids = ud_req->channel_ids;
@@ -524,6 +562,7 @@ void ecall_go_idle(unsigned char *msg, unsigned char *signature, unsigned char *
 //	printf("channel %d is idle updated \n", channel_ids[i]);
     }
 
+    payments.find(payment_num)->second.m_status = END;
     *result = 9999;
     return;
 
@@ -561,6 +600,34 @@ void ecall_register_comminfo(unsigned int channel_id, unsigned char *ip, unsigne
  * InstaPay 3.0
  */
 
+void ecall_verify_client_prepare_msg(unsigned char *msg, unsigned char *sig, unsigned char *address, unsigned int *is_verified)
+{
+    MessageRes *res = (MessageRes*)msg;
+    verify_client_message(0, sig, msg, sizeof(MessageRes), address, res->payment_num);
+
+    if(res->type != CROSS_PREPARE_RES || res->e != 1) {
+	    *is_verified = 0;
+	    printf("ud msg type failure");
+	    return;
+    }
+
+    *is_verified = 9999;
+}
+
+void ecall_verify_client_commit_msg(unsigned char *msg, unsigned char *sig, unsigned char *address, unsigned int *is_verified)
+{
+    MessageRes *res = (MessageRes*)msg;
+    verify_client_message(0, sig, msg, sizeof(MessageRes), address, res->payment_num);
+
+    if(res->type != CROSS_COMMIT_RES || res->e != 1) {
+	    *is_verified = 0;
+	    printf("ud msg type failure");
+	    return;
+    }
+
+    *is_verified = 9999;
+}
+
 void ecall_cross_go_pre_update(unsigned char *msg, unsigned char *signature, unsigned char *original_msg, unsigned char *output, unsigned int *result)
 {
     //printf("PRE UPDATE START \n");
@@ -589,15 +656,15 @@ void ecall_cross_go_pre_update(unsigned char *msg, unsigned char *signature, uns
 */    
 
     /* step 1. verify signature */
-    
+/*    
     if(verify_message(1, signature, msg, sizeof(Cross_Message), NULL)) {
 	printf("verification failure ! \n");
         return;
     }
-
+*/
     /* step 2. check that message type is 'AG_REQ' */
    
-//    verify_message(1, signature, msg, sizeof(Cross_Message), NULL);
+    verify_message(1, signature, msg, sizeof(Cross_Message), NULL);
     
 //    printf("type : %d \n", ag_req->type);
 
@@ -757,7 +824,7 @@ void ecall_cross_go_post_update(unsigned char *msg, unsigned char *signature, un
     if(verify_message(1, signature, msg, sizeof(Cross_Message), NULL))
         return;
 
-
+/*
     verify_message(1, senderSig, senderMSG, sizeof(MessageRes), NULL);
     verify_message(1, middleManSig, middleManMSG, sizeof(MessageRes), NULL);
     verify_message(1, receiverSig, receiverMSG, sizeof(MessageRes), NULL);
@@ -768,9 +835,9 @@ void ecall_cross_go_post_update(unsigned char *msg, unsigned char *signature, un
 //    printf("%d %d %d \n", senderMsg->amount, middleManMsg->amount, receiverMsg->amount);
 
     if(senderMsg->amount == middleManMsg->amount && 
-		    middleManMsg->amount == receiverMsg->amount) { /*printf("same amount !! \n");*/ }
+		    middleManMsg->amount == receiverMsg->amount) { printf("same amount !! \n"); }
     else { return; }
-
+*/
 //    verify_message(1, signature, msg, sizeof(Cross_Message), NULL);
 
     /* step 2. check that message type is 'UD_REQ' */
@@ -943,7 +1010,7 @@ void ecall_cross_go_idle(unsigned char *msg, unsigned char *signature, unsigned 
     if(verify_message(1, signature, msg, sizeof(Message), NULL))
         return;
 
-
+/*
     verify_message(1, senderSig, senderMSG, sizeof(MessageRes), NULL);
     verify_message(1, middleManSig, middleManMSG, sizeof(MessageRes), NULL);
     verify_message(1, receiverSig, receiverMSG, sizeof(MessageRes), NULL);
@@ -954,9 +1021,9 @@ void ecall_cross_go_idle(unsigned char *msg, unsigned char *signature, unsigned 
 
 
     if(senderMsg->amount == middleManMsg->amount && 
-		    middleManMsg->amount == receiverMsg->amount) { /*printf("same amount !! \n");*/ }
+		    middleManMsg->amount == receiverMsg->amount) { printf("same amount !! \n");}
     else { return; }
-
+*/
 //    verify_message(1, signature, msg, sizeof(Cross_Message), NULL);
 
     /* step 2. check that message type is 'UD_REQ' */
@@ -1085,7 +1152,7 @@ void ecall_cross_go_idle(unsigned char *msg, unsigned char *signature, unsigned 
     }
 
     *result = 9999;
-    return;
+//    printf("IDLE \n");
     return;
 }
 

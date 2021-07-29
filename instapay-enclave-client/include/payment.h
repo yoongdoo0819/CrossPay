@@ -6,8 +6,8 @@
 #include <util.h>
 
 enum payment_status {
-	AGREED	= 0,
-	UPDATED	= 1,
+	INIT	= 0,
+	END	= 1,
 };
 
 using namespace std;
@@ -21,11 +21,14 @@ class Payment {
     public:
         Payment(unsigned int t_payment_num) {
             m_payment_num = t_payment_num;
+	    m_status = INIT;
         };
 
         std::vector<Related> m_related_channels;
         
         void add_element(unsigned int channel_id, int amount);
+
+	unsigned int m_status;
 
     private:
         unsigned int m_payment_num;

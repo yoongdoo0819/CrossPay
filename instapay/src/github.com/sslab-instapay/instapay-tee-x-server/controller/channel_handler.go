@@ -28,7 +28,7 @@ import (
 	"log"
 	"fmt"
 	"strconv"
-	//"math/rand"
+	"math/rand"
 	//pbClient "github.com/sslab-instapay/instapay-tee-x-server/proto/client"
 
 )
@@ -113,18 +113,19 @@ func GetChannelListHandler(context *gin.Context){
 
 */
 func CrossPaymentToServerChannelHandler(ctx *gin.Context) {
-
+/*
 	isCrossPayment, err := strconv.Atoi(ctx.PostForm("isCrossPayment"))
 	if err != nil {
 		log.Fatal(err)
 	}
-
+*/
+	randVal := rand.Intn(100)
 	rwMutex.Lock()
 	tempPn := pn
 	pn++
 	rwMutex.Unlock()
 
-	if isCrossPayment == 1 {
+	if /*isCrossPayment == 1*/ randVal < 0 {
 
 		chain1From := ctx.PostForm("chain1_sender")
 		chain1To := ctx.PostForm("chain1_receiver")
@@ -148,7 +149,7 @@ func CrossPaymentToServerChannelHandler(ctx *gin.Context) {
 		chainTo = append(chainTo, chain2To)
 		amount = append(amount, int64(amount2))
 
-		r, err := serverGrpc.Cross_Client[tempPn%100].CrossPaymentRequest(serverGrpc.Cross_ClientContext[tempPn%100], &xServerPb.CrossPaymentMessage{Pn: int64(tempPn), ChainFrom: chainFrom, ChainTo: chainTo, ChainVal: amount})
+		r, err := serverGrpc.Cross_Client[tempPn%1000].CrossPaymentRequest(serverGrpc.Cross_ClientContext[tempPn%1000], &xServerPb.CrossPaymentMessage{Pn: int64(tempPn), ChainFrom: chainFrom, ChainTo: chainTo, ChainVal: amount})
 		if err != nil {
 			log.Println(err)
 			return
@@ -164,6 +165,7 @@ func CrossPaymentToServerChannelHandler(ctx *gin.Context) {
 
 	} else {
 
+
 		myAddress := ctx.PostForm("chain1_sender") 
 		otherAddress := ctx.PostForm("chain1_receiver")
 		amount, err := strconv.Atoi(ctx.PostForm("chain1_sender_val"))
@@ -171,7 +173,7 @@ func CrossPaymentToServerChannelHandler(ctx *gin.Context) {
 			log.Fatal(err)
 		}
 
-		r, _ := serverGrpc.Client[tempPn%100].PaymentRequest(serverGrpc.ClientContext[tempPn%100], &serverPb.PaymentRequestMessage{Pn: int64(tempPn), From: myAddress, To: otherAddress, Amount: int64(amount)})
+		r, _ := serverGrpc.Client[tempPn%1000].PaymentRequest(serverGrpc.ClientContext[tempPn%1000], &serverPb.PaymentRequestMessage{Pn: int64(tempPn+200000), From: myAddress, To: otherAddress, Amount: int64(amount)})
 
 		if r.GetResult() == true {
 			ctx.JSON(http.StatusOK, gin.H{"message": "Payment"})
