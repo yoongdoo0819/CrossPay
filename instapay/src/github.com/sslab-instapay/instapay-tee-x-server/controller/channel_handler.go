@@ -125,7 +125,7 @@ func CrossPaymentToServerChannelHandler(ctx *gin.Context) {
 	pn++
 	rwMutex.Unlock()
 
-	if /*isCrossPayment == 1*/ randVal < 0 {
+	if /*isCrossPayment == 1*/ randVal < 100 {
 
 		chain1From := ctx.PostForm("chain1_sender")
 		chain1To := ctx.PostForm("chain1_receiver")

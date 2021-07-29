@@ -48,11 +48,11 @@ typedef struct cross_message {
     cross_message_type type;
 
     /*** cross-payment ***/
-    cross_payment_server server;
+//    cross_payment_server server;
 
     /***** direct payment *****/
-    unsigned int channel_id;
-    int amount;
+//    unsigned int channel_id;
+//    int amount;
     //unsigned int counter;
 
     /*** multi-hop payment ****/
@@ -64,7 +64,7 @@ typedef struct cross_message {
     int payment_amount[2];
     */
     Participant participant[3];
-    unsigned int e;
+//    unsigned int e;
 
     /*** cross-payment ***/
     //cross_payment_server server;

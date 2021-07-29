@@ -252,7 +252,8 @@ void ecall_cross_create_all_prepare_req_msg(unsigned int payment_num, unsigned c
         unsigned char *seckey = ::arr_to_bytes(seckey_arr, 64);
 
 	Cross_Message request;
-	
+//	printf("%d \n", sizeof(Cross_Message));	
+
 	memset((unsigned char*)&request, 0x00, sizeof(Cross_Message));
 
 //	request.type = CROSS_ALL_PREPARE_REQ;
@@ -263,13 +264,20 @@ void ecall_cross_create_all_prepare_req_msg(unsigned int payment_num, unsigned c
    	request.participant[0].payment_size = sender_payment_size;
    	memcpy(request.participant[0].channel_ids, sender_channel_ids, sizeof(unsigned int) * sender_payment_size);
    	memcpy(request.participant[0].payment_amount, sender_amount, sizeof(int) * sender_payment_size);
-
-   	memcpy(request.participant[1].party, middleMan, 41);
+/*
+	for(int i=1; i<4; i++) { 
+   	memcpy(request.participant[i].party, middleMan, 41);
+   	request.participant[i].payment_size = middleMan_payment_size;
+   	memcpy(request.participant[i].channel_ids, middleMan_channel_ids, sizeof(unsigned int) * middleMan_payment_size);
+   	memcpy(request.participant[i].payment_amount, middleMan_amount, sizeof(int) * middleMan_payment_size);
+	}
+*/
+    	memcpy(request.participant[1].party, middleMan, 41);
    	request.participant[1].payment_size = middleMan_payment_size;
    	memcpy(request.participant[1].channel_ids, middleMan_channel_ids, sizeof(unsigned int) * middleMan_payment_size);
    	memcpy(request.participant[1].payment_amount, middleMan_amount, sizeof(int) * middleMan_payment_size);
-
-   	memcpy(request.participant[2].party, receiver, 41);
+ 
+    	memcpy(request.participant[2].party, receiver, 41);
    	request.participant[2].payment_size = receiver_payment_size;
    	memcpy(request.participant[2].channel_ids, receiver_channel_ids, sizeof(unsigned int) * receiver_payment_size);
    	memcpy(request.participant[2].payment_amount, receiver_amount, sizeof(int) * receiver_payment_size);
@@ -315,7 +323,7 @@ void ecall_cross_create_all_commit_req_msg(unsigned int payment_num, unsigned ch
         unsigned char *seckey = ::arr_to_bytes(seckey_arr, 64);
 
 	Cross_Message request;
-	
+
 	memset((unsigned char*)&request, 0x00, sizeof(Cross_Message));
 
 //	printf("%d, %d \n", payment_num, cross_payments.find(payment_num)->second.m_count);
