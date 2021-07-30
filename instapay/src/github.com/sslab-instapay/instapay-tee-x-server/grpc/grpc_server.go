@@ -401,6 +401,8 @@ func SearchPath(pn int64, amount int64, firstTempChId int, secondTempChId int) (
 	p = append(p, "70603f1189790fcd0fd753a7fef464bdc2c2ad36")
 */
 	var channelInform1, channelInform2, channelInform3 []C.uint
+	var _channelInform1, _channelInform2, _channelInform3 []C.uint
+
 	var amountInform1, amountInform2, amountInform3 []C.int
 
 	channelInform1 = append(channelInform1, C.uint(firstTempChId))
@@ -421,9 +423,19 @@ func SearchPath(pn int64, amount int64, firstTempChId int, secondTempChId int) (
 	amountInform2 = append(amountInform2, C.int(-amount))
 	amountInform3 = append(amountInform3, C.int(amount))
 
+	_channelInform1 = append(_channelInform1, C.uint(secondTempChId))
+	_channelInform2 = append(_channelInform2, C.uint(secondTempChId))
+	//      channelId++
+	_channelInform2 = append(_channelInform2, C.uint(firstTempChId))
+	_channelInform3 = append(_channelInform3, C.uint(firstTempChId))
+
 	paymentInform1 := PaymentInformation{ChannelInform: channelInform1, AmountInform: amountInform1}
 	paymentInform2 := PaymentInformation{ChannelInform: channelInform2, AmountInform: amountInform2}
 	paymentInform3 := PaymentInformation{ChannelInform: channelInform3, AmountInform: amountInform3}
+
+	_paymentInform1 := PaymentInformation{ChannelInform: _channelInform1, AmountInform: amountInform1}
+	_paymentInform2 := PaymentInformation{ChannelInform: _channelInform2, AmountInform: amountInform2}
+	_paymentInform3 := PaymentInformation{ChannelInform: _channelInform3, AmountInform: amountInform3}
 
          //paymentInformation := make(map[string]PaymentInformation)
 	 rwMutex.Lock()
@@ -431,9 +443,9 @@ func SearchPath(pn int64, amount int64, firstTempChId int, secondTempChId int) (
 	 paymentInformationForChain1["c60f640c4505d15b972e6fc2a2a7cba09d05d9f7"] = paymentInform2
 	 paymentInformationForChain1["70603f1189790fcd0fd753a7fef464bdc2c2ad36"] = paymentInform3
 
-	 paymentInformationForChain2["f4444529d6221122d1712c52623ba119a60609e3"] = paymentInform1
-	 paymentInformationForChain2["d95da40bbd2001abf1a558c0b1dffd75940b8fd9"] = paymentInform2
-	 paymentInformationForChain2["73d8e5475278f7593b5293beaa45fb53f34c9ad2"] = paymentInform3
+	 paymentInformationForChain2["f4444529d6221122d1712c52623ba119a60609e3"] = _paymentInform1
+	 paymentInformationForChain2["d95da40bbd2001abf1a558c0b1dffd75940b8fd9"] = _paymentInform2
+	 paymentInformationForChain2["73d8e5475278f7593b5293beaa45fb53f34c9ad2"] = _paymentInform3
 	 rwMutex.Unlock()
 
 //         log.Println("===== SearchPath End =====")
@@ -536,6 +548,11 @@ func (s *ServerGrpc) CrossPaymentRequest(ctx context.Context, rs *pbXServer.Cros
 	paymentInformation1 := paymentInformationForChain1[participantsForChain1[0]]
 	paymentInformation2 := paymentInformationForChain1[participantsForChain1[1]]
 	paymentInformation3 := paymentInformationForChain1[participantsForChain1[2]]
+
+	_paymentInformation1 := paymentInformationForChain2[participantsForChain2[0]]
+	_paymentInformation2 := paymentInformationForChain2[participantsForChain2[1]]
+	_paymentInformation3 := paymentInformationForChain2[participantsForChain2[2]]
+
 	rwMutex.Unlock()
 /*
 	_paymentInformation1 := _paymentInformation[p2[0]]
@@ -554,7 +571,8 @@ func (s *ServerGrpc) CrossPaymentRequest(ctx context.Context, rs *pbXServer.Cros
 
 	channelSlice3 := paymentInformation3.ChannelInform
 	amountSlice3 := paymentInformation3.AmountInform
-/*
+
+	// for chain2
 	_channelSlice1 := _paymentInformation1.ChannelInform
 	_amountSlice1 := _paymentInformation1.AmountInform
 
@@ -563,7 +581,7 @@ func (s *ServerGrpc) CrossPaymentRequest(ctx context.Context, rs *pbXServer.Cros
 
 	_channelSlice3 := _paymentInformation3.ChannelInform
 	_amountSlice3 := _paymentInformation3.AmountInform
-*/
+
 
 
 //	st := time.Now()
@@ -586,7 +604,7 @@ func (s *ServerGrpc) CrossPaymentRequest(ctx context.Context, rs *pbXServer.Cros
 		go func() {
 
 			for ; ; {
-				result := C.ecall_cross_create_all_prepare_req_msg_w(C.uint(rs.Pn), &sender2[0], &middleMan2[0], &receiver2[0], C.uint(len(channelSlice1)), &channelSlice1[0], C.uint(len(channelSlice2)), &channelSlice2[0], C.uint(len(channelSlice3)), &channelSlice3[0], &amountSlice1[0], &amountSlice2[0], &amountSlice3[0], &originalMessageForPrepare2, &signatureForPrepare2)
+				result := C.ecall_cross_create_all_prepare_req_msg_w(C.uint(rs.Pn), &sender2[0], &middleMan2[0], &receiver2[0], C.uint(len(_channelSlice1)), &_channelSlice1[0], C.uint(len(_channelSlice2)), &_channelSlice2[0], C.uint(len(_channelSlice3)), &_channelSlice3[0], &_amountSlice1[0], &_amountSlice2[0], &_amountSlice3[0], &originalMessageForPrepare2, &signatureForPrepare2)
 				if result == EnclaveFailure {
 					prepareMsgCreation[rs.Pn] <- true
 					break
@@ -648,7 +666,7 @@ func (s *ServerGrpc) CrossPaymentRequest(ctx context.Context, rs *pbXServer.Cros
 //	} else {
 		go func() {
 			for ; ; {
-				result := C.ecall_cross_create_all_commit_req_msg_w(C.uint(rs.Pn), &sender2[0], &middleMan2[0], &receiver2[0], C.uint(len(channelSlice1)), &channelSlice1[0], C.uint(len(channelSlice2)), &channelSlice2[0], C.uint(len(channelSlice3)), &channelSlice3[0], &amountSlice1[0], &amountSlice2[0], &amountSlice3[0], &originalMessageForCommit2, &signatureForCommit2)
+				result := C.ecall_cross_create_all_commit_req_msg_w(C.uint(rs.Pn), &sender2[0], &middleMan2[0], &receiver2[0], C.uint(len(_channelSlice1)), &_channelSlice1[0], C.uint(len(_channelSlice2)), &_channelSlice2[0], C.uint(len(_channelSlice3)), &_channelSlice3[0], &_amountSlice1[0], &_amountSlice2[0], &_amountSlice3[0], &originalMessageForCommit2, &signatureForCommit2)
 				if result == EnclaveFailure {
 					commitMsgCreation[rs.Pn] <- true
 					break
@@ -741,7 +759,7 @@ func (s *ServerGrpc) CrossPaymentRequest(ctx context.Context, rs *pbXServer.Cros
 //	} else {
 		go func() {
 			for ; ; {
-				result := C.ecall_cross_create_all_confirm_req_msg_w(C.uint(rs.Pn), &sender2[0], &middleMan2[0], &receiver2[0], C.uint(len(channelSlice1)), &channelSlice1[0], C.uint(len(channelSlice2)), &channelSlice2[0], C.uint(len(channelSlice3)), &channelSlice3[0], &amountSlice1[0], &amountSlice2[0], &amountSlice3[0], &originalMessageForConfirm2, &signatureForConfirm2)
+				result := C.ecall_cross_create_all_confirm_req_msg_w(C.uint(rs.Pn), &sender2[0], &middleMan2[0], &receiver2[0], C.uint(len(_channelSlice1)), &_channelSlice1[0], C.uint(len(_channelSlice2)), &_channelSlice2[0], C.uint(len(_channelSlice3)), &_channelSlice3[0], &_amountSlice1[0], &_amountSlice2[0], &_amountSlice3[0], &originalMessageForConfirm2, &signatureForConfirm2)
 				if result == EnclaveFailure {
 					confirmMsgCreation[rs.Pn] <- true
 					break
@@ -811,7 +829,7 @@ func (s *ServerGrpc) CrossPaymentRequest(ctx context.Context, rs *pbXServer.Cros
 		}
 	}
 
-	//fmt.Println("END!!")
+//	fmt.Println("END!!")
 
 	go func() {
 		emptyChannel[chIdToPaymentNum[firstTempChId]] <- true
