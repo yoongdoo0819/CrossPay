@@ -224,7 +224,7 @@ type Message struct {
 	int payment_amount[2];
 	*/
 
-	participant[3] Participant
+	participant[6] Participant
 	e C.uint
 }
 
@@ -373,21 +373,19 @@ func SendAgreementRequest(i interface{}) {
 	}
 
 	if r.Result {
-/*
-		channelForRecevingMsg[pn] <- true
-		return
+
 
 		agreementOriginalMessage, _ := convertMsgResByteToPointer(r.OriginalMessage, r.Signature)
 
 		hash := crypto.Keccak256(r.OriginalMessage)
 		pubKey, _ := secp256k1.RecoverPubkey(hash[:], r.Signature)
-*/
+
 /*		for i:=0; i<32; i++ {
 			fmt.Printf("%02x", pubKey[i])
 		}
 		fmt.Println(address)
 */
-/*
+
 		var addr string
 
 		for i:=0; i<32; i++ {
@@ -418,7 +416,7 @@ func SendAgreementRequest(i interface{}) {
 			fmt.Println("Message verification failed")
 			return
 		}
-*/
+
 		var clientPrepareMsgRes = AG{}
 		clientPrepareMsgRes.originalMessageByte = r.OriginalMessage
 		clientPrepareMsgRes.signatureByte = r.Signature
@@ -460,8 +458,6 @@ func SendUpdateRequest(i interface{}) {
 		NumOfParticipants : int64(len(originalMessageByteArray)),
 	}
 
-	fmt.Println(int64(len(originalMessageByteArray)))
-
 	r, err := client.UpdateRequest(context.Background(), &rqm)
 	if err != nil {
 		log.Fatal(err)
@@ -469,19 +465,17 @@ func SendUpdateRequest(i interface{}) {
 
 
 	if r.Result == true {
-/*
-		channelForRecevingMsg[pn] <- true
-		return
+
 
 		updateOriginalMessage, _ := convertMsgResByteToPointer(r.OriginalMessage, r.Signature)
 		hash := crypto.Keccak256(r.OriginalMessage)
 		pubKey, _ := secp256k1.RecoverPubkey(hash[:], r.Signature)
-*/
+
 /*		for i:=0; i<32; i++ {
 			fmt.Printf("%02x", pubKey[i])
 		}
 */
-/*		var addr string
+		var addr string
 
 		for i:=0; i<32; i++ {
 			addr += fmt.Sprintf("%02x", pubKey[i])
@@ -517,7 +511,7 @@ func SendUpdateRequest(i interface{}) {
 			fmt.Println("Message UD Res verification failed")
 			return
 		}
-*/
+
 		var clientCommitMsgRes = AG{}
 		clientCommitMsgRes.originalMessageByte = r.OriginalMessage
 		clientCommitMsgRes.signatureByte = r.Signature
@@ -615,7 +609,7 @@ func WrapperConfirmPayment(pn int, p []string, paymentInformation map[string]Pay
 	return true
 }
 
-func SearchPath(pn int64, amount int64, firstTempChId int, secondTempChId int) ([]string, []string, map[string]PaymentInformation, map[string]PaymentInformation) {
+func SearchPath(pn int64, amount int64, firstTempChId int, secondTempChId int, thirdTempChId int) ([]string, []string, map[string]PaymentInformation, map[string]PaymentInformation) {
 
 	//log.Println("===== SearchPath Start =====")
 	//var tempP = p// []string
@@ -627,23 +621,42 @@ func SearchPath(pn int64, amount int64, firstTempChId int, secondTempChId int) (
 	p = append(p, "70603f1189790fcd0fd753a7fef464bdc2c2ad36")
 */
 	/* composing w */
-	var channelInform1, channelInform2, channelInform3 []C.uint
-	var amountInform1, amountInform2, amountInform3 []C.int
+	var channelInform1, channelInform2, channelInform3/*, channelInform4*/ []C.uint
+	var amountInform1, amountInform2, amountInform3/*, amountInform4*/ []C.int
 
+/*
+	3 parties
 	channelInform1 = append(channelInform1, C.uint(firstTempChId))
 	channelInform2 = append(channelInform2, C.uint(firstTempChId))
 
 	channelInform2 = append(channelInform2, C.uint(secondTempChId))
 	channelInform3 = append(channelInform3, C.uint(secondTempChId))
+*/
+	// 4 parties
+	channelInform1 = append(channelInform1, C.uint(firstTempChId))
 
+	channelInform2 = append(channelInform2, C.uint(firstTempChId))
+	channelInform2 = append(channelInform2, C.uint(secondTempChId))
+
+	channelInform3 = append(channelInform3, C.uint(secondTempChId))
+	// 4 parties
+/*	channelInform3 = append(channelInform3, C.uint(thirdTempChId))
+
+	channelInform4 = append(channelInform4, C.uint(thirdTempChId))
+*/
 	amountInform1 = append(amountInform1, C.int(-amount))
 	amountInform2 = append(amountInform2, C.int(amount))
 	amountInform2 = append(amountInform2, C.int(-amount))
 	amountInform3 = append(amountInform3, C.int(amount))
-
+	// 4 parties
+/*	amountInform3 = append(amountInform3, C.int(-amount))
+	amountInform4 = append(amountInform4, C.int(amount))
+*/
 	paymentInform1 := PaymentInformation{ChannelInform: channelInform1, AmountInform: amountInform1}
 	paymentInform2 := PaymentInformation{ChannelInform: channelInform2, AmountInform: amountInform2}
 	paymentInform3 := PaymentInformation{ChannelInform: channelInform3, AmountInform: amountInform3}
+	// 4 parties
+//	paymentInform4 := PaymentInformation{ChannelInform: channelInform4, AmountInform: amountInform4}
 
 	//paymentInformation := make(map[string]PaymentInformation)
 
@@ -651,6 +664,8 @@ func SearchPath(pn int64, amount int64, firstTempChId int, secondTempChId int) (
 	paymentInformation["f55ba9376db959fab2af86d565325829b08ea3c4"] = paymentInform1
 	paymentInformation["c60f640c4505d15b972e6fc2a2a7cba09d05d9f7"] = paymentInform2
 	paymentInformation["70603f1189790fcd0fd753a7fef464bdc2c2ad36"] = paymentInform3
+	// 4 parties
+//	paymentInformation["f4444529d6221122d1712c52623ba119a60609e3"] = paymentInform4
 
 	_paymentInformation["f4444529d6221122d1712c52623ba119a60609e3"] = paymentInform1
 	_paymentInformation["d95da40bbd2001abf1a558c0b1dffd75940b8fd9"] = paymentInform2
@@ -668,10 +683,10 @@ func (s *ServerGrpc) PaymentRequest(ctx context.Context, rq *pbServer.PaymentReq
 
 	firstTempChId := channelId
 	secondTempChId := channelId+1
-
+	thirdTempChId := channelId+2
 	channelId+=2
 
-	if channelId > 9000 {
+	if channelId > 9000-5 {
 		channelId = 4501
 	}
 	rwMutex.Unlock()
@@ -687,7 +702,7 @@ func (s *ServerGrpc) PaymentRequest(ctx context.Context, rq *pbServer.PaymentReq
 		}
 	}()
 
-        participants, p2, paymentInformation, _paymentInformation = SearchPath(int64(rq.Pn), amount, firstTempChId, secondTempChId)
+        participants, p2, paymentInformation, _paymentInformation = SearchPath(int64(rq.Pn), amount, firstTempChId, secondTempChId, thirdTempChId)
 
 	PaymentRequest[rq.Pn].Sender = rq.From
 	PaymentRequest[rq.Pn].MiddleMan = "c60f640c4505d15b972e6fc2a2a7cba09d05d9f7"
@@ -796,38 +811,38 @@ func (s *ServerGrpc) PaymentRequest(ctx context.Context, rq *pbServer.PaymentReq
 
 
 	var originalMessageByteForPrepare, signatureByteForPrepare []byte
-	//var originalMessageByteForPrepare2, signatureByteForPrepare2 []byte
+	var originalMessageByteForPrepare2, signatureByteForPrepare2 []byte
 
 	var originalMessageByteForCommit, signatureByteForCommit []byte
-	//var originalMessageByteForCommit2, signatureByteForCommit2 []byte
+	var originalMessageByteForCommit2, signatureByteForCommit2 []byte
 
 	var originalMessageByteForConfirm, signatureByteForConfirm []byte
-	//var originalMessageByteForConfirm2, signatureByteForConfirm2 []byte
+	var originalMessageByteForConfirm2, signatureByteForConfirm2 []byte
 
 	var originalMessageByteArrayForCommit [][]byte
 	var signatureByteArrayForCommit [][]byte
 
-	//var originalMessageByteArrayForCommit2 [][]byte
-	//var signatureByteArrayForCommit2 [][]byte
+	var originalMessageByteArrayForCommit2 [][]byte
+	var signatureByteArrayForCommit2 [][]byte
 
 	var originalMessageByteArrayForConfirm [][]byte
 	var signatureByteArrayForConfirm [][]byte
 
-	//var originalMessageByteArrayForConfirm2 [][]byte
-	//var signatureByteArrayForConfirm2 [][]byte
+	var originalMessageByteArrayForConfirm2 [][]byte
+	var signatureByteArrayForConfirm2 [][]byte
 
-//	if rq.Pn%2 == 1 {
+	if rq.Pn%2 == 1 {
 		go func() {
 			originalMessageByteForPrepare, signatureByteForPrepare = createMsgAndSig(rq.Pn, participants, paymentInformation, PREPARE)
 			prepareMsgCreation[rq.Pn] <- true
 		}()
-/*	} else {
+	} else {
 		go func() {
 			originalMessageByteForPrepare2, signatureByteForPrepare2 = createMsgAndSig(rq.Pn, p2, _paymentInformation, 3)
 			prepareMsgCreation[rq.Pn] <- true
 		}()
 	}
-*/
+
 	for i:=1; ; i++ {
 		if <-prepareMsgCreation[rq.Pn] == true {
 			prepareMsgCreationSuccess[rq.Pn]++
@@ -840,12 +855,12 @@ func (s *ServerGrpc) PaymentRequest(ctx context.Context, rq *pbServer.PaymentReq
 
 //	return &pbServer.Result{Result: true}, nil
 
-//	if rq.Pn%2 == 1 {
+	if rq.Pn%2 == 1 {
 		go WrapperAgreementRequest(rq.Pn, participants, paymentInformation, originalMessageByteForPrepare, signatureByteForPrepare)
-/*	} else {
+	} else {
 		go WrapperAgreementRequest(rq.Pn, p2, _paymentInformation, originalMessageByteForPrepare2, signatureByteForPrepare2)
 	}
-*/
+
 	for i:= 1; ; i++ {
 		var data = <- channelForRecevingMsg[rq.Pn]
 		//fmt.Printf("%d AG response %d \n", pn, i)
@@ -873,18 +888,18 @@ func (s *ServerGrpc) PaymentRequest(ctx context.Context, rq *pbServer.PaymentReq
 //	return &pbServer.Result{Result: true}, nil
 
 
-//	if rq.Pn%2 == 1 {
+	if rq.Pn%2 == 1 {
 		go func() {
 			originalMessageByteForCommit, signatureByteForCommit = createMsgAndSig(int64(rq.Pn), participants, paymentInformation, COMMIT)
 			commitMsgCreation[rq.Pn] <- true
 		}()
-/*	} else {
+	} else {
 		go func() {
 			originalMessageByteForCommit2, signatureByteForCommit2 = createMsgAndSig(int64(rq.Pn), p2, _paymentInformation, 5)
 			commitMsgCreation[rq.Pn] <- true
 		}()
 	}
-*/
+
 	for i:=1; ; i++ {
 		if <-commitMsgCreation[rq.Pn] == true {
 			commitMsgCreationSuccess[rq.Pn]++
@@ -895,7 +910,7 @@ func (s *ServerGrpc) PaymentRequest(ctx context.Context, rq *pbServer.PaymentReq
 		}
 	}
 
-//	if rq.Pn%2 == 1 {
+	if rq.Pn%2 == 1 {
 
 		originalMessageByteArrayForCommit = append(originalMessageByteArrayForCommit, originalMessageByteForCommit)
 		signatureByteArrayForCommit = append(signatureByteArrayForCommit, signatureByteForCommit)
@@ -911,7 +926,7 @@ func (s *ServerGrpc) PaymentRequest(ctx context.Context, rq *pbServer.PaymentReq
 			rwMutex.Unlock()
 
 		}
-/*	} else {
+	} else {
 
 		originalMessageByteArrayForCommit2 = append(originalMessageByteArrayForCommit2, originalMessageByteForCommit2)
 		signatureByteArrayForCommit2 = append(signatureByteArrayForCommit2, signatureByteForCommit2)
@@ -928,13 +943,13 @@ func (s *ServerGrpc) PaymentRequest(ctx context.Context, rq *pbServer.PaymentReq
 
 		}
 	}
-*/
-//	if rq.Pn%2 == 1 {
+
+	if rq.Pn%2 == 1 {
 		go WrapperUpdateRequest(rq.Pn, participants, paymentInformation, originalMessageByteArrayForCommit, signatureByteArrayForCommit)
-/*	} else {
+	} else {
 		go WrapperUpdateRequest(rq.Pn, p2, _paymentInformation, originalMessageByteArrayForCommit2, signatureByteArrayForCommit2)
 	}
-*/
+
 	for i:= 1; ; i++ {
 		var data = <- channelForRecevingMsg[rq.Pn]
 		//fmt.Printf("%d UD response %d \n", pn, i)
@@ -962,19 +977,19 @@ func (s *ServerGrpc) PaymentRequest(ctx context.Context, rq *pbServer.PaymentReq
 //	return &pbServer.Result{Result: true}, nil
 
 
-//	if rq.Pn%2 == 1 {
+	if rq.Pn%2 == 1 {
 
 		go func() {
 			originalMessageByteForConfirm, signatureByteForConfirm = createMsgAndSig(int64(rq.Pn), participants, paymentInformation, CONFIRM)
 			confirmMsgCreation[rq.Pn] <- true
 		}()
-/*	} else {
+	} else {
 		go func() {
 			originalMessageByteForConfirm2, signatureByteForConfirm2 = createMsgAndSig(int64(rq.Pn), p2, _paymentInformation, 7)
 			confirmMsgCreation[rq.Pn] <- true
 		}()
 	}
-*/
+
 	for i:=1; ; i++ {
 		if <-confirmMsgCreation[rq.Pn] == true {
 			confirmMsgCreationSuccess[rq.Pn]++
@@ -985,7 +1000,7 @@ func (s *ServerGrpc) PaymentRequest(ctx context.Context, rq *pbServer.PaymentReq
 		}
 	}
 
-//	if rq.Pn%2 == 1 {
+	if rq.Pn%2 == 1 {
 
 		originalMessageByteArrayForConfirm = append(originalMessageByteArrayForConfirm, originalMessageByteForConfirm)
 		signatureByteArrayForConfirm = append(signatureByteArrayForConfirm, signatureByteForConfirm)
@@ -1000,7 +1015,7 @@ func (s *ServerGrpc) PaymentRequest(ctx context.Context, rq *pbServer.PaymentReq
 			rwMutex.Unlock()
 
 		}
-/*	} else {
+	} else {
 
 		originalMessageByteArrayForConfirm2 = append(originalMessageByteArrayForConfirm2, originalMessageByteForConfirm2)
 		signatureByteArrayForConfirm2 = append(signatureByteArrayForConfirm2, signatureByteForConfirm2)
@@ -1016,13 +1031,13 @@ func (s *ServerGrpc) PaymentRequest(ctx context.Context, rq *pbServer.PaymentReq
 
 		}
 	}
-*/
-//	if rq.Pn%2 == 1 {
+
+	if rq.Pn%2 == 1 {
 		go WrapperConfirmPayment(int(rq.Pn), participants, paymentInformation, originalMessageByteArrayForConfirm, signatureByteArrayForConfirm)
-/*	} else {
+	} else {
 		go WrapperConfirmPayment(int(rq.Pn), p2, _paymentInformation, originalMessageByteArrayForConfirm2, signatureByteArrayForConfirm2)
 	}
-*/
+
 	for i:= 1; ; i++ {
 		var data = <- channelForRecevingMsg[rq.Pn]
 		//fmt.Printf("%d UD response %d \n", pn, i)
@@ -1155,8 +1170,8 @@ func convertPointerToByte(originalMsg *C.uchar, signature *C.uchar) ([]byte, []b
 	//fmt.Println(originalMsg)
 	replyMsgHdr := reflect.SliceHeader{
 		Data: uintptr(unsafe.Pointer(originalMsg)),
-		Len:  int(216),
-		Cap:  int(216),
+		Len:  int(408),
+		Cap:  int(408),
 	}
 	replyMsgS := *(*[]C.uchar)(unsafe.Pointer(&replyMsgHdr))
 	//fmt.Println(replyMsgS)
@@ -1168,7 +1183,7 @@ func convertPointerToByte(originalMsg *C.uchar, signature *C.uchar) ([]byte, []b
 	}
 	replySigS := *(*[]C.uchar)(unsafe.Pointer(&replySigHdr))
 
-	for i := 0; i < 216; i++ {
+	for i := 0; i < 408; i++ {
 		returnMsg = append(returnMsg, byte(replyMsgS[i]))
 	}
 
@@ -1462,7 +1477,7 @@ func (s *ServerGrpc) CrossPaymentRefundRequest(ctx context.Context, rq *pbServer
 	fmt.Println("all confirm msg : ", is_verified)
 
 	//PaymentNum := C.ecall_accept_request_w(&sender[0], &receiver[0], C.uint(amount))
-	p, _, paymentInformation, _ := SearchPath(pn, amount, 1, 2)
+	p, _, paymentInformation, _ := SearchPath(pn, amount, 1, 2, 3)
 
 	go WrapperCrossRefundPayment(int(pn), p, paymentInformation)
 	//go WrapperCrossUpdateRequest(pn, p, paymentInformation)
@@ -2312,6 +2327,7 @@ func GetClientInfo() {
 	participants = append(participants, clientAddr1ForChain1)
 	participants = append(participants, clientAddr2ForChain1)
 	participants = append(participants, clientAddr3ForChain1)
+//	participants = append(participants, clientAddr1ForChain2)
 
 	p2 = append(p2, clientAddr1ForChain2)
 	p2 = append(p2, clientAddr2ForChain2)
@@ -2352,30 +2368,24 @@ func createMsgAndSig(pn int64, p []string, paymentInformation map[string]Payment
 	Message.payment_num = C.uint(pn)
 	//var party = "f55ba9376db959fab2af86d565325829b08ea3c4"
 
-	rwMutex.Lock()
-	paymentInformation1 := paymentInformation[p[0]]
-	paymentInformation2 := paymentInformation[p[1]]
-	paymentInformation3 := paymentInformation[p[2]]
-	rwMutex.Unlock()
+	var channelSlice [NumOfParticipants][]C.uint
+	var amountSlice [NumOfParticipants][]C.int
 
-	var channelSlice [3][]C.uint
-	var amountSlice [3][]C.int
+	for i:=0; i<NumOfParticipants; i++ {
+		rwMutex.Lock()
+		paymentInformation := paymentInformation[p[i]]
+		rwMutex.Unlock()
 
-	channelSlice[0] = paymentInformation1.ChannelInform
-	amountSlice[0] = paymentInformation1.AmountInform
+		channelSlice[i] = paymentInformation.ChannelInform
+		amountSlice[i] = paymentInformation.AmountInform
 
-	channelSlice[1] = paymentInformation2.ChannelInform
-	amountSlice[1] = paymentInformation2.AmountInform
+	}
 
-	channelSlice[2] = paymentInformation3.ChannelInform
-        amountSlice[2] = paymentInformation3.AmountInform
+	for i:=0; i<6; i++ {
 
-	/*
-	var Participant2 = Participant{}
-	var Participant3 = Participant{}
-	*/
-
-	for i, _ := range p {
+		if i == NumOfParticipants {
+			break
+		}
 
 		var Participant = Participant{}
 
@@ -2474,7 +2484,7 @@ func createMsgAndSig(pn int64, p []string, paymentInformation map[string]Payment
 	signature = (*C.uchar)(unsafe.Pointer(&_signature))
 
 
-	//fmt.Println("msg : ", originalMessage)
+	//fmt.Println("msg : ", Message)
 	//fmt.Println("sig : ", signature)
 	originalMessageByte, _ = convertPointerToByte(originalMessage, signature)
 

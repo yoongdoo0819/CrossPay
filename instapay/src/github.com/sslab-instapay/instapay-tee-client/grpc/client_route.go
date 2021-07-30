@@ -714,7 +714,7 @@ func (s *ClientGrpc) UpdateRequest(ctx context.Context, in *clientPb.UpdateReque
 			AgreeMsgVerificationSuccess[in.PaymentNumber]++
 		}
 
-		if AgreeMsgVerificationSuccess[in.PaymentNumber] == 3 {
+		if AgreeMsgVerificationSuccess[in.PaymentNumber] == in.NumOfParticipants-1 {
 			break
 		}
 	}
@@ -817,7 +817,7 @@ func (s *ClientGrpc) ConfirmPayment(ctx context.Context, in *clientPb.ConfirmReq
 			UdMsgVerificationSuccess[in.PaymentNumber]++
 		}
 
-		if UdMsgVerificationSuccess[in.PaymentNumber] == 3 {
+		if UdMsgVerificationSuccess[in.PaymentNumber] == in.NumOfParticipants-1 {
 			break
 		}
 	}
@@ -1225,7 +1225,7 @@ func (s *ClientGrpc) CrossPaymentCommitClientRequest(ctx context.Context, in *cl
 			PrepareMsgVerificationSuccess[in.PaymentNumber]++
 		}
 
-		if PrepareMsgVerificationSuccess[in.PaymentNumber] == 3 {
+		if PrepareMsgVerificationSuccess[in.PaymentNumber] == in.NumOfParticipants-1 {
 			break
 		}
 	}
@@ -1347,7 +1347,7 @@ func (s *ClientGrpc) CrossPaymentConfirmClientRequest(ctx context.Context, in *c
 			CommitMsgVerificationSuccess[in.PaymentNumber]++
 		}
 
-		if CommitMsgVerificationSuccess[in.PaymentNumber] == 3 {
+		if CommitMsgVerificationSuccess[in.PaymentNumber] == in.NumOfParticipants-1 {
 			break
 		}
 	}

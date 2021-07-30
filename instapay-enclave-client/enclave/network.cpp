@@ -1007,7 +1007,7 @@ void ecall_cross_go_idle(unsigned char *msg, unsigned char *signature, unsigned 
 
     /* step 1. verify signature */
 
-    if(verify_message(1, signature, msg, sizeof(Message), NULL))
+    if(verify_message(1, signature, msg, sizeof(Cross_Message), NULL))
         return;
 
 /*
