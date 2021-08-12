@@ -128,6 +128,30 @@ enclave {
             [user_check] unsigned char *req_sig,
 	    [user_check] unsigned int *result);
 
+	public void ecall_cross_create_all_prepare_req_msg2(
+            unsigned int payment_num, 
+            [user_check] unsigned char *sender, 
+            [user_check] unsigned char *middleMan, 
+            [user_check] unsigned char *receiver,
+            [user_check] unsigned char *receiver2, 
+            [user_check] unsigned char *receiver3, 
+            unsigned int sender_payment_size, 
+            [user_check] unsigned int *sender_channel_ids, 
+            unsigned int middleMan_payment_size, 
+            [user_check] unsigned int *middleMan_channel_ids, 
+            unsigned int receiver_payment_size, 
+            [user_check] unsigned int *receiver_channel_ids, 
+            unsigned int receiver2_payment_size, 
+            [user_check] unsigned int *receiver2_channel_ids, 
+            unsigned int receiver3_payment_size, 
+            [user_check] unsigned int *receiver3_channel_ids, 
+            [user_check] int *sender_amount,  
+            [user_check] int *middleMan_amount, 
+            [user_check] int *receiver_amount,
+            [user_check] unsigned char **req_msg, 
+            [user_check] unsigned char *req_sig,
+	    [user_check] unsigned int *result);
+
 	public void ecall_cross_create_all_commit_req_msg(
             unsigned int payment_num, 
             [user_check] unsigned char *sender, 
@@ -143,6 +167,30 @@ enclave {
             [user_check] int *middleMan_amount, 
             [user_check] int *receiver_amount,
             [user_check] unsigned char *req_msg, 
+            [user_check] unsigned char *req_sig,
+	    [user_check] unsigned int *result);
+
+	public void ecall_cross_create_all_commit_req_msg2(
+            unsigned int payment_num, 
+            [user_check] unsigned char *sender, 
+            [user_check] unsigned char *middleMan, 
+            [user_check] unsigned char *receiver,
+            [user_check] unsigned char *receiver2, 
+            [user_check] unsigned char *receiver3, 
+            unsigned int sender_payment_size, 
+            [user_check] unsigned int *sender_channel_ids, 
+            unsigned int middleMan_payment_size, 
+            [user_check] unsigned int *middleMan_channel_ids, 
+            unsigned int receiver_payment_size, 
+            [user_check] unsigned int *receiver_channel_ids, 
+            unsigned int receiver2_payment_size, 
+            [user_check] unsigned int *receiver2_channel_ids, 
+            unsigned int receiver3_payment_size, 
+            [user_check] unsigned int *receiver3_channel_ids, 
+            [user_check] int *sender_amount,  
+            [user_check] int *middleMan_amount, 
+            [user_check] int *receiver_amount,
+            [user_check] unsigned char **req_msg, 
             [user_check] unsigned char *req_sig,
 	    [user_check] unsigned int *result);
 
@@ -173,6 +221,30 @@ enclave {
             [user_check] int *middleMan_amount, 
             [user_check] int *receiver_amount,
             [user_check] unsigned char *req_msg, 
+            [user_check] unsigned char *req_sig,
+	    [user_check] unsigned int *result);
+
+	public void ecall_cross_create_all_confirm_req_msg2(
+            unsigned int payment_num, 
+            [user_check] unsigned char *sender, 
+            [user_check] unsigned char *middleMan, 
+            [user_check] unsigned char *receiver,
+            [user_check] unsigned char *receiver2, 
+            [user_check] unsigned char *receiver3, 
+            unsigned int sender_payment_size, 
+            [user_check] unsigned int *sender_channel_ids, 
+            unsigned int middleMan_payment_size, 
+            [user_check] unsigned int *middleMan_channel_ids, 
+            unsigned int receiver_payment_size, 
+            [user_check] unsigned int *receiver_channel_ids, 
+            unsigned int receiver2_payment_size, 
+            [user_check] unsigned int *receiver2_channel_ids, 
+            unsigned int receiver3_payment_size, 
+            [user_check] unsigned int *receiver3_channel_ids, 
+            [user_check] int *sender_amount,  
+            [user_check] int *middleMan_amount, 
+            [user_check] int *receiver_amount,
+            [user_check] unsigned char **req_msg, 
             [user_check] unsigned char *req_sig,
 	    [user_check] unsigned int *result);
 

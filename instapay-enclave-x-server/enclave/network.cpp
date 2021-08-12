@@ -245,6 +245,66 @@ void ecall_cross_check_committed_unanimity(unsigned int payment_num, int which_l
 {
 }
 
+void ecall_cross_create_all_prepare_req_msg2(unsigned int payment_num, unsigned char *sender, unsigned char *middleMan, unsigned char *receiver, unsigned char *receiver2, unsigned char *receiver3, unsigned int sender_payment_size, unsigned int *sender_channel_ids, unsigned int middleMan_payment_size, unsigned int *middleMan_channel_ids, unsigned int receiver_payment_size, unsigned int *receiver_channel_ids, unsigned int receiver2_payment_size, unsigned int *receiver2_channel_ids, unsigned int receiver3_payment_size, unsigned int *receiver3_channel_ids, int *sender_amount, int *middleMan_amount, int *receiver_amount, unsigned char **req_msg, unsigned char *req_sig, unsigned int *result)
+{
+	unsigned char req_signature[65] = {0, };
+   	unsigned char *seckey_arr = (unsigned char*)"5a5e2194e0639fd017158793812dd5f5668f5bfc9a146f93f39237a4b4ed7dd5";
+        unsigned char *seckey = ::arr_to_bytes(seckey_arr, 64);
+
+//	Cross_Message request;
+	Cross_Message *request = (Cross_Message*)malloc(sizeof(Cross_Message));
+	//unsigned char *request = new Cross_Message();
+
+	//memset((unsigned char*)&request, 0x00, sizeof(Cross_Message));
+
+//	request.type = CROSS_ALL_PREPARE_REQ;
+	request->type = CROSS_PREPARE_REQ;
+	request->payment_num = payment_num;
+
+	memcpy(request->participant[0].party, sender, 41);
+   	request->participant[0].payment_size = sender_payment_size;
+   	memcpy(request->participant[0].channel_ids, sender_channel_ids, sizeof(unsigned int) * sender_payment_size);
+   	memcpy(request->participant[0].payment_amount, sender_amount, sizeof(int) * sender_payment_size);
+/*
+	for(int i=1; i<3; i++) { 
+   	memcpy(request.participant[i].party, middleMan, 41);
+   	request.participant[i].payment_size = middleMan_payment_size;
+   	memcpy(request.participant[i].channel_ids, middleMan_channel_ids, sizeof(unsigned int) * middleMan_payment_size);
+   	memcpy(request.participant[i].payment_amount, middleMan_amount, sizeof(int) * middleMan_payment_size);
+	}
+*/  
+	memcpy(request->participant[1].party, middleMan, 41);
+   	request->participant[1].payment_size = middleMan_payment_size;
+   	memcpy(request->participant[1].channel_ids, middleMan_channel_ids, sizeof(unsigned int) * middleMan_payment_size);
+   	memcpy(request->participant[1].payment_amount, middleMan_amount, sizeof(int) * middleMan_payment_size);
+
+   	memcpy(request->participant[2].party, receiver, 41);
+   	request->participant[2].payment_size = receiver_payment_size;
+   	memcpy(request->participant[2].channel_ids, receiver_channel_ids, sizeof(unsigned int) * receiver_payment_size);
+   	memcpy(request->participant[2].payment_amount, receiver_amount, sizeof(int) * receiver_payment_size);
+
+	memcpy(request->participant[3].party, receiver2, 41);
+   	request->participant[3].payment_size = receiver2_payment_size;
+   	memcpy(request->participant[3].channel_ids, receiver2_channel_ids, sizeof(unsigned int) * receiver2_payment_size);
+   	memcpy(request->participant[3].payment_amount, receiver_amount, sizeof(int) * receiver2_payment_size);
+
+    	memcpy(request->participant[4].party, receiver3, 41);
+   	request->participant[4].payment_size = receiver3_payment_size;
+   	memcpy(request->participant[4].channel_ids, receiver3_channel_ids, sizeof(unsigned int) * receiver3_payment_size);
+   	memcpy(request->participant[4].payment_amount, receiver_amount, sizeof(int) * receiver3_payment_size);
+
+	sign_message((unsigned char*)request, sizeof(Cross_Message), seckey, req_signature, payment_num);
+//	memcpy(req_msg, (unsigned char*)&request, sizeof(Cross_Message));
+	memcpy(req_sig, req_signature, 65);
+
+	*req_msg = (unsigned char*)request;
+	free(seckey);
+
+	*result = 9999;
+//    	printf("PREPARE \n");
+	return;
+}
+
 void ecall_cross_create_all_prepare_req_msg(unsigned int payment_num, unsigned char *sender, unsigned char *middleMan, unsigned char *receiver, unsigned int sender_payment_size, unsigned int *sender_channel_ids, unsigned int middleMan_payment_size, unsigned int *middleMan_channel_ids, unsigned int receiver_payment_size, unsigned int *receiver_channel_ids, int *sender_amount, int *middleMan_amount, int *receiver_amount, unsigned char *req_msg, unsigned char *req_sig, unsigned int *result)
 {
 	unsigned char req_signature[65] = {0, };
@@ -286,6 +346,7 @@ void ecall_cross_create_all_prepare_req_msg(unsigned int payment_num, unsigned c
 	memcpy(req_msg, (unsigned char*)&request, sizeof(Cross_Message));
 	memcpy(req_sig, req_signature, 65);
 
+	printf("in req_msg %p \n", req_msg);
 	free(seckey);
 
 	*result = 9999;
@@ -315,6 +376,65 @@ void ecall_cross_verify_all_prepared_res_msg(unsigned char *res_msg, unsigned ch
     return;
 }
 
+void ecall_cross_create_all_commit_req_msg2(unsigned int payment_num, unsigned char *sender, unsigned char *middleMan, unsigned char *receiver, unsigned char *receiver2, unsigned char *receiver3, unsigned int sender_payment_size, unsigned int *sender_channel_ids, unsigned int middleMan_payment_size, unsigned int *middleMan_channel_ids, unsigned int receiver_payment_size, unsigned int *receiver_channel_ids, unsigned int receiver2_payment_size, unsigned int *receiver2_channel_ids, unsigned int receiver3_payment_size, unsigned int *receiver3_channel_ids, int *sender_amount, int *middleMan_amount, int *receiver_amount, unsigned char **req_msg, unsigned char *req_sig, unsigned int *result)
+{
+	unsigned char req_signature[65] = {0, };
+   	unsigned char *seckey_arr = (unsigned char*)"5a5e2194e0639fd017158793812dd5f5668f5bfc9a146f93f39237a4b4ed7dd5";
+        unsigned char *seckey = ::arr_to_bytes(seckey_arr, 64);
+
+//	Cross_Message request;
+	Cross_Message *request = (Cross_Message*)malloc(sizeof(Cross_Message));
+	//unsigned char *request = new Cross_Message();
+
+	//memset((unsigned char*)&request, 0x00, sizeof(Cross_Message));
+
+//	request.type = CROSS_ALL_PREPARE_REQ;
+	request->type = CROSS_COMMIT_REQ;
+	request->payment_num = payment_num;
+
+	memcpy(request->participant[0].party, sender, 41);
+   	request->participant[0].payment_size = sender_payment_size;
+   	memcpy(request->participant[0].channel_ids, sender_channel_ids, sizeof(unsigned int) * sender_payment_size);
+   	memcpy(request->participant[0].payment_amount, sender_amount, sizeof(int) * sender_payment_size);
+/*
+	for(int i=1; i<3; i++) { 
+   	memcpy(request.participant[i].party, middleMan, 41);
+   	request.participant[i].payment_size = middleMan_payment_size;
+   	memcpy(request.participant[i].channel_ids, middleMan_channel_ids, sizeof(unsigned int) * middleMan_payment_size);
+   	memcpy(request.participant[i].payment_amount, middleMan_amount, sizeof(int) * middleMan_payment_size);
+	}
+*/  
+	memcpy(request->participant[1].party, middleMan, 41);
+   	request->participant[1].payment_size = middleMan_payment_size;
+   	memcpy(request->participant[1].channel_ids, middleMan_channel_ids, sizeof(unsigned int) * middleMan_payment_size);
+   	memcpy(request->participant[1].payment_amount, middleMan_amount, sizeof(int) * middleMan_payment_size);
+
+   	memcpy(request->participant[2].party, receiver, 41);
+   	request->participant[2].payment_size = receiver_payment_size;
+   	memcpy(request->participant[2].channel_ids, receiver_channel_ids, sizeof(unsigned int) * receiver_payment_size);
+   	memcpy(request->participant[2].payment_amount, receiver_amount, sizeof(int) * receiver_payment_size);
+
+	memcpy(request->participant[3].party, receiver2, 41);
+   	request->participant[3].payment_size = receiver2_payment_size;
+   	memcpy(request->participant[3].channel_ids, receiver2_channel_ids, sizeof(unsigned int) * receiver2_payment_size);
+   	memcpy(request->participant[3].payment_amount, receiver_amount, sizeof(int) * receiver2_payment_size);
+
+    	memcpy(request->participant[4].party, receiver3, 41);
+   	request->participant[4].payment_size = receiver3_payment_size;
+   	memcpy(request->participant[4].channel_ids, receiver3_channel_ids, sizeof(unsigned int) * receiver3_payment_size);
+   	memcpy(request->participant[4].payment_amount, receiver_amount, sizeof(int) * receiver3_payment_size);
+
+	sign_message((unsigned char*)request, sizeof(Cross_Message), seckey, req_signature, payment_num);
+//	memcpy(req_msg, (unsigned char*)&request, sizeof(Cross_Message));
+	memcpy(req_sig, req_signature, 65);
+
+	*req_msg = (unsigned char*)request;
+	free(seckey);
+
+	*result = 9999;
+//    	printf("PREPARE \n");
+	return;
+}
 
 void ecall_cross_create_all_commit_req_msg(unsigned int payment_num, unsigned char *sender, unsigned char *middleMan, unsigned char *receiver, unsigned int sender_payment_size, unsigned int *sender_channel_ids, unsigned int middleMan_payment_size, unsigned int *middleMan_channel_ids, unsigned int receiver_payment_size, unsigned int *receiver_channel_ids, int *sender_amount, int *middleMan_amount, int *receiver_amount, unsigned char *req_msg, unsigned char *req_sig, unsigned int *result)
 {
@@ -434,6 +554,66 @@ void ecall_cross_create_all_confirm_req_msg(unsigned int payment_num, unsigned c
 
 	*result = 9999;
 //	printf("CONFIRM \n");
+	return;
+}
+
+void ecall_cross_create_all_confirm_req_msg2(unsigned int payment_num, unsigned char *sender, unsigned char *middleMan, unsigned char *receiver, unsigned char *receiver2, unsigned char *receiver3, unsigned int sender_payment_size, unsigned int *sender_channel_ids, unsigned int middleMan_payment_size, unsigned int *middleMan_channel_ids, unsigned int receiver_payment_size, unsigned int *receiver_channel_ids, unsigned int receiver2_payment_size, unsigned int *receiver2_channel_ids, unsigned int receiver3_payment_size, unsigned int *receiver3_channel_ids, int *sender_amount, int *middleMan_amount, int *receiver_amount, unsigned char **req_msg, unsigned char *req_sig, unsigned int *result)
+{
+	unsigned char req_signature[65] = {0, };
+   	unsigned char *seckey_arr = (unsigned char*)"5a5e2194e0639fd017158793812dd5f5668f5bfc9a146f93f39237a4b4ed7dd5";
+        unsigned char *seckey = ::arr_to_bytes(seckey_arr, 64);
+
+//	Cross_Message request;
+	Cross_Message *request = (Cross_Message*)malloc(sizeof(Cross_Message));
+	//unsigned char *request = new Cross_Message();
+
+	//memset((unsigned char*)&request, 0x00, sizeof(Cross_Message));
+
+//	request.type = CROSS_ALL_PREPARE_REQ;
+	request->type = CROSS_CONFIRM_REQ;
+	request->payment_num = payment_num;
+
+	memcpy(request->participant[0].party, sender, 41);
+   	request->participant[0].payment_size = sender_payment_size;
+   	memcpy(request->participant[0].channel_ids, sender_channel_ids, sizeof(unsigned int) * sender_payment_size);
+   	memcpy(request->participant[0].payment_amount, sender_amount, sizeof(int) * sender_payment_size);
+/*
+	for(int i=1; i<3; i++) { 
+   	memcpy(request.participant[i].party, middleMan, 41);
+   	request.participant[i].payment_size = middleMan_payment_size;
+   	memcpy(request.participant[i].channel_ids, middleMan_channel_ids, sizeof(unsigned int) * middleMan_payment_size);
+   	memcpy(request.participant[i].payment_amount, middleMan_amount, sizeof(int) * middleMan_payment_size);
+	}
+*/  
+	memcpy(request->participant[1].party, middleMan, 41);
+   	request->participant[1].payment_size = middleMan_payment_size;
+   	memcpy(request->participant[1].channel_ids, middleMan_channel_ids, sizeof(unsigned int) * middleMan_payment_size);
+   	memcpy(request->participant[1].payment_amount, middleMan_amount, sizeof(int) * middleMan_payment_size);
+
+   	memcpy(request->participant[2].party, receiver, 41);
+   	request->participant[2].payment_size = receiver_payment_size;
+   	memcpy(request->participant[2].channel_ids, receiver_channel_ids, sizeof(unsigned int) * receiver_payment_size);
+   	memcpy(request->participant[2].payment_amount, receiver_amount, sizeof(int) * receiver_payment_size);
+
+	memcpy(request->participant[3].party, receiver2, 41);
+   	request->participant[3].payment_size = receiver2_payment_size;
+   	memcpy(request->participant[3].channel_ids, receiver2_channel_ids, sizeof(unsigned int) * receiver2_payment_size);
+   	memcpy(request->participant[3].payment_amount, receiver_amount, sizeof(int) * receiver2_payment_size);
+
+    	memcpy(request->participant[4].party, receiver3, 41);
+   	request->participant[4].payment_size = receiver3_payment_size;
+   	memcpy(request->participant[4].channel_ids, receiver3_channel_ids, sizeof(unsigned int) * receiver3_payment_size);
+   	memcpy(request->participant[4].payment_amount, receiver_amount, sizeof(int) * receiver3_payment_size);
+
+	sign_message((unsigned char*)request, sizeof(Cross_Message), seckey, req_signature, payment_num);
+//	memcpy(req_msg, (unsigned char*)&request, sizeof(Cross_Message));
+	memcpy(req_sig, req_signature, 65);
+
+	*req_msg = (unsigned char*)request;
+	free(seckey);
+
+	*result = 9999;
+//    	printf("PREPARE \n");
 	return;
 }
 

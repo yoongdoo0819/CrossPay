@@ -159,7 +159,7 @@ const (
 	COMMIT = 5
 	CONFIRM = 7
 
-	NumOfParticipants = 4
+	NumOfParticipants = 3 
 
 	NONE = 1111
 	PREPARED = 2222
@@ -621,8 +621,8 @@ func SearchPath(pn int64, amount int64, firstTempChId int, secondTempChId int, t
 	p = append(p, "70603f1189790fcd0fd753a7fef464bdc2c2ad36")
 */
 	/* composing w */
-	var channelInform1, channelInform2, channelInform3, channelInform4 []C.uint
-	var amountInform1, amountInform2, amountInform3, amountInform4 []C.int
+	var channelInform1, channelInform2, channelInform3, channelInform4, channelInform5, channelInform6 []C.uint
+	var amountInform1, amountInform2, amountInform3, amountInform4, amountInform5, amountInform6 []C.int
 
 /*
 	3 parties
@@ -632,7 +632,7 @@ func SearchPath(pn int64, amount int64, firstTempChId int, secondTempChId int, t
 	channelInform2 = append(channelInform2, C.uint(secondTempChId))
 	channelInform3 = append(channelInform3, C.uint(secondTempChId))
 */
-	// 4 parties
+	// 3 parties
 	channelInform1 = append(channelInform1, C.uint(firstTempChId))
 
 	channelInform2 = append(channelInform2, C.uint(firstTempChId))
@@ -641,8 +641,13 @@ func SearchPath(pn int64, amount int64, firstTempChId int, secondTempChId int, t
 	channelInform3 = append(channelInform3, C.uint(secondTempChId))
 	// 4 parties
 	channelInform3 = append(channelInform3, C.uint(firstTempChId))
-
 	channelInform4 = append(channelInform4, C.uint(firstTempChId))
+	// 5 parties
+	channelInform4 = append(channelInform4, C.uint(secondTempChId))
+	channelInform5 = append(channelInform5, C.uint(secondTempChId))
+	// 6 parties
+	channelInform5 = append(channelInform5, C.uint(firstTempChId))
+	channelInform6 = append(channelInform6, C.uint(firstTempChId))
 
 	amountInform1 = append(amountInform1, C.int(-amount))
 	amountInform2 = append(amountInform2, C.int(amount))
@@ -651,12 +656,24 @@ func SearchPath(pn int64, amount int64, firstTempChId int, secondTempChId int, t
 	// 4 parties
 	amountInform3 = append(amountInform3, C.int(-amount))
 	amountInform4 = append(amountInform4, C.int(amount))
+	// 5 parties
+	amountInform4 = append(amountInform4, C.int(-amount))
+	amountInform5 = append(amountInform5, C.int(amount))
+	// 6 parties
+	amountInform5 = append(amountInform5, C.int(-amount))
+	amountInform6 = append(amountInform6, C.int(amount))
 
 	paymentInform1 := PaymentInformation{ChannelInform: channelInform1, AmountInform: amountInform1}
 	paymentInform2 := PaymentInformation{ChannelInform: channelInform2, AmountInform: amountInform2}
 	paymentInform3 := PaymentInformation{ChannelInform: channelInform3, AmountInform: amountInform3}
 	// 4 parties
 	paymentInform4 := PaymentInformation{ChannelInform: channelInform4, AmountInform: amountInform4}
+	// 5 parties
+	paymentInform5 := PaymentInformation{ChannelInform: channelInform5, AmountInform: amountInform5}
+	// 6 parties
+	paymentInform6 := PaymentInformation{ChannelInform: channelInform6, AmountInform: amountInform6}
+
+
 
 	//paymentInformation := make(map[string]PaymentInformation)
 
@@ -666,6 +683,10 @@ func SearchPath(pn int64, amount int64, firstTempChId int, secondTempChId int, t
 	paymentInformation["70603f1189790fcd0fd753a7fef464bdc2c2ad36"] = paymentInform3
 	// 4 parties
 	paymentInformation["f4444529d6221122d1712c52623ba119a60609e3"] = paymentInform4
+	// 5 parties
+	paymentInformation["d95da40bbd2001abf1a558c0b1dffd75940b8fd9"] = paymentInform5
+	// 6 parties
+	paymentInformation["73d8e5475278f7593b5293beaa45fb53f34c9ad2"] = paymentInform6
 
 	_paymentInformation["f4444529d6221122d1712c52623ba119a60609e3"] = paymentInform1
 	_paymentInformation["d95da40bbd2001abf1a558c0b1dffd75940b8fd9"] = paymentInform2
@@ -677,6 +698,7 @@ func SearchPath(pn int64, amount int64, firstTempChId int, secondTempChId int, t
 
 func (s *ServerGrpc) PaymentRequest(ctx context.Context, rq *pbServer.PaymentRequestMessage) (*pbServer.Result, error) {
 
+	StartTime = time.Now()
 	amount := rq.Amount
 
 	rwMutex.Lock()
@@ -884,8 +906,8 @@ func (s *ServerGrpc) PaymentRequest(ctx context.Context, rq *pbServer.PaymentReq
 			return &pbServer.Result{Result: true}, nil
 		}
 */
-	fmt.Println("ALL AG")
-	return &pbServer.Result{Result: true}, nil
+//	fmt.Println("ALL AG")
+//	return &pbServer.Result{Result: true}, nil
 
 
 //	if rq.Pn%2 == 1 {
@@ -1055,7 +1077,10 @@ func (s *ServerGrpc) PaymentRequest(ctx context.Context, rq *pbServer.PaymentReq
 		emptyChannel[chIdToPaymentNum[firstTempChId]] <- true
 	}()
 
-	//fmt.Println("END!!")
+	elapsedTime := time.Since(StartTime)
+	fmt.Printf("execution time : %s", elapsedTime)
+
+//	fmt.Println("END!!")
 	return &pbServer.Result{Result: true}, nil
 }
 
@@ -2327,7 +2352,9 @@ func GetClientInfo() {
 	participants = append(participants, clientAddr1ForChain1)
 	participants = append(participants, clientAddr2ForChain1)
 	participants = append(participants, clientAddr3ForChain1)
-	participants = append(participants, clientAddr1ForChain2)
+//	participants = append(participants, clientAddr1ForChain2)	// 4 parties
+//	participants = append(participants, clientAddr2ForChain2)	// 5 parties
+//	participants = append(participants, clientAddr3ForChain2)	// 6 parties
 
 	p2 = append(p2, clientAddr1ForChain2)
 	p2 = append(p2, clientAddr2ForChain2)
@@ -2402,7 +2429,20 @@ func createMsgAndSig(pn int64, p []string, paymentInformation map[string]Payment
 
 		Message.participant[i] = Participant
 	}
+/*
+	var Participant = Participant{}
 
+	for j := 0; j < 40; j++ {
+		Participant.party[j] = C.uchar(p[NumOfParticipants-1][j])
+	}
+
+	Participant.payment_size = C.uint(len(channelSlice[NumOfParticipants-1]))
+
+	for j := 0; j < int(Participant.payment_size); j++ {
+		Participant.channel_ids[j] = channelSlice[i][j]
+		Participant.payment_amount[j] = amountSlice[i][j]
+	}
+*/
 /*
 	key, err := ecdsa.GenerateKey(secp256k1.S256(), rand.Reader)
 	if err != nil {

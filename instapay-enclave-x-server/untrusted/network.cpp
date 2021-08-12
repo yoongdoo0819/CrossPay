@@ -354,6 +354,28 @@ unsigned int ecall_cross_create_all_prepare_req_msg_w(unsigned int payment_num, 
 	return result;
 }
 
+unsigned int ecall_cross_create_all_prepare_req_msg_w2(unsigned int payment_num, unsigned char *sender, unsigned char *middleMan, unsigned char *receiver, unsigned char *receiver2, unsigned char *receiver3, unsigned int sender_payment_size, unsigned int *sender_channel_ids, unsigned int middleMan_payment_size, unsigned int *middleMan_channel_ids, unsigned int receiver_payment_size, unsigned int *receiver_channel_ids, unsigned int receiver2_payment_size, unsigned int *receiver2_channel_ids, unsigned int receiver3_payment_size, unsigned int *receiver3_channel_ids, int *sender_amount, int *middleMan_amount, int *receiver_amount, unsigned char **original_msg, unsigned char **output)
+{
+	unsigned char *req_msg = NULL;// = new unsigned char[sizeof(cross_message)];
+    	unsigned char *req_sig = new unsigned char[65];
+    	unsigned int result = 1;
+
+	//memset(req_msg, 0x00, sizeof(cross_message));
+	memset(req_sig, 0x00, 65);
+
+	sgx_status_t ret = SGX_ERROR_UNEXPECTED;    
+	ret = ecall_cross_create_all_prepare_req_msg2(global_eid, payment_num, sender, middleMan, receiver, receiver2, receiver3, sender_payment_size, sender_channel_ids, middleMan_payment_size, middleMan_channel_ids, receiver_payment_size, receiver_channel_ids, receiver2_payment_size, receiver2_channel_ids, receiver3_payment_size, receiver3_channel_ids, sender_amount, middleMan_amount, receiver_amount, &req_msg, req_sig, &result);
+		    
+	if (ret != SGX_SUCCESS) {
+//		print_error_message(ret);
+		return 1;
+	}
+
+	*original_msg = req_msg;
+	*output = req_sig;
+	return result;
+}
+
 unsigned int ecall_cross_verify_all_prepared_res_msg_w(unsigned char *res_msg, unsigned char *res_sig, unsigned char *address)
 {
     unsigned int is_verified;
@@ -392,6 +414,28 @@ unsigned int ecall_cross_create_all_commit_req_msg_w(unsigned int payment_num, u
 	return result;
 }
 
+unsigned int ecall_cross_create_all_commit_req_msg_w2(unsigned int payment_num, unsigned char *sender, unsigned char *middleMan, unsigned char *receiver, unsigned char *receiver2, unsigned char *receiver3, unsigned int sender_payment_size, unsigned int *sender_channel_ids, unsigned int middleMan_payment_size, unsigned int *middleMan_channel_ids, unsigned int receiver_payment_size, unsigned int *receiver_channel_ids, unsigned int receiver2_payment_size, unsigned int *receiver2_channel_ids, unsigned int receiver3_payment_size, unsigned int *receiver3_channel_ids, int *sender_amount, int *middleMan_amount, int *receiver_amount, unsigned char **original_msg, unsigned char **output)
+{
+	unsigned char *req_msg = NULL;// = new unsigned char[sizeof(cross_message)];
+    	unsigned char *req_sig = new unsigned char[65];
+    	unsigned int result = 1;
+
+	//memset(req_msg, 0x00, sizeof(cross_message));
+	memset(req_sig, 0x00, 65);
+
+	sgx_status_t ret = SGX_ERROR_UNEXPECTED;    
+	ret = ecall_cross_create_all_commit_req_msg2(global_eid, payment_num, sender, middleMan, receiver, receiver2, receiver3, sender_payment_size, sender_channel_ids, middleMan_payment_size, middleMan_channel_ids, receiver_payment_size, receiver_channel_ids, receiver2_payment_size, receiver2_channel_ids, receiver3_payment_size, receiver3_channel_ids, sender_amount, middleMan_amount, receiver_amount, &req_msg, req_sig, &result);
+		    
+	if (ret != SGX_SUCCESS) {
+//		print_error_message(ret);
+		return 1;
+	}
+
+	*original_msg = req_msg;
+	*output = req_sig;
+	return result;
+}
+
 unsigned int ecall_cross_verify_all_committed_res_msg_w(unsigned char *res_msg, unsigned char *res_sig, unsigned char *address)
 {
     unsigned int is_verified;
@@ -427,6 +471,28 @@ unsigned int ecall_cross_create_all_confirm_req_msg_w(unsigned int payment_num, 
 	*original_msg = req_msg;
 	*output = req_sig;
 
+	return result;
+}
+
+unsigned int ecall_cross_create_all_confirm_req_msg_w2(unsigned int payment_num, unsigned char *sender, unsigned char *middleMan, unsigned char *receiver, unsigned char *receiver2, unsigned char *receiver3, unsigned int sender_payment_size, unsigned int *sender_channel_ids, unsigned int middleMan_payment_size, unsigned int *middleMan_channel_ids, unsigned int receiver_payment_size, unsigned int *receiver_channel_ids, unsigned int receiver2_payment_size, unsigned int *receiver2_channel_ids, unsigned int receiver3_payment_size, unsigned int *receiver3_channel_ids, int *sender_amount, int *middleMan_amount, int *receiver_amount, unsigned char **original_msg, unsigned char **output)
+{
+	unsigned char *req_msg = NULL;// = new unsigned char[sizeof(cross_message)];
+    	unsigned char *req_sig = new unsigned char[65];
+    	unsigned int result = 1;
+
+	//memset(req_msg, 0x00, sizeof(cross_message));
+	memset(req_sig, 0x00, 65);
+
+	sgx_status_t ret = SGX_ERROR_UNEXPECTED;    
+	ret = ecall_cross_create_all_confirm_req_msg2(global_eid, payment_num, sender, middleMan, receiver, receiver2, receiver3, sender_payment_size, sender_channel_ids, middleMan_payment_size, middleMan_channel_ids, receiver_payment_size, receiver_channel_ids, receiver2_payment_size, receiver2_channel_ids, receiver3_payment_size, receiver3_channel_ids, sender_amount, middleMan_amount, receiver_amount, &req_msg, req_sig, &result);
+		    
+	if (ret != SGX_SUCCESS) {
+//		print_error_message(ret);
+		return 1;
+	}
+
+	*original_msg = req_msg;
+	*output = req_sig;
 	return result;
 }
 
