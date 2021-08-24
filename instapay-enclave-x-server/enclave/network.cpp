@@ -254,7 +254,7 @@ void ecall_cross_create_all_prepare_req_msg2(unsigned int payment_num, unsigned 
 //	Cross_Message request;
 	Cross_Message *request = (Cross_Message*)malloc(sizeof(Cross_Message));
 	//unsigned char *request = new Cross_Message();
-
+	printf("%d \n", sizeof(Cross_Message));
 	//memset((unsigned char*)&request, 0x00, sizeof(Cross_Message));
 
 //	request.type = CROSS_ALL_PREPARE_REQ;
@@ -312,8 +312,6 @@ void ecall_cross_create_all_prepare_req_msg(unsigned int payment_num, unsigned c
         unsigned char *seckey = ::arr_to_bytes(seckey_arr, 64);
 
 	Cross_Message request;
-//	printf("%d \n", sizeof(Cross_Message));	
-
 	memset((unsigned char*)&request, 0x00, sizeof(Cross_Message));
 
 //	request.type = CROSS_ALL_PREPARE_REQ;
@@ -346,7 +344,6 @@ void ecall_cross_create_all_prepare_req_msg(unsigned int payment_num, unsigned c
 	memcpy(req_msg, (unsigned char*)&request, sizeof(Cross_Message));
 	memcpy(req_sig, req_signature, 65);
 
-	printf("in req_msg %p \n", req_msg);
 	free(seckey);
 
 	*result = 9999;

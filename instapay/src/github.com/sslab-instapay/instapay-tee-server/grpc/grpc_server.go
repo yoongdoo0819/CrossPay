@@ -159,7 +159,7 @@ const (
 	COMMIT = 5
 	CONFIRM = 7
 
-	NumOfParticipants = 3 
+	NumOfParticipants = 6
 
 	NONE = 1111
 	PREPARED = 2222
@@ -698,7 +698,7 @@ func SearchPath(pn int64, amount int64, firstTempChId int, secondTempChId int, t
 
 func (s *ServerGrpc) PaymentRequest(ctx context.Context, rq *pbServer.PaymentRequestMessage) (*pbServer.Result, error) {
 
-	StartTime = time.Now()
+//	StartTime = time.Now()
 	amount := rq.Amount
 
 	rwMutex.Lock()
@@ -708,12 +708,12 @@ func (s *ServerGrpc) PaymentRequest(ctx context.Context, rq *pbServer.PaymentReq
 	thirdTempChId := channelId+2
 	channelId+=2
 
-	if channelId > 9000-5 {
+	if channelId > 8000 {
 		channelId = 4501
 	}
 	rwMutex.Unlock()
 
-	go func() {
+//	go func() {
 		if chIdToPaymentNum[firstTempChId] == 0 {
 			// if channel ID is used first,
 			chIdToPaymentNum[firstTempChId] = 1
@@ -722,7 +722,7 @@ func (s *ServerGrpc) PaymentRequest(ctx context.Context, rq *pbServer.PaymentReq
 			data := <-emptyChannel[chIdToPaymentNum[firstTempChId]]
 			if data == true { } // else, wait
 		}
-	}()
+//	}()
 
         participants, p2, paymentInformation, _paymentInformation = SearchPath(int64(rq.Pn), amount, firstTempChId, secondTempChId, thirdTempChId)
 
@@ -1077,8 +1077,8 @@ func (s *ServerGrpc) PaymentRequest(ctx context.Context, rq *pbServer.PaymentReq
 		emptyChannel[chIdToPaymentNum[firstTempChId]] <- true
 	}()
 
-	elapsedTime := time.Since(StartTime)
-	fmt.Printf("execution time : %s", elapsedTime)
+//	elapsedTime := time.Since(StartTime)
+//	fmt.Printf("execution time : %s", elapsedTime)
 
 //	fmt.Println("END!!")
 	return &pbServer.Result{Result: true}, nil
@@ -2352,9 +2352,9 @@ func GetClientInfo() {
 	participants = append(participants, clientAddr1ForChain1)
 	participants = append(participants, clientAddr2ForChain1)
 	participants = append(participants, clientAddr3ForChain1)
-//	participants = append(participants, clientAddr1ForChain2)	// 4 parties
-//	participants = append(participants, clientAddr2ForChain2)	// 5 parties
-//	participants = append(participants, clientAddr3ForChain2)	// 6 parties
+	participants = append(participants, clientAddr1ForChain2)	// 4 parties
+	participants = append(participants, clientAddr2ForChain2)	// 5 parties
+	participants = append(participants, clientAddr3ForChain2)	// 6 parties
 
 	p2 = append(p2, clientAddr1ForChain2)
 	p2 = append(p2, clientAddr2ForChain2)
@@ -2421,7 +2421,6 @@ func createMsgAndSig(pn int64, p []string, paymentInformation map[string]Payment
 		}
 
 		Participant.payment_size = C.uint(len(channelSlice[i]))
-
 		for j := 0; j < int(Participant.payment_size); j++ {
 			Participant.channel_ids[j] = channelSlice[i][j]
 			Participant.payment_amount[j] = amountSlice[i][j]

@@ -526,7 +526,7 @@ type ClientGrpc struct {
 }
 
 var verificationSuccess [500000]chan bool
-var address = [4]string{"" , "f55ba9376db959fab2af86d565325829b08ea3c4", "c60f640c4505d15b972e6fc2a2a7cba09d05d9f7", "70603f1189790fcd0fd753a7fef464bdc2c2ad36"}
+var address = [7]string{"" , "f55ba9376db959fab2af86d565325829b08ea3c4", "c60f640c4505d15b972e6fc2a2a7cba09d05d9f7", "70603f1189790fcd0fd753a7fef464bdc2c2ad36", "f4444529d6221122d1712c52623ba119a60609e3", "d95da40bbd2001abf1a558c0b1dffd75940b8fd9", "73d8e5475278f7593b5293beaa45fb53f34c9ad2"}
 
 var AgreeMsgVerificationSuccess [500000]int64
 var UdMsgVerificationSuccess [500000]int64
@@ -871,10 +871,29 @@ func (s *ClientGrpc) DirectChannelPayment(ctx context.Context, in *clientPb.Dire
 
 func convertByteToPointer(originalMsg []byte, signature []byte) (*C.uchar, *C.uchar) {
 
-	var uOriginal [216]C.uchar
+	var uOriginal [408]C.uchar
 	var uSignature [65]C.uchar
 
-	for i := 0; i < 216; i++ {
+	for i := 0; i < 408; i++ {
+		uOriginal[i] = C.uchar(originalMsg[i])
+	}
+
+	for i := 0; i < 65; i++ {
+		uSignature[i] = C.uchar(signature[i])
+	}
+
+	cOriginalMsg := (*C.uchar)(unsafe.Pointer(&uOriginal[0]))
+	cSignature := (*C.uchar)(unsafe.Pointer(&uSignature[0]))
+
+	return cOriginalMsg, cSignature
+}
+
+func convertCrossMsgByteToPointer(originalMsg []byte, signature []byte) (*C.uchar, *C.uchar) {
+
+	var uOriginal [200]C.uchar
+	var uSignature [65]C.uchar
+
+	for i := 0; i < 200; i++ {
 		uOriginal[i] = C.uchar(originalMsg[i])
 	}
 
@@ -1031,7 +1050,7 @@ func (s *ClientGrpc) CrossPaymentPrepareClientRequest(ctx context.Context, in *c
 			fmt.Printf("%02x", addr[i])
 		}
 */
-	convertedOriginalMsg, convertedSignatureMsg := convertByteToPointer(in.OriginalMessage, in.Signature)
+	convertedOriginalMsg, convertedSignatureMsg := convertCrossMsgByteToPointer(in.OriginalMessage, in.Signature)
 
 //	rwMutex.Lock()
 	for ; ; {
@@ -1200,7 +1219,7 @@ func (s *ClientGrpc) CrossPaymentCommitClientRequest(ctx context.Context, in *cl
 
 //	return &clientPb.CommitResult{Result: true}, nil
 
-	convertedOriginalMsg, convertedSignatureMsg := convertByteToPointer(in.OriginalMessage[0], in.Signature[0])
+	convertedOriginalMsg, convertedSignatureMsg := convertCrossMsgByteToPointer(in.OriginalMessage[0], in.Signature[0])
 /*	convertedSenderMsg, convertedSenderSig := convertMsgResByteToPointer(in.OriginalMessage[1], in.Signature[1])
 	convertedMiddleManMsg, convertedMiddleManSig := convertMsgResByteToPointer(in.OriginalMessage[2], in.Signature[2])
 	convertedReceiverMsg, convertedReceiverSig := convertMsgResByteToPointer(in.OriginalMessage[3], in.Signature[3])
@@ -1246,7 +1265,7 @@ func (s *ClientGrpc) CrossPaymentCommitClientRequest(ctx context.Context, in *cl
 	}
 
 	originalMessageStr, signatureStr := convertMsgResPointerToByte(originalMsg, signature)
-//	fmt.Println("COMMIT !!")
+	//fmt.Println("COMMIT !!")
 	return &clientPb.CommitResult{Result: true, OriginalMessage: originalMessageStr, Signature: signatureStr}, nil
 
 
@@ -1327,7 +1346,7 @@ func (s *ClientGrpc) CrossPaymentConfirmClientRequest(ctx context.Context, in *c
 
 //	return &clientPb.ConfirmResult{Result: true}, nil
 
-	convertedOriginalMsg, convertedSignatureMsg := convertByteToPointer(in.OriginalMessage[0], in.Signature[0])
+	convertedOriginalMsg, convertedSignatureMsg := convertCrossMsgByteToPointer(in.OriginalMessage[0], in.Signature[0])
 /*	convertedSenderMsg, convertedSenderSig := convertMsgResByteToPointer(in.OriginalMessage[1], in.Signature[1])
 	convertedMiddleManMsg, convertedMiddleManSig := convertMsgResByteToPointer(in.OriginalMessage[2], in.Signature[2])
 	convertedReceiverMsg, convertedReceiverSig := convertMsgResByteToPointer(in.OriginalMessage[3], in.Signature[3])

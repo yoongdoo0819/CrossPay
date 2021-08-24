@@ -63,7 +63,7 @@ typedef struct cross_message {
     unsigned int channel_ids[2];
     int payment_amount[2];
     */
-    Participant participant[5];
+    Participant participant[3];
 //    unsigned int e;
 
     /*** cross-payment ***/
