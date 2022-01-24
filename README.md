@@ -1,12 +1,12 @@
 # CrossPay
-블록체인 확장성/상호운용성 연구 프로젝트
+Blockchain Interoperability/Scalability Project
 
 
 ## Prerequisites
 - Ubuntu : 18.04
 - go : 1.15.10
 - protoc : libprotoc 3.0.0
-- solidity : 0.4.24
+- solidity : 0.4.23
 - sgx driver : sgx_linux_x64_driver_2.11.100.2
 - sgx sdk    : sgx_linux_x64_sdk_2.13.100
 
@@ -29,6 +29,7 @@ data$ ./start.sh
 ### 2. Deploy CrossPay Smart Contract 
 
 ```bash
+instapay-tee-client/contracts/auto.sh
 instapay/src/github.com/sslab-instapay/instapay-tee-client/ethereum_test$ go run deploy_contract.go   
 ```
 
